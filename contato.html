@@ -90,8 +90,8 @@
             <label style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">O que vale a pena investigar?</span><span class="t-en">What is worth investigating?</span></label>
             <textarea class="fld" rows="4" id="f_msg" style="width:100%;background:#12161d;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;resize:vertical;"></textarea>
           </div>
-          <button onclick="submitForm()" style="background:#fff;color:#07080a;font-weight:700;padding:15px 30px;border:0;border-radius:999px;font-size:15px;cursor:pointer;box-shadow:0 0 40px rgba(40,215,247,.28);align-self:flex-start;"><span class="t-pt">Enviar mensagem</span><span class="t-en">Send message</span></button>
-          <p style="font-size:12.5px;color:#7c869b;margin-top:2px;"><span class="t-pt">Ao enviar, abrimos seu e-mail já com a mensagem preenchida.</span><span class="t-en">On submit, we'll open your email client with the message filled in.</span></p>
+          <button id="f_btn" onclick="submitForm()" style="background:#fff;color:#07080a;font-weight:700;padding:15px 30px;border:0;border-radius:999px;font-size:15px;cursor:pointer;box-shadow:0 0 40px rgba(40,215,247,.28);align-self:flex-start;"><span class="t-pt">Enviar mensagem</span><span class="t-en">Send message</span></button>
+          <p id="f_status" style="font-size:13.5px;color:#7c869b;margin-top:2px;min-height:19px;"><span class="t-pt">Resposta em até 1 dia útil.</span><span class="t-en">We reply within one business day.</span></p>
         </div>
       </div>
     </div>
@@ -146,10 +146,26 @@
   if(cw){var W={pt:['sistema','produto','operação','decisão','execução'],en:['system','product','operation','decision','execution']},i=0;
     setInterval(function(){var l=(root&&root.getAttribute('data-lang'))||'pt',a=W[l];i=(i+1)%a.length;cw.style.opacity=0;
       setTimeout(function(){cw.textContent=a[i];cw.style.opacity=1;},180);},2200);}
-  window.submitForm=function(){var g=function(id){var e=document.getElementById(id);return e?e.value:'';};
+  window.submitForm=function(){
+    var g=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
     var n=g('f_nome'),em=g('f_email'),ep=g('f_empresa'),m=g('f_msg');
-    var body='Nome: '+n+'%0D%0AEmpresa: '+ep+'%0D%0AEmail: '+em+'%0D%0A%0D%0A'+encodeURIComponent(m);
-    window.location.href='mailto:contato@finderlab.com.br?subject='+encodeURIComponent('Contato via site - '+(n||''))+'&body='+body; return false;};
+    var st=document.getElementById('f_status'),btn=document.getElementById('f_btn');
+    var lang=(root&&root.getAttribute('data-lang'))||'pt';
+    var T=function(pt,en){return lang==='en'?en:pt;};
+    var say=function(t,c){if(st){st.style.color=c;st.textContent=t;}};
+    if(!n||!em||!m){say(T('Preencha nome, e-mail e mensagem.','Please fill in name, email and message.'),'#f6b73c');return false;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){say(T('E-mail inválido.','Invalid email.'),'#f6b73c');return false;}
+    if(btn){btn.disabled=true;btn.style.opacity=.6;btn.style.cursor='progress';}
+    say(T('Enviando...','Sending...'),'#9aa7b8');
+    fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({access_key:'583f7bc1-8249-43b1-ad76-6426e076a745',subject:'Novo contato via site Finder Lab',from_name:'Site Finder Lab',name:n,email:em,empresa:ep||'-',message:m})
+    }).then(function(r){return r.json();}).then(function(d){
+      if(d&&d.success){say(T('Mensagem enviada! Retornamos em breve.','Message sent! We will get back to you soon.'),'#28d7f7');
+        ['f_nome','f_email','f_empresa','f_msg'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+      }else{say(T('Não foi possível enviar. Tente de novo ou escreva para contato@finderlab.com.br.','Could not send. Try again or email contato@finderlab.com.br.'),'#ff6b6b');}
+    }).catch(function(){say(T('Falha de conexão. Escreva para contato@finderlab.com.br.','Connection failed. Please email contato@finderlab.com.br.'),'#ff6b6b');
+    }).finally(function(){if(btn){btn.disabled=false;btn.style.opacity=1;btn.style.cursor='pointer';}});
+    return false;};
 })();
 </script>
 </body>
