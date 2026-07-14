@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Serviços · Finder Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Instrument Sans','Helvetica Neue',sans-serif;background:#07080a;color:#e6ebf2;-webkit-font-smoothing:antialiased;letter-spacing:-.1px;line-height:1.6;}
+  a{color:#28d7f7;text-decoration:none;}
+  a:hover{color:#74e7ff;}
+  img{display:block;max-width:100%;}
+  [data-lang="pt"] .t-en{display:none;}
+  [data-lang="en"] .t-pt{display:none;}
+  .mono{font-family:'DM Mono',monospace;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+  @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,20px) scale(1.07)}}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1);}
+  .reveal.in{opacity:1;transform:none;}
+  .navlink:hover{color:#fff!important;}
+  .navlink::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:2px;background:#28d7f7;transition:right .25s ease;}
+  .navlink:hover::after{right:0;}
+  .cap:hover{border-color:rgba(40,215,247,.5)!important;transform:translateY(-3px);box-shadow:0 0 0 1px rgba(40,215,247,.18),0 16px 40px rgba(0,0,0,.4)!important;}
+  .prod-card:hover .prod-media img{transform:scale(1.06);}
+  .prod-card:hover{border-color:rgba(40,215,247,.55)!important;box-shadow:0 0 0 1px rgba(40,215,247,.22),0 22px 54px rgba(0,0,0,.5)!important;transform:translateY(-4px);}
+
+  @media(max-width:900px){
+    .nav-links{display:none!important;position:absolute;top:calc(100% + 12px);left:0;right:0;flex-direction:column;align-items:stretch!important;gap:14px!important;background:#0d1016;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;box-shadow:0 24px 54px rgba(0,0,0,.55);z-index:80;}
+    .navtog:checked ~ .nav-links{display:flex!important;}
+    .burger{display:flex!important;}
+  }
+</style>
+<link rel="icon" type="image/png" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+</head>
+<body>
+
+<div data-lang="pt" style="min-height:100vh;overflow-x:hidden;background:radial-gradient(1100px 620px at 78% -6%,rgba(40,215,247,.11),transparent 60%),#07080a;">
+
+<header style="position:sticky;top:0;z-index:60;padding:16px 24px 0;">
+  <div style="max-width:1180px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:11px 14px 11px 26px;box-shadow:0 12px 40px rgba(0,0,0,.42);">
+    <a href="index.html" style="font-size:20px;font-weight:800;letter-spacing:.4px;color:#fff;">FINDER<b style="color:#28d7f7;">LAB</b></a>
+    <input class="navtog" id="navtog" type="checkbox" style="display:none;"/><label class="burger" for="navtog" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.2);cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></label><nav class="nav-links" style="display:flex;align-items:center;gap:26px;">
+      <a class="navlink" href="index.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Início</span><span class="t-en">Home</span></a>
+      <a class="navlink" href="research.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;">Research</a>
+      <a class="navlink" href="sistemas.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a class="navlink" href="servicos.html" style="position:relative;color:#fff;font-size:14.5px;font-weight:500;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <a class="navlink" href="sobre.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
+      <button onclick="toggleLang()" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
+      <a href="contato.html" style="background:#fff;color:#07080a;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Vamos conversar</span><span class="t-en">Let's talk</span></a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section style="position:relative;padding:92px 24px 72px;overflow:hidden;">
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(40,215,247,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(40,215,247,.05) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(circle at 80% 20%,#000,transparent 64%);pointer-events:none;"></div>
+  <div style="position:absolute;right:-120px;top:-150px;width:560px;height:560px;background:radial-gradient(circle,rgba(40,215,247,.16),transparent 62%);pointer-events:none;animation:drift 13s ease-in-out infinite;"></div>
+  <div style="max-width:900px;margin:0 auto;position:relative;z-index:2;">
+    <div class="mono" style="font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:20px;display:inline-flex;align-items:center;gap:9px;"><span style="width:7px;height:7px;border-radius:50%;background:#28d7f7;box-shadow:0 0 12px #28d7f7;animation:blink 2.4s ease-in-out infinite;"></span><span class="t-pt">Applied Intelligence, para empresas</span><span class="t-en">Applied Intelligence, for companies</span></div>
+    <h1 style="font-size:clamp(38px,5vw,60px);font-weight:800;line-height:1.04;letter-spacing:-1.6px;color:#f6fbfd;"><span class="t-pt">Investigamos o problema e construímos o sistema que o resolve.</span><span class="t-en">We investigate the problem and build the system that solves it.</span></h1>
+    <p style="color:#9aa7b8;font-size:19px;line-height:1.55;max-width:720px;margin-top:20px;"><span class="t-pt">Levamos pesquisa aplicada para processos e produtos reais: hipótese clara, experimento, arquitetura e sistema em produção.</span><span class="t-en">We bring applied research to real processes and products: clear hypothesis, experiment, architecture and production system.</span></p>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:30px;">
+      <a href="contato.html" style="background:#fff;color:#07080a;font-weight:700;padding:15px 30px;border-radius:999px;font-size:15px;box-shadow:0 0 40px rgba(40,215,247,.28);"><span class="t-pt">Vamos conversar</span><span class="t-en">Let's talk</span></a>
+      <a href="#como" style="background:transparent;color:#e6ebf2;font-weight:700;padding:15px 30px;border-radius:999px;font-size:15px;border:1.5px solid rgba(255,255,255,.24);"><span class="t-pt">Como trabalhamos</span><span class="t-en">How we work</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section style="padding:90px 24px;background:#0b0e13;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:760px;margin-bottom:40px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">O problema</span><span class="t-en">The problem</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">A maioria dos projetos de IA para no piloto.</span><span class="t-en">Most AI projects stall at the pilot.</span></h2>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;" data-p4>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:17px;color:#f2f6fb;margin-bottom:8px;"><span class="t-pt">IA cosmética</span><span class="t-en">Cosmetic AI</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.5;"><span class="t-pt">Um chatbot colado por cima que responde, mas não executa nada do processo.</span><span class="t-en">A bolted-on chatbot that answers but runs none of the process.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:17px;color:#f2f6fb;margin-bottom:8px;"><span class="t-pt">PoC que não escala</span><span class="t-en">A PoC that won't scale</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.5;"><span class="t-pt">Demonstrações que impressionam e quebram quando encontram o mundo real.</span><span class="t-en">Demos that impress and break when they meet the real world.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:17px;color:#f2f6fb;margin-bottom:8px;"><span class="t-pt">Sem método</span><span class="t-en">No method</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.5;"><span class="t-pt">Sem discovery e arquitetura, o projeto vira retrabalho e estouro de prazo.</span><span class="t-en">Without discovery and architecture, the project becomes rework and delays.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:17px;color:#f2f6fb;margin-bottom:8px;"><span class="t-pt">Risco com dados</span><span class="t-en">Data risk</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.5;"><span class="t-pt">Dados sensíveis e LGPD tratados no fim, como remendo, viram passivo.</span><span class="t-en">Sensitive data and privacy handled last, as a patch, become liability.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- APPROACH -->
+<section style="padding:100px 24px;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:760px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">A nossa abordagem</span><span class="t-en">Our approach</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Construímos a IA que executa, não a que só responde.</span><span class="t-en">We build AI that acts, not AI that merely answers.</span></h2>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:42px;" data-p3>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:13px;">01</div><h3 style="font-size:19px;margin:14px 0 10px;color:#f2f6fb;"><span class="t-pt">Agentes que executam</span><span class="t-en">Agents that act</span></h3><p style="color:#9aa7b8;font-size:15px;line-height:1.55;"><span class="t-pt">Um orquestrador coordena agentes especialistas que conduzem o processo de ponta a ponta.</span><span class="t-en">An orchestrator coordinates specialist agents that run the process end to end.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:13px;">02</div><h3 style="font-size:19px;margin:14px 0 10px;color:#f2f6fb;"><span class="t-pt">Método por baixo de tudo</span><span class="t-en">Method under everything</span></h3><p style="color:#9aa7b8;font-size:15px;line-height:1.55;"><span class="t-pt">Discovery, arquitetura especificada e decisões com critério reduzem o risco de execução.</span><span class="t-en">Discovery, specified architecture and criteria-based decisions reduce execution risk.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:13px;">03</div><h3 style="font-size:19px;margin:14px 0 10px;color:#f2f6fb;"><span class="t-pt">Governança LGPD by design</span><span class="t-en">Privacy by design</span></h3><p style="color:#9aa7b8;font-size:15px;line-height:1.55;"><span class="t-pt">Privacidade, segurança e auditoria na arquitetura desde o início.</span><span class="t-en">Privacy, security and audit in the architecture from day one.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITIES 8 -->
+<section style="padding:100px 24px;background:#0b0e13;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:760px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">O que fazemos</span><span class="t-en">What we do</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Capacidades de ponta a ponta.</span><span class="t-en">End-to-end capabilities.</span></h2>
+      <p style="color:#9aa7b8;font-size:17px;margin-top:14px;line-height:1.55;"><span class="t-pt">Use como um cardápio: o cliente quase nunca precisa de tudo, mas somos capazes do todo.</span><span class="t-en">Use it as a menu: clients rarely need everything, but we can do it all.</span></p>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:42px;" data-p8>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:12px;">01</div><h3 style="font-size:16px;margin:10px 0 7px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Produtos AI-first ponta a ponta</span><span class="t-en">End-to-end AI-first products</span></h3><p style="color:#9aa7b8;font-size:13.5px;line-height:1.5;"><span class="t-pt">Concepção, design e construção de produtos digitais completos com arquitetura agêntica nativa.</span><span class="t-en">Concept, design and build of complete digital products with native agentic architecture.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:12px;">02</div><h3 style="font-size:16px;margin:10px 0 7px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Arquitetura multi-agente</span><span class="t-en">Multi-agent architecture</span></h3><p style="color:#9aa7b8;font-size:13.5px;line-height:1.5;"><span class="t-pt">Orquestrador e agentes especialistas para o domínio do cliente, em modo Human-on-the-Loop.</span><span class="t-en">Orchestrator and specialist agents for the client's domain, Human-on-the-Loop.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:12px;">03</div><h3 style="font-size:16px;margin:10px 0 7px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Integração de IA no que já existe</span><span class="t-en">AI into what already exists</span></h3><p style="color:#9aa7b8;font-size:13.5px;line-height:1.5;"><span class="t-pt">Agentes rodando processos dentro dos produtos e operações que o cliente já tem.</span><span class="t-en">Agents running processes inside the client's existing products and operations.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:12px;">04</div><h3 style="font-size:16px;margin:10px 0 7px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Conhecimento e dados</span><span class="t-en">Knowledge and data</span></h3><p style="color:#9aa7b8;font-size:13.5px;line-height:1.5;"><span class="t-pt">Ontologias e grafos de conhecimento, RAG, leitura e classificação inteligente de dados.</span><span class="t-en">Ontologies and knowledge graphs, RAG, intelligent data reading and classification.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:12px;">05</div><h3 style="font-size:16px;margin:10px 0 7px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Plataformas e aplicativos</span><span class="t-en">Platforms and apps</span></h3><p style="color:#9aa7b8;font-size:13.5px;line-height:1.5;"><span class="t-pt">SaaS web e mobile (iOS/Android), multiusuário, escaláveis e prontos para produção.</span><span class="t-en">Web and mobile SaaS (iOS/Android), multi-user, scalable and production-ready.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:12px;">06</div><h3 style="font-size:16px;margin:10px 0 7px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Produto e experiência</span><span class="t-en">Product and experience</span></h3><p style="color:#9aa7b8;font-size:13.5px;line-height:1.5;"><span class="t-pt">Discovery estruturado, definição de produto (PRD, arquitetura) e design de experiência (UX).</span><span class="t-en">Structured discovery, product definition (PRD, architecture) and UX design.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:12px;">07</div><h3 style="font-size:16px;margin:10px 0 7px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Governança e conformidade</span><span class="t-en">Governance and compliance</span></h3><p style="color:#9aa7b8;font-size:13.5px;line-height:1.5;"><span class="t-pt">LGPD por design, trilhas auditáveis, segregação de acesso e segurança na arquitetura.</span><span class="t-en">Privacy by design, audit trails, access control and security in the architecture.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:12px;">08</div><h3 style="font-size:16px;margin:10px 0 7px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Consultoria e estratégia</span><span class="t-en">Consulting and strategy</span></h3><p style="color:#9aa7b8;font-size:13.5px;line-height:1.5;"><span class="t-pt">Estratégia de produto com IA, decisão de construir vs. comprar e roadmap agêntico.</span><span class="t-en">AI product strategy, build vs. buy decisions and agentic roadmap.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW WE WORK -->
+<section id="como" style="padding:100px 24px;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:760px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">Como trabalhamos</span><span class="t-en">How we work</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Do problema ao produto em produção.</span><span class="t-en">From problem to product in production.</span></h2>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:42px;" data-p3>
+      <div style="padding:28px;border-radius:18px;background:#0d1016;border:1px solid rgba(255,255,255,.08);"><div style="font-size:40px;font-weight:800;color:#28d7f7;opacity:.55;line-height:1;">01</div><h3 style="font-size:18px;margin:10px 0 8px;color:#fff;">Discovery</h3><p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Entendemos o processo, o dado e a dor real antes de escrever a primeira linha.</span><span class="t-en">We understand the process, the data and the real pain before writing a line.</span></p></div>
+      <div style="padding:28px;border-radius:18px;background:#0d1016;border:1px solid rgba(255,255,255,.08);"><div style="font-size:40px;font-weight:800;color:#28d7f7;opacity:.55;line-height:1;">02</div><h3 style="font-size:18px;margin:10px 0 8px;color:#fff;"><span class="t-pt">Arquitetura</span><span class="t-en">Architecture</span></h3><p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Desenhamos a arquitetura agêntica e o método, com governança embutida.</span><span class="t-en">We design the agentic architecture and method, with governance built in.</span></p></div>
+      <div style="padding:28px;border-radius:18px;background:#0d1016;border:1px solid rgba(255,255,255,.08);"><div style="font-size:40px;font-weight:800;color:#28d7f7;opacity:.55;line-height:1;">03</div><h3 style="font-size:18px;margin:10px 0 8px;color:#fff;"><span class="t-pt">Produto em produção</span><span class="t-en">Product live</span></h3><p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Construímos, integramos e colocamos no ar, com execução garantida.</span><span class="t-en">We build, integrate and ship, with execution guaranteed.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVING PROOF -->
+<section style="padding:100px 24px;background:#0b0e13;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:780px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">Prova viva</span><span class="t-en">Living proof</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Não é teoria. Já temos produtos em produção.</span><span class="t-en">Not theory. We already have products in production.</span></h2>
+      <p style="color:#9aa7b8;font-size:17px;margin-top:14px;line-height:1.55;"><span class="t-pt">Construímos os nossos próprios produtos AI-first. Eles são a prova do que entregamos para você.</span><span class="t-en">We build our own AI-first products. They are the proof of what we deliver for you.</span></p>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:42px;" data-proof>
+      <a href="anchora.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:16px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;"><div class="prod-media" style="height:150px;overflow:hidden;background:#08090b;"><img src="assets/img/anc02.png" alt="Anchora" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div><div style="padding:22px;"><span class="mono" style="font-size:9.5px;letter-spacing:1.5px;color:#28d7f7;">HR TECH</span><h3 style="font-size:21px;font-weight:800;color:#f2f6fb;margin:10px 0 3px;">Anchora</h3><div style="color:#28d7f7;font-weight:700;font-size:13px;margin-bottom:12px;"><span class="t-pt">Performance Management Agêntico</span><span class="t-en">Agentic Performance Management</span></div><span style="color:#28d7f7;font-weight:700;font-size:13.5px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span></div></a>
+      <a href="zelus-health.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:16px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;"><div class="prod-media" style="height:150px;overflow:hidden;background:#08090b;"><img src="assets/img/n_hl1.png" alt="Zelus Health" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div><div style="padding:22px;"><span class="mono" style="font-size:9.5px;letter-spacing:1.5px;color:#28d7f7;">HEALTHTECH</span><h3 style="font-size:21px;font-weight:800;color:#f2f6fb;margin:10px 0 3px;">Zelus Health</h3><div style="color:#28d7f7;font-weight:700;font-size:13px;margin-bottom:12px;"><span class="t-pt">Saúde preventiva humana</span><span class="t-en">Human preventive health</span></div><span style="color:#28d7f7;font-weight:700;font-size:13.5px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span></div></a>
+      <a href="zelus-pet.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:16px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;"><div class="prod-media" style="height:150px;overflow:hidden;background:#08090b;"><img src="assets/img/n_pet1.png" alt="Zelus Pet" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div><div style="padding:22px;"><span class="mono" style="font-size:9.5px;letter-spacing:1.5px;color:#28d7f7;">PETTECH</span><h3 style="font-size:21px;font-weight:800;color:#f2f6fb;margin:10px 0 3px;">Zelus Pet</h3><div style="color:#28d7f7;font-weight:700;font-size:13px;margin-bottom:12px;"><span class="t-pt">Saúde preventiva animal</span><span class="t-en">Animal preventive health</span></div><span style="color:#28d7f7;font-weight:700;font-size:13.5px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span></div></a>
+      <a href="viva.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:16px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;"><div class="prod-media" style="height:150px;overflow:hidden;background:#08090b;"><img src="assets/img/viva-dash.png" alt="Viva" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div><div style="padding:22px;"><span class="mono" style="font-size:9.5px;letter-spacing:1.5px;color:#28d7f7;">PROPTECH</span><h3 style="font-size:21px;font-weight:800;color:#f2f6fb;margin:10px 0 3px;">Viva</h3><div style="color:#28d7f7;font-weight:700;font-size:13px;margin-bottom:12px;"><span class="t-pt">Gestão condominial</span><span class="t-en">Condo management</span></div><span style="color:#28d7f7;font-weight:700;font-size:13.5px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span></div></a>
+      <a href="themis.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:16px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;"><div class="prod-media" style="height:150px;overflow:hidden;background:#08090b;"><img src="assets/img/themis-painel.png" alt="Themis" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div><div style="padding:22px;"><span class="mono" style="font-size:9.5px;letter-spacing:1.5px;color:#28d7f7;">REGTECH · SST</span><h3 style="font-size:21px;font-weight:800;color:#f2f6fb;margin:10px 0 3px;">Themis</h3><div style="color:#28d7f7;font-weight:700;font-size:13px;margin-bottom:12px;"><span class="t-pt">Riscos psicossociais · NR-1</span><span class="t-en">Psychosocial risk · NR-1</span></div><span style="color:#28d7f7;font-weight:700;font-size:13.5px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span></div></a>
+      <a href="famulus.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:16px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;"><div class="prod-media" style="height:150px;overflow:hidden;background:#08090b;"><img src="assets/img/famulus-painel.png" alt="Famulus" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div><div style="padding:22px;"><span class="mono" style="font-size:9.5px;letter-spacing:1.5px;color:#28d7f7;">HEALTHTECH · SST</span><h3 style="font-size:21px;font-weight:800;color:#f2f6fb;margin:10px 0 3px;">Famulus</h3><div style="color:#28d7f7;font-weight:700;font-size:13px;margin-bottom:12px;"><span class="t-pt">Saúde e segurança do trabalho</span><span class="t-en">Occupational health & safety</span></div><span style="color:#28d7f7;font-weight:700;font-size:13.5px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span></div></a>
+    </div>
+  </div>
+</section>
+
+<!-- WHO / START -->
+<section style="padding:100px 24px;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:760px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">Para quem</span><span class="t-en">Who it's for</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Onde a gente entra.</span><span class="t-en">Where we come in.</span></h2>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:42px;" data-p4>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:17px;color:#f2f6fb;margin-bottom:8px;"><span class="t-pt">Automatizar um processo</span><span class="t-en">Automate a process</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.5;"><span class="t-pt">Aquele trabalho repetitivo que hoje depende de gente e um agente poderia conduzir.</span><span class="t-en">That repetitive work that today depends on people and an agent could run.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:17px;color:#f2f6fb;margin-bottom:8px;"><span class="t-pt">Colocar IA no seu produto</span><span class="t-en">Put AI in your product</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.5;"><span class="t-pt">Adicionar uma camada agêntica ao software que você já tem, sem refazer tudo.</span><span class="t-en">Add an agentic layer to the software you already have, without rebuilding it.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:17px;color:#f2f6fb;margin-bottom:8px;"><span class="t-pt">Ler e classificar dados</span><span class="t-en">Read and classify data</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.5;"><span class="t-pt">Documentos, exames, planilhas: leitura inteligente que vira decisão.</span><span class="t-en">Documents, exams, spreadsheets: intelligent reading that turns into decisions.</span></p></div>
+      <div class="cap" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:17px;color:#f2f6fb;margin-bottom:8px;"><span class="t-pt">Construir um produto do zero</span><span class="t-en">Build a product from scratch</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.5;"><span class="t-pt">Um produto AI-first inteiro, da ideia à produção, com a nossa arquitetura.</span><span class="t-en">A whole AI-first product, from idea to production, with our architecture.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:0 24px 100px;">
+  <div class="reveal" data-reveal style="max-width:1180px;margin:0 auto;border-radius:24px;background:linear-gradient(125deg,#142b31,#0c1217);border:1px solid rgba(40,215,247,.22);text-align:center;padding:64px 32px;position:relative;overflow:hidden;">
+    <div style="position:absolute;width:520px;height:520px;right:-180px;top:-220px;border:1px solid rgba(40,215,247,.22);border-radius:50%;pointer-events:none;"></div>
+    <h2 style="font-size:clamp(28px,3.4vw,40px);font-weight:800;letter-spacing:-1px;color:#fff;max-width:760px;margin:0 auto 14px;position:relative;"><span class="t-pt">O que da sua operação poderia rodar com agentes?</span><span class="t-en">What in your operation could run on agents?</span></h2>
+    <p style="color:#aeb7c9;max-width:600px;margin:0 auto 28px;font-size:17px;position:relative;"><span class="t-pt">Conte o desafio. A gente volta com uma leitura e um caminho.</span><span class="t-en">Tell us the challenge. We'll come back with a read and a path.</span></p>
+    <a href="contato.html" style="background:#fff;color:#07080a;font-weight:700;padding:16px 34px;border-radius:999px;font-size:16px;display:inline-block;box-shadow:0 0 44px rgba(40,215,247,.34);position:relative;"><span class="t-pt">Falar com a Finder Lab</span><span class="t-en">Talk to Finder Lab</span></a>
+  </div>
+</section>
+
+<footer style="background:#08090b;color:#9aa7b8;padding:56px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;" data-footer>
+    <div>
+      <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:12px;">FINDER<b style="color:#28d7f7;">LAB</b></div>
+      <div class="mono" style="font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
+      <p style="max-width:340px;font-size:14.5px;line-height:1.6;"><span class="t-pt">Casa de produtos AI-first do grupo Finder. Arquitetura agêntica, método e governança por baixo de cada decisão.</span><span class="t-en">AI-first product house of the Finder group. Agentic architecture, method and governance under every decision.</span></p>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Navegação</span><span class="t-en">Navigate</span></h4>
+      <a href="research.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Research</a>
+      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a href="servicos.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <a href="sobre.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></h4>
+      <a href="anchora.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Anchora</a>
+      <a href="zelus-health.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Zelus Health</a>
+      <a href="themis.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Themis</a>
+      <a href="famulus.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Famulus</a>
+    </div>
+  </div>
+  <div style="max-width:1180px;margin:40px auto 0;border-top:1px solid rgba(255,255,255,.1);padding-top:22px;font-size:13px;color:#7c869b;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <span>© 2026 Finder Lab · Applied Intelligence Lab</span>
+    <span>contato@finderlab.com.br</span>
+  </div>
+</footer>
+</div>
+</x-dc>
+
+<script>
+(function(){
+  var root=document.querySelector('[data-lang]');
+  function setLang(l){ if(root)root.setAttribute('data-lang',l); document.documentElement.setAttribute('lang',l==='pt'?'pt-BR':'en');
+    document.querySelectorAll('.langlabel').forEach(function(x){x.textContent=l==='pt'?'EN':'PT';});
+    try{localStorage.setItem('fl_lang',l);}catch(e){} }
+  window.toggleLang=function(){ var c=(root&&root.getAttribute('data-lang'))||'pt'; setLang(c==='pt'?'en':'pt'); };
+  var sv='pt'; try{sv=localStorage.getItem('fl_lang')||'pt';}catch(e){} setLang(sv);
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+    requestAnimationFrame(function(){document.querySelectorAll('[data-reveal]').forEach(function(el){
+      var r=el.getBoundingClientRect(); if(r.top>=(window.innerHeight||800)*0.9){el.classList.add('reveal');io.observe(el);} else {el.classList.add('reveal','in');}
+    });});
+  }
+  var cw=document.getElementById('cw');
+  if(cw){var W={pt:['sistema','produto','operação','decisão','execução'],en:['system','product','operation','decision','execution']},i=0;
+    setInterval(function(){var l=(root&&root.getAttribute('data-lang'))||'pt',a=W[l];i=(i+1)%a.length;cw.style.opacity=0;
+      setTimeout(function(){cw.textContent=a[i];cw.style.opacity=1;},180);},2200);}
+  window.submitForm=function(){var g=function(id){var e=document.getElementById(id);return e?e.value:'';};
+    var n=g('f_nome'),em=g('f_email'),ep=g('f_empresa'),m=g('f_msg');
+    var body='Nome: '+n+'%0D%0AEmpresa: '+ep+'%0D%0AEmail: '+em+'%0D%0A%0D%0A'+encodeURIComponent(m);
+    window.location.href='mailto:contato@finderlab.com.br?subject='+encodeURIComponent('Contato via site - '+(n||''))+'&body='+body; return false;};
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viva · Finder Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Instrument Sans','Helvetica Neue',sans-serif;background:#07080a;color:#e6ebf2;-webkit-font-smoothing:antialiased;letter-spacing:-.1px;line-height:1.6;}
+  a{color:#28d7f7;text-decoration:none;}
+  a:hover{color:#74e7ff;}
+  img{display:block;max-width:100%;}
+  [data-lang="pt"] .t-en{display:none;}
+  [data-lang="en"] .t-pt{display:none;}
+  .mono{font-family:'DM Mono',monospace;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+  @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,20px) scale(1.07)}}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1);}
+  .reveal.in{opacity:1;transform:none;}
+  .navlink:hover{color:#fff!important;}
+  .navlink::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:2px;background:#28d7f7;transition:right .25s ease;}
+  .navlink:hover::after{right:0;}
+  .card-h:hover{border-color:rgba(40,215,247,.5)!important;transform:translateY(-3px);box-shadow:0 0 0 1px rgba(40,215,247,.18),0 16px 40px rgba(0,0,0,.4)!important;}
+  .phone-h{transition:transform .35s ease;}
+  .phone-h:hover{transform:translateY(-8px);}
+
+  @media(max-width:900px){
+    .nav-links{display:none!important;position:absolute;top:calc(100% + 12px);left:0;right:0;flex-direction:column;align-items:stretch!important;gap:14px!important;background:#0d1016;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;box-shadow:0 24px 54px rgba(0,0,0,.55);z-index:80;}
+    .navtog:checked ~ .nav-links{display:flex!important;}
+    .burger{display:flex!important;}
+  }
+</style>
+<link rel="icon" type="image/png" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+</head>
+<body>
+
+<div data-lang="pt" style="min-height:100vh;overflow-x:hidden;background:radial-gradient(1100px 620px at 78% -6%,rgba(40,215,247,.11),transparent 60%),#07080a;">
+
+<header style="position:sticky;top:0;z-index:60;padding:16px 24px 0;">
+  <div style="max-width:1180px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:11px 14px 11px 26px;box-shadow:0 12px 40px rgba(0,0,0,.42);">
+    <a href="index.html" style="font-size:20px;font-weight:800;letter-spacing:.4px;color:#fff;">FINDER<b style="color:#28d7f7;">LAB</b></a>
+    <input class="navtog" id="navtog" type="checkbox" style="display:none;"/><label class="burger" for="navtog" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.2);cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></label><nav class="nav-links" style="display:flex;align-items:center;gap:26px;">
+      <a class="navlink" href="index.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Início</span><span class="t-en">Home</span></a>
+      <a class="navlink" href="research.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;">Research</a>
+      <a class="navlink" href="sistemas.html" style="position:relative;color:#fff;font-size:14.5px;font-weight:500;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a class="navlink" href="servicos.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <a class="navlink" href="sobre.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
+      <button onclick="toggleLang()" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
+      <a href="contato.html" style="background:#fff;color:#07080a;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Vamos conversar</span><span class="t-en">Let's talk</span></a>
+    </nav>
+  </div>
+</header>
+
+<!-- PHERO -->
+<section style="position:relative;padding:88px 24px 72px;overflow:hidden;">
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(40,215,247,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(40,215,247,.05) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(circle at 82% 24%,#000,transparent 62%);pointer-events:none;"></div>
+  <div style="position:absolute;right:-120px;top:-150px;width:560px;height:560px;background:radial-gradient(circle,rgba(40,215,247,.16),transparent 62%);pointer-events:none;animation:drift 13s ease-in-out infinite;"></div>
+  <div style="max-width:1180px;margin:0 auto;position:relative;z-index:2;display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;" data-phero>
+    <div>
+      <div class="mono" style="font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:18px;display:inline-flex;align-items:center;gap:9px;"><span style="width:7px;height:7px;border-radius:50%;background:#28d7f7;box-shadow:0 0 12px #28d7f7;animation:blink 2.4s ease-in-out infinite;"></span>PROPTECH · <span class="t-pt">Produto</span><span class="t-en">Product</span></div>
+      <h1 style="font-size:clamp(40px,5vw,64px);font-weight:800;line-height:1;letter-spacing:-1.8px;color:#f6fbfd;">Viva</h1>
+      <div style="color:#28d7f7;font-weight:700;font-size:19px;margin:12px 0 16px;"><span class="t-pt">Gestão condominial</span><span class="t-en">Condo management</span></div>
+      <p style="color:#9aa7b8;font-size:19px;line-height:1.55;max-width:520px;"><span class="t-pt">O sistema de gestão condominial que o síndico usa sozinho e a administradora oferece à carteira inteira.</span><span class="t-en">The condo management system the manager runs alone and the administrator offers to its whole portfolio.</span></p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:28px;">
+        <a href="contato.html" style="background:#fff;color:#07080a;font-weight:700;padding:15px 30px;border-radius:999px;font-size:15px;box-shadow:0 0 40px rgba(40,215,247,.28);"><span class="t-pt">Vamos conversar</span><span class="t-en">Let's talk</span></a>
+        <a href="sistemas.html" style="background:transparent;color:#e6ebf2;font-weight:700;padding:15px 30px;border-radius:999px;font-size:15px;border:1.5px solid rgba(255,255,255,.24);"><span class="t-pt">Voltar aos sistemas</span><span class="t-en">Back to systems</span></a>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;">
+      <div class="phone-h" style="width:262px;padding:8px;border-radius:46px;background:linear-gradient(155deg,#3a4149,#0a0c10 68%);box-shadow:0 40px 80px rgba(0,0,0,.62),inset 0 0 0 1.5px rgba(255,255,255,.08),inset 0 0 0 7px #070809;">
+        <div style="border-radius:38px;overflow:hidden;background:#f5f3ec;">
+          <div style="height:34px;background:#f5f3ec;display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:relative;"><span class="mono" style="font-size:12px;font-weight:700;color:#26312b;">9:41</span><div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);width:66px;height:19px;background:#070809;border-radius:99px;"></div><span style="width:22px;height:12px;border:1.5px solid #26312b;border-radius:3px;position:relative;display:inline-block;"><span style="position:absolute;top:1.5px;bottom:1.5px;left:1.5px;width:12px;background:#26312b;border-radius:1px;"></span></span></div>
+          <img src="assets/img/viva-s1.png" alt="Viva" style="width:100%;">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAIN -->
+<section style="padding:90px 24px;">
+  <div class="reveal" data-reveal style="max-width:820px;margin:0 auto;text-align:center;">
+    <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">A dor</span><span class="t-en">The pain</span></div>
+    <h2 style="font-size:clamp(28px,3.6vw,44px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Três dores, um mesmo condomínio.</span><span class="t-en">Three pains, one building.</span></h2>
+    <p style="color:#9aa7b8;font-size:18px;line-height:1.6;margin-top:16px;"><span class="t-pt">O síndico vive no Excel e no WhatsApp, a administradora se afoga em atendimento e o morador não enxerga o que acontece no prédio. Decisão vira discussão no grupo.</span><span class="t-en">The manager lives in spreadsheets and WhatsApp, the administrator drowns in support and the resident can't see what happens in the building. Decisions turn into group chat arguments.</span></p>
+  </div>
+</section>
+
+<!-- SHIFT / CONTRAST -->
+<section style="padding:90px 24px;background:#0b0e13;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:820px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">A virada</span><span class="t-en">The shift</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Mensagem no grupo é opinião. A convenção é evidência.</span><span class="t-en">A group message is opinion. The bylaws are evidence.</span></h2>
+      <p style="color:#9aa7b8;font-size:17px;line-height:1.6;margin-top:16px;"><span class="t-pt">No condomínio, quase tudo vira opinião no grupo do WhatsApp. O Viva ancora a decisão na regra: o Edi responde citando a convenção e o sistema age, em vez de gerar mais uma discussão.</span><span class="t-en">In a building, almost everything becomes an opinion in the WhatsApp group. Viva anchors the decision in the rule: Edi answers citing the bylaws and the system acts, instead of starting another argument.</span></p>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px;" data-two>
+      <div style="background:#0e1015;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:28px;">
+        <div class="mono" style="font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:#8a97a8;margin-bottom:16px;"><span class="t-pt">Excel + grupo do WhatsApp</span><span class="t-en">Spreadsheet + WhatsApp group</span></div>
+        <ul style="list-style:none;">
+          <li style="position:relative;padding-left:26px;margin-bottom:12px;font-size:15px;color:#9aa7b8;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#e0794f;font-weight:800;">×</span><span class="t-pt">Cobrança e aviso perdidos no grupo</span><span class="t-en">Billing and notices lost in the group</span></li>
+          <li style="position:relative;padding-left:26px;margin-bottom:12px;font-size:15px;color:#9aa7b8;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#e0794f;font-weight:800;">×</span><span class="t-pt">Regra vira discussão e opinião</span><span class="t-en">The rule becomes argument and opinion</span></li>
+          <li style="position:relative;padding-left:26px;margin-bottom:12px;font-size:15px;color:#9aa7b8;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#e0794f;font-weight:800;">×</span><span class="t-pt">Reserva no fiado, conflito de data</span><span class="t-en">Bookings on trust, date conflicts</span></li>
+          <li style="position:relative;padding-left:26px;font-size:15px;color:#9aa7b8;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#e0794f;font-weight:800;">×</span><span class="t-pt">Prazo legal lembrado quando vence</span><span class="t-en">Legal deadline remembered when it's due</span></li>
+        </ul>
+      </div>
+      <div style="background:linear-gradient(165deg,#0f2530,#0a0f16);border:1px solid rgba(40,215,247,.34);border-radius:18px;padding:28px;box-shadow:0 0 0 1px rgba(40,215,247,.14),0 20px 50px rgba(40,215,247,.08);">
+        <div class="mono" style="font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:16px;"><span class="t-pt">Viva · regra e operação</span><span class="t-en">Viva · rule and operation</span></div>
+        <ul style="list-style:none;">
+          <li style="position:relative;padding-left:26px;margin-bottom:12px;font-size:15px;color:#dbe2ee;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#28d7f7;font-weight:800;">✓</span><span class="t-pt">Cobrança, aviso e reserva por link</span><span class="t-en">Billing, notices and bookings by link</span></li>
+          <li style="position:relative;padding-left:26px;margin-bottom:12px;font-size:15px;color:#dbe2ee;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#28d7f7;font-weight:800;">✓</span><span class="t-pt">Edi responde citando a convenção</span><span class="t-en">Edi answers citing the bylaws</span></li>
+          <li style="position:relative;padding-left:26px;margin-bottom:12px;font-size:15px;color:#dbe2ee;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#28d7f7;font-weight:800;">✓</span><span class="t-pt">Reserva com bloqueio de conflito</span><span class="t-en">Booking with conflict blocking</span></li>
+          <li style="position:relative;padding-left:26px;font-size:15px;color:#dbe2ee;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#28d7f7;font-weight:800;">✓</span><span class="t-pt">Prazos obrigatórios pré-carregados</span><span class="t-en">Mandatory deadlines preloaded</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="reveal" data-reveal style="margin-top:40px;text-align:center;">
+      <p style="font-size:clamp(19px,2.2vw,24px);font-weight:700;color:#eef3f9;max-width:850px;margin:0 auto;line-height:1.4;letter-spacing:-.3px;"><span class="t-pt">A diferença entre um grupo de WhatsApp e um condomínio que roda é ter a <span style="color:#28d7f7;">regra no comando</span>, não a opinião mais alta.</span><span class="t-en">The difference between a WhatsApp group and a building that runs is having the <span style="color:#28d7f7;">rule in charge</span>, not the loudest opinion.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section style="padding:100px 24px;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:820px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">Como funciona</span><span class="t-en">How it works</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Como o Viva faz o prédio rodar.</span><span class="t-en">How Viva makes the building run.</span></h2>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:42px;" data-mechs>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:13px;">01</div><h3 style="font-size:17px;margin:12px 0 9px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Evidência da operação</span><span class="t-en">Operation evidence</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">Cobrança, manutenção, reservas e avisos num painel, não em planilhas soltas.</span><span class="t-en">Billing, maintenance, bookings and notices in one panel, not loose spreadsheets.</span></p></div>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:13px;">02</div><h3 style="font-size:17px;margin:12px 0 9px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Julgamento pela convenção</span><span class="t-en">Judgment by the bylaws</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">O Edi responde o morador citando a regra do próprio condomínio.</span><span class="t-en">Edi answers the resident citing the building's own rule.</span></p></div>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:13px;">03</div><h3 style="font-size:17px;margin:12px 0 9px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Intervém na hora</span><span class="t-en">Intervenes on time</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">PIX de cobrança, reserva com conflito bloqueado e prazo legal antes de vencer.</span><span class="t-en">Billing PIX, booking with conflict blocked and legal deadline before it's due.</span></p></div>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:13px;">04</div><h3 style="font-size:17px;margin:12px 0 9px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Dois canais, um produto</span><span class="t-en">Two channels, one product</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">Direto para o síndico (B2C) e white-label para a administradora (B2B2C).</span><span class="t-en">Direct to the manager (B2C) and white-label to the administrator (B2B2C).</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREENS (phones) -->
+<section style="padding:100px 24px;background:#0b0e13;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:820px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">Por dentro</span><span class="t-en">Inside</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Telas do produto</span><span class="t-en">Product screens</span></h2>
+    </div>
+    <div class="reveal" data-reveal style="display:flex;flex-wrap:wrap;justify-content:center;gap:32px;margin-top:48px;" data-phones>
+      <figure style="margin:0;"><div class="phone-h" style="width:214px;padding:7px;border-radius:42px;background:linear-gradient(155deg,#3a4149,#0a0c10 68%);box-shadow:0 30px 60px rgba(0,0,0,.55),inset 0 0 0 1.5px rgba(255,255,255,.07),inset 0 0 0 6px #070809;"><div style="border-radius:35px;overflow:hidden;background:#f5f3ec;"><div style="height:30px;background:#f5f3ec;display:flex;align-items:center;justify-content:space-between;padding:0 15px;position:relative;"><span class="mono" style="font-size:11px;font-weight:700;color:#26312b;">9:41</span><div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);width:54px;height:15px;background:#070809;border-radius:99px;"></div><span style="width:18px;height:10px;border:1.4px solid #26312b;border-radius:2px;"></span></div><div style="height:330px;overflow:hidden;"><img src="assets/img/viva-s1.png" alt="Painel do síndico" style="width:100%;"></div></div></div><figcaption class="mono" style="margin-top:12px;font-size:11px;color:#8a97a8;text-align:center;"><span class="t-pt">Painel do síndico</span><span class="t-en">Manager dashboard</span></figcaption></figure>
+      <figure style="margin:0;"><div class="phone-h" style="width:214px;padding:7px;border-radius:42px;background:linear-gradient(155deg,#3a4149,#0a0c10 68%);box-shadow:0 30px 60px rgba(0,0,0,.55),inset 0 0 0 1.5px rgba(255,255,255,.07),inset 0 0 0 6px #070809;"><div style="border-radius:35px;overflow:hidden;background:#f5f3ec;"><div style="height:30px;background:#f5f3ec;display:flex;align-items:center;justify-content:space-between;padding:0 15px;position:relative;"><span class="mono" style="font-size:11px;font-weight:700;color:#26312b;">9:41</span><div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);width:54px;height:15px;background:#070809;border-radius:99px;"></div><span style="width:18px;height:10px;border:1.4px solid #26312b;border-radius:2px;"></span></div><div style="height:330px;overflow:hidden;"><img src="assets/img/viva-s2b.png" alt="Home do morador" style="width:100%;"></div></div></div><figcaption class="mono" style="margin-top:12px;font-size:11px;color:#8a97a8;text-align:center;"><span class="t-pt">Home do morador</span><span class="t-en">Resident home</span></figcaption></figure>
+      <figure style="margin:0;"><div class="phone-h" style="width:214px;padding:7px;border-radius:42px;background:linear-gradient(155deg,#3a4149,#0a0c10 68%);box-shadow:0 30px 60px rgba(0,0,0,.55),inset 0 0 0 1.5px rgba(255,255,255,.07),inset 0 0 0 6px #070809;"><div style="border-radius:35px;overflow:hidden;background:#f5f3ec;"><div style="height:30px;background:#f5f3ec;display:flex;align-items:center;justify-content:space-between;padding:0 15px;position:relative;"><span class="mono" style="font-size:11px;font-weight:700;color:#26312b;">9:41</span><div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);width:54px;height:15px;background:#070809;border-radius:99px;"></div><span style="width:18px;height:10px;border:1.4px solid #26312b;border-radius:2px;"></span></div><div style="height:330px;overflow:hidden;"><img src="assets/img/viva-s3b.png" alt="Reserva de áreas comuns" style="width:100%;"></div></div></div><figcaption class="mono" style="margin-top:12px;font-size:11px;color:#8a97a8;text-align:center;"><span class="t-pt">Reserva de áreas comuns</span><span class="t-en">Common-area booking</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- FOUNDATION -->
+<section style="padding:100px 24px;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:820px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">A fundação</span><span class="t-en">The foundation</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">A fundação por baixo.</span><span class="t-en">The foundation underneath.</span></h2>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:42px;" data-three>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:18px;margin-bottom:10px;color:#f2f6fb;"><span class="t-pt">A convenção como regra</span><span class="t-en">The bylaws as the rule</span></h3><p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">As decisões se ancoram na convenção do condomínio, não em opinião.</span><span class="t-en">Decisions anchor in the building's bylaws, not in opinion.</span></p></div>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:18px;margin-bottom:10px;color:#f2f6fb;"><span class="t-pt">PIX nativo com conciliação</span><span class="t-en">Native PIX with reconciliation</span></h3><p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Copia-e-cola com txid por unidade e conciliação por extrato, sem gateway.</span><span class="t-en">Copy-paste with a txid per unit and statement reconciliation, no gateway.</span></p></div>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:18px;margin-bottom:10px;color:#f2f6fb;"><span class="t-pt">Sem aprisionamento</span><span class="t-en">No lock-in</span></h3><p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Dados sempre exportáveis e a marca da administradora no produto.</span><span class="t-en">Data always exportable and the administrator's brand on the product.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:100px 24px;">
+  <div class="reveal" data-reveal style="max-width:1180px;margin:0 auto;border-radius:24px;background:linear-gradient(125deg,#142b31,#0c1217);border:1px solid rgba(40,215,247,.22);text-align:center;padding:64px 32px;position:relative;overflow:hidden;">
+    <div style="position:absolute;width:520px;height:520px;right:-180px;top:-220px;border:1px solid rgba(40,215,247,.22);border-radius:50%;pointer-events:none;"></div>
+    <h2 style="font-size:clamp(28px,3.4vw,40px);font-weight:800;letter-spacing:-1px;color:#fff;max-width:720px;margin:0 auto 24px;position:relative;"><span class="t-pt">Quer ver o Viva funcionando?</span><span class="t-en">Want to see Viva in action?</span></h2>
+    <a href="contato.html" style="background:#fff;color:#07080a;font-weight:700;padding:16px 34px;border-radius:999px;font-size:16px;display:inline-block;box-shadow:0 0 44px rgba(40,215,247,.34);position:relative;"><span class="t-pt">Falar com a Finder Lab</span><span class="t-en">Talk to Finder Lab</span></a>
+  </div>
+</section>
+
+<footer style="background:#08090b;color:#9aa7b8;padding:56px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;" data-footer>
+    <div>
+      <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:12px;">FINDER<b style="color:#28d7f7;">LAB</b></div>
+      <div class="mono" style="font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
+      <p style="max-width:340px;font-size:14.5px;line-height:1.6;"><span class="t-pt">Casa de produtos AI-first do grupo Finder. Arquitetura agêntica, método e governança por baixo de cada decisão.</span><span class="t-en">AI-first product house of the Finder group. Agentic architecture, method and governance under every decision.</span></p>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Navegação</span><span class="t-en">Navigate</span></h4>
+      <a href="research.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Research</a>
+      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a href="servicos.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <a href="sobre.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></h4>
+      <a href="anchora.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Anchora</a>
+      <a href="viva.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Viva</a>
+      <a href="themis.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Themis</a>
+      <a href="famulus.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Famulus</a>
+    </div>
+  </div>
+  <div style="max-width:1180px;margin:40px auto 0;border-top:1px solid rgba(255,255,255,.1);padding-top:22px;font-size:13px;color:#7c869b;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <span>© 2026 Finder Lab · Applied Intelligence Lab</span>
+    <span>contato@finderlab.com.br</span>
+  </div>
+</footer>
+</div>
+</x-dc>
+
+<script>
+(function(){
+  var root=document.querySelector('[data-lang]');
+  function setLang(l){ if(root)root.setAttribute('data-lang',l); document.documentElement.setAttribute('lang',l==='pt'?'pt-BR':'en');
+    document.querySelectorAll('.langlabel').forEach(function(x){x.textContent=l==='pt'?'EN':'PT';});
+    try{localStorage.setItem('fl_lang',l);}catch(e){} }
+  window.toggleLang=function(){ var c=(root&&root.getAttribute('data-lang'))||'pt'; setLang(c==='pt'?'en':'pt'); };
+  var sv='pt'; try{sv=localStorage.getItem('fl_lang')||'pt';}catch(e){} setLang(sv);
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+    requestAnimationFrame(function(){document.querySelectorAll('[data-reveal]').forEach(function(el){
+      var r=el.getBoundingClientRect(); if(r.top>=(window.innerHeight||800)*0.9){el.classList.add('reveal');io.observe(el);} else {el.classList.add('reveal','in');}
+    });});
+  }
+  var cw=document.getElementById('cw');
+  if(cw){var W={pt:['sistema','produto','operação','decisão','execução'],en:['system','product','operation','decision','execution']},i=0;
+    setInterval(function(){var l=(root&&root.getAttribute('data-lang'))||'pt',a=W[l];i=(i+1)%a.length;cw.style.opacity=0;
+      setTimeout(function(){cw.textContent=a[i];cw.style.opacity=1;},180);},2200);}
+  window.submitForm=function(){var g=function(id){var e=document.getElementById(id);return e?e.value:'';};
+    var n=g('f_nome'),em=g('f_email'),ep=g('f_empresa'),m=g('f_msg');
+    var body='Nome: '+n+'%0D%0AEmpresa: '+ep+'%0D%0AEmail: '+em+'%0D%0A%0D%0A'+encodeURIComponent(m);
+    window.location.href='mailto:contato@finderlab.com.br?subject='+encodeURIComponent('Contato via site - '+(n||''))+'&body='+body; return false;};
+})();
+</script>
+</body>
+</html>

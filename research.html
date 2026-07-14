@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research · Finder Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Instrument Sans','Helvetica Neue',sans-serif;background:#0b0d11;color:#e6ebf2;-webkit-font-smoothing:antialiased;letter-spacing:-.1px;line-height:1.6;}
+  a{color:#28d7f7;text-decoration:none;}
+  a:hover{color:#74e7ff;}
+  [data-lang="pt"] .t-en{display:none;}
+  [data-lang="en"] .t-pt{display:none;}
+  .mono{font-family:'DM Mono',monospace;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+  @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,20px) scale(1.08)}}
+  @keyframes dotpulse{0%,100%{box-shadow:0 0 0 0 rgba(85,225,247,.5)}70%{box-shadow:0 0 0 9px rgba(85,225,247,0)}}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1);}
+  .reveal.in{opacity:1;transform:none;}
+  .navlink:hover{color:#fff!important;}
+  .navlink::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:2px;background:#28d7f7;transition:right .25s ease;}
+  .navlink:hover::after{right:0;}
+  .idx:hover{background:rgba(40,215,247,.08)!important;color:#fff!important;}
+  .expc:hover{border-color:rgba(85,225,247,.45)!important;}
+
+  @media(max-width:900px){
+    .nav-links{display:none!important;position:absolute;top:calc(100% + 12px);left:0;right:0;flex-direction:column;align-items:stretch!important;gap:14px!important;background:#0d1016;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;box-shadow:0 24px 54px rgba(0,0,0,.55);z-index:80;}
+    .navtog:checked ~ .nav-links{display:flex!important;}
+    .burger{display:flex!important;}
+  }
+</style>
+<link rel="icon" type="image/png" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+</head>
+<body>
+
+<div data-lang="pt" style="min-height:100vh;overflow-x:hidden;">
+
+<header style="position:sticky;top:0;z-index:60;padding:16px 24px 0;">
+  <div style="max-width:1180px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:11px 14px 11px 26px;box-shadow:0 12px 40px rgba(0,0,0,.42);">
+    <a href="index.html" style="font-size:20px;font-weight:800;letter-spacing:.4px;color:#fff;">FINDER<b style="color:#28d7f7;">LAB</b></a>
+    <input class="navtog" id="navtog" type="checkbox" style="display:none;"/><label class="burger" for="navtog" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.2);cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></label><nav class="nav-links" style="display:flex;align-items:center;gap:26px;">
+      <a class="navlink" href="index.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Início</span><span class="t-en">Home</span></a>
+      <a class="navlink" href="research.html" style="position:relative;color:#fff;font-size:14.5px;font-weight:500;">Research</a>
+      <a class="navlink" href="sistemas.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a class="navlink" href="servicos.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <a class="navlink" href="sobre.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
+      <button onclick="toggleLang()" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
+      <a href="contato.html" style="background:#fff;color:#07080a;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Construir com a Finder</span><span class="t-en">Build with Finder</span></a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section style="position:relative;overflow:hidden;padding:120px 24px 90px;background:linear-gradient(145deg,#0d1017 10%,#111d20 60%,#0b0d11 100%);">
+  <div style="position:absolute;inset:0;opacity:.27;background-image:linear-gradient(rgba(117,229,246,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(117,229,246,.12) 1px,transparent 1px);background-size:58px 58px;mask-image:linear-gradient(90deg,#000 0,rgba(0,0,0,.45) 53%,transparent 88%);pointer-events:none;"></div>
+  <div style="position:absolute;width:720px;height:720px;right:-270px;top:-220px;border:1px solid rgba(40,215,247,.3);border-radius:50%;box-shadow:0 0 0 85px rgba(40,215,247,.025),0 0 100px rgba(40,215,247,.16);pointer-events:none;animation:drift 16s ease-in-out infinite;"></div>
+  <div style="max-width:1180px;margin:0 auto;position:relative;z-index:2;">
+    <div class="mono" style="font-size:10px;letter-spacing:1.15px;color:#708292;margin-bottom:44px;">FINDER LAB / RESEARCH / 2026</div>
+    <div class="mono" style="font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:18px;display:inline-flex;align-items:center;gap:9px;"><span style="width:7px;height:7px;border-radius:50%;background:#28d7f7;animation:blink 2.4s ease-in-out infinite;"></span>Applied Intelligence Research</div>
+    <h1 style="font-size:clamp(46px,6vw,78px);line-height:.99;letter-spacing:-2px;max-width:900px;color:#f6fbfd;font-weight:800;"><span class="t-pt">O que aprendemos construindo inteligência aplicada.</span><span class="t-en">What we learn by building applied intelligence.</span></h1>
+    <p style="font-size:20px;color:#b2c2ca;max-width:715px;margin-top:24px;line-height:1.5;"><span class="t-pt">Este é o caderno aberto da Finder Lab: hipóteses, experimentos, frameworks e aprendizados de sistemas de IA em condições reais.</span><span class="t-en">This is Finder Lab's open notebook: hypotheses, experiments, frameworks and learnings from AI systems under real conditions.</span></p>
+    <div style="display:flex;gap:0;margin-top:56px;border-top:1px solid rgba(255,255,255,.13);max-width:800px;">
+      <div style="display:flex;align-items:baseline;gap:10px;flex:1;padding-top:16px;"><b class="mono" style="color:#55e1f7;font-size:21px;font-weight:500;">02</b><span style="font-size:12px;color:#9aaab5;max-width:100px;line-height:1.25;"><span class="t-pt">experimentos publicados</span><span class="t-en">experiments published</span></span></div>
+      <div style="display:flex;align-items:baseline;gap:10px;flex:1;padding-top:16px;"><b class="mono" style="color:#55e1f7;font-size:21px;font-weight:500;">01</b><span style="font-size:12px;color:#9aaab5;max-width:100px;line-height:1.25;"><span class="t-pt">framework em evolução</span><span class="t-en">framework evolving</span></span></div>
+      <div style="display:flex;align-items:baseline;gap:10px;flex:1;padding-top:16px;"><b class="mono" style="color:#55e1f7;font-size:21px;font-weight:500;">01</b><span style="font-size:12px;color:#9aaab5;max-width:100px;line-height:1.25;"><span class="t-pt">nota de laboratório</span><span class="t-en">lab note</span></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- INDEX -->
+<section style="background:#13181c;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1.25fr repeat(3,1fr);" data-index>
+    <div class="mono" style="min-height:88px;display:flex;align-items:center;justify-content:space-between;padding-right:26px;color:#9baab1;font-size:10px;letter-spacing:1.15px;"><span>INDEX</span><span>07.2026</span></div>
+    <a class="idx" href="#experimentos" style="min-height:88px;display:flex;align-items:center;gap:14px;border-left:1px solid rgba(255,255,255,.08);padding:0 20px;color:#9baab1;font-size:14px;font-weight:600;transition:background .2s,color .2s;"><span class="mono" style="color:#55e1f7;font-size:11px;">01</span><span class="t-pt">Experimentos</span><span class="t-en">Experiments</span><b style="margin-left:auto;color:#55e1f7;">↓</b></a>
+    <a class="idx" href="#frameworks" style="min-height:88px;display:flex;align-items:center;gap:14px;border-left:1px solid rgba(255,255,255,.08);padding:0 20px;color:#9baab1;font-size:14px;font-weight:600;transition:background .2s,color .2s;"><span class="mono" style="color:#55e1f7;font-size:11px;">02</span>Frameworks<b style="margin-left:auto;color:#55e1f7;">↓</b></a>
+    <a class="idx" href="#notes" style="min-height:88px;display:flex;align-items:center;gap:14px;border-left:1px solid rgba(255,255,255,.08);padding:0 20px;color:#9baab1;font-size:14px;font-weight:600;transition:background .2s,color .2s;"><span class="mono" style="color:#55e1f7;font-size:11px;">03</span>Lab Notes<b style="margin-left:auto;color:#55e1f7;">↓</b></a>
+  </div>
+</section>
+
+<!-- EXPERIMENTS -->
+<section id="experimentos" style="padding:110px 24px;background:#0b0d11;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:56px;flex-wrap:wrap;">
+      <div style="max-width:670px;"><div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;">01 / <span class="t-pt">Experimentos</span><span class="t-en">Experiments</span></div><h2 style="font-size:clamp(32px,4vw,48px);font-weight:800;letter-spacing:-1.2px;line-height:1.05;color:#f4f8f9;"><span class="t-pt">Hipóteses feitas para encontrar a realidade.</span><span class="t-en">Hypotheses designed to meet reality.</span></h2></div>
+      <p style="max-width:300px;color:#91a0ab;font-size:15px;line-height:1.55;"><span class="t-pt">Todo experimento começa com uma pergunta útil, registra o método e termina com limites explícitos.</span><span class="t-en">Every experiment starts with a useful question, records its method and ends with explicit limits.</span></p>
+    </div>
+
+    <article class="reveal expc" data-reveal style="display:grid;grid-template-columns:140px minmax(0,1fr) 280px;gap:34px;padding:40px 0;border-top:1px solid rgba(255,255,255,.13);transition:border-color .3s;">
+      <div class="mono" style="color:#55e1f7;font-size:11px;letter-spacing:1.15px;padding-top:5px;">EXP / 001</div>
+      <div>
+        <div class="mono" style="color:#65dced;font-size:10px;letter-spacing:1.15px;margin-bottom:16px;">MEMORY · AGENTIC SYSTEMS</div>
+        <h3 style="font-size:clamp(24px,2.6vw,32px);line-height:1.05;color:#f4f8f9;max-width:620px;font-weight:800;letter-spacing:-.6px;"><span class="t-pt">Quando um agente realmente precisa de memória?</span><span class="t-en">When does an agent really need memory?</span></h3>
+        <p style="max-width:620px;color:#a5b1ba;font-size:16px;margin:14px 0 22px;line-height:1.55;"><span class="t-pt">Antes de adicionar uma camada de memória, queremos separar contexto útil, estado operacional e conhecimento que precisa sobreviver à conversa.</span><span class="t-en">Before adding a memory layer, we want to separate useful context, operational state and knowledge that needs to outlive the conversation.</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span class="mono" style="border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 9px;color:#98aab3;font-size:9px;">HYPOTHESIS</span>
+          <span class="mono" style="border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 9px;color:#98aab3;font-size:9px;">CONTEXT</span>
+          <span class="mono" style="border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 9px;color:#98aab3;font-size:9px;">EVALUATION</span>
+        </div>
+      </div>
+      <dl style="border-left:1px solid rgba(255,255,255,.11);padding-left:24px;margin:0;">
+        <div><dt class="mono" style="color:#62717c;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;"><span class="t-pt">Hipótese</span><span class="t-en">Hypothesis</span></dt><dd style="color:#c6d0d5;font-size:13px;line-height:1.5;"><span class="t-pt">Memória só agrega quando altera uma decisão futura de forma verificável.</span><span class="t-en">Memory only adds value when it changes a future decision in a verifiable way.</span></dd></div>
+        <div style="border-top:1px solid rgba(255,255,255,.1);margin-top:20px;padding-top:18px;"><dt class="mono" style="color:#62717c;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;"><span class="t-pt">Estado</span><span class="t-en">Status</span></dt><dd style="color:#c6d0d5;font-size:13px;line-height:1.5;"><span style="display:inline-block;width:7px;height:7px;margin-right:7px;border-radius:50%;background:#55e1f7;animation:dotpulse 2s infinite;"></span><span class="t-pt">Em investigação</span><span class="t-en">Under investigation</span></dd></div>
+      </dl>
+    </article>
+
+    <article class="reveal expc" data-reveal style="display:grid;grid-template-columns:140px minmax(0,1fr) 280px;gap:34px;padding:40px 0;border-top:1px solid rgba(255,255,255,.13);border-bottom:1px solid rgba(255,255,255,.13);transition:border-color .3s;">
+      <div class="mono" style="color:#55e1f7;font-size:11px;letter-spacing:1.15px;padding-top:5px;">EXP / 002</div>
+      <div>
+        <div class="mono" style="color:#65dced;font-size:10px;letter-spacing:1.15px;margin-bottom:16px;">KNOWLEDGE · TRACEABILITY</div>
+        <h3 style="font-size:clamp(24px,2.6vw,32px);line-height:1.05;color:#f4f8f9;max-width:620px;font-weight:800;letter-spacing:-.6px;"><span class="t-pt">RAG, grafo ou os dois para decisões explicáveis?</span><span class="t-en">RAG, graph or both for explainable decisions?</span></h3>
+        <p style="max-width:620px;color:#a5b1ba;font-size:16px;margin:14px 0 22px;line-height:1.55;"><span class="t-pt">Estamos comparando recuperação semântica, relações explícitas e uma arquitetura híbrida em tarefas que exigem fonte, contexto e rastreabilidade.</span><span class="t-en">We're comparing semantic retrieval, explicit relationships and a hybrid architecture in tasks requiring source, context and traceability.</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span class="mono" style="border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 9px;color:#98aab3;font-size:9px;">RAG</span>
+          <span class="mono" style="border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 9px;color:#98aab3;font-size:9px;">KNOWLEDGE GRAPH</span>
+          <span class="mono" style="border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 9px;color:#98aab3;font-size:9px;">GOVERNANCE</span>
+        </div>
+      </div>
+      <dl style="border-left:1px solid rgba(255,255,255,.11);padding-left:24px;margin:0;">
+        <div><dt class="mono" style="color:#62717c;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;"><span class="t-pt">Hipótese</span><span class="t-en">Hypothesis</span></dt><dd style="color:#c6d0d5;font-size:13px;line-height:1.5;"><span class="t-pt">Sistemas que precisam justificar decisões demandam mais do que similaridade semântica.</span><span class="t-en">Systems that need to justify decisions require more than semantic similarity.</span></dd></div>
+        <div style="border-top:1px solid rgba(255,255,255,.1);margin-top:20px;padding-top:18px;"><dt class="mono" style="color:#62717c;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;"><span class="t-pt">Estado</span><span class="t-en">Status</span></dt><dd style="color:#c6d0d5;font-size:13px;line-height:1.5;"><span style="display:inline-block;width:7px;height:7px;margin-right:7px;border-radius:50%;background:#55e1f7;animation:dotpulse 2s infinite;"></span><span class="t-pt">Em investigação</span><span class="t-en">Under investigation</span></dd></div>
+      </dl>
+    </article>
+  </div>
+</section>
+
+<!-- FRAMEWORKS -->
+<section id="frameworks" style="padding:110px 24px;background:#141a1d;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:56px;flex-wrap:wrap;">
+      <div style="max-width:670px;"><div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;">02 / FRAMEWORKS</div><h2 style="font-size:clamp(32px,4vw,48px);font-weight:800;letter-spacing:-1.2px;line-height:1.05;color:#f4f8f9;"><span class="t-pt">Quando um padrão se repete, ele deixa de ser improviso.</span><span class="t-en">When a pattern repeats, it stops being improvisation.</span></h2></div>
+      <p style="max-width:300px;color:#91a0ab;font-size:15px;line-height:1.55;"><span class="t-pt">Frameworks são conhecimento destilado de experimentos e sistemas em produção — sempre abertos a revisão.</span><span class="t-en">Frameworks are knowledge distilled from experiments and production systems — always open to revision.</span></p>
+    </div>
+    <article class="reveal" data-reveal style="display:grid;grid-template-columns:160px minmax(0,1.5fr) 1fr;gap:32px;padding:40px;border:1px solid rgba(85,225,247,.35);border-radius:18px;background:linear-gradient(130deg,rgba(40,215,247,.1),rgba(40,215,247,.025));position:relative;overflow:hidden;">
+      <div style="position:absolute;width:290px;height:290px;border:1px solid rgba(85,225,247,.24);border-radius:50%;right:-112px;top:-155px;pointer-events:none;"></div>
+      <div class="mono" style="color:#55e1f7;font-size:26px;position:relative;">F/01</div>
+      <div style="position:relative;">
+        <div class="mono" style="color:#65dced;font-size:10px;letter-spacing:1.15px;margin-bottom:12px;">FRAMEWORK · V0.1</div>
+        <h3 style="font-size:clamp(26px,3vw,32px);color:#f5fbfc;line-height:1.05;margin-bottom:15px;font-weight:800;letter-spacing:-.6px;">Agent Intervention Canvas</h3>
+        <p style="color:#b7c5ca;line-height:1.55;max-width:560px;font-size:16px;"><span class="t-pt">Um mapa para desenhar sistemas que não apenas respondem: detectam sinais, ponderam contexto, agem dentro de limites e deixam evidência da decisão.</span><span class="t-en">A map to design systems that don't just respond: they detect signals, weigh context, act within boundaries and leave evidence of the decision.</span></p>
+      </div>
+      <div style="position:relative;display:grid;grid-template-columns:repeat(2,1fr);align-content:start;gap:10px;">
+        <span class="mono" style="border:1px solid rgba(255,255,255,.13);color:#dcecf0;font-size:10px;padding:10px;">Signal</span>
+        <span class="mono" style="border:1px solid rgba(255,255,255,.13);color:#dcecf0;font-size:10px;padding:10px;">Context</span>
+        <span class="mono" style="border:1px solid rgba(255,255,255,.13);color:#dcecf0;font-size:10px;padding:10px;">Decision</span>
+        <span class="mono" style="border:1px solid rgba(255,255,255,.13);color:#dcecf0;font-size:10px;padding:10px;">Action</span>
+        <span class="mono" style="border:1px solid rgba(255,255,255,.13);color:#dcecf0;font-size:10px;padding:10px;">Evidence</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- LAB NOTES -->
+<section id="notes" style="padding:110px 24px 80px;background:#0b0d11;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:56px;flex-wrap:wrap;">
+      <div style="max-width:670px;"><div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;">03 / LAB NOTES</div><h2 style="font-size:clamp(32px,4vw,48px);font-weight:800;letter-spacing:-1.2px;line-height:1.05;color:#f4f8f9;"><span class="t-pt">O que não cabe em um slide.</span><span class="t-en">What doesn't fit on a slide.</span></h2></div>
+      <p style="max-width:300px;color:#91a0ab;font-size:15px;line-height:1.55;"><span class="t-pt">Notas curtas sobre tentativas, decisões e falhas que merecem ser compartilhadas.</span><span class="t-en">Short notes on attempts, decisions and failures worth sharing.</span></p>
+    </div>
+    <article class="reveal" data-reveal style="display:grid;grid-template-columns:160px minmax(0,1fr);gap:48px;padding:46px 0;border-top:1px solid rgba(255,255,255,.13);border-bottom:1px solid rgba(255,255,255,.13);">
+      <div class="mono" style="display:flex;flex-direction:column;align-items:flex-start;color:#70808b;font-size:10px;letter-spacing:1px;"><span>LAB NOTE</span><b style="font-size:48px;font-weight:400;color:#55e1f7;letter-spacing:-4px;line-height:1;margin:10px 0;">001</b><small>07.2026</small></div>
+      <div>
+        <h3 style="font-size:clamp(28px,3.4vw,39px);line-height:1.05;max-width:760px;color:#f5f8fa;font-weight:800;letter-spacing:-.8px;"><span class="t-pt">Um agente em produção não falha só porque o modelo erra.</span><span class="t-en">An agent in production doesn't fail only because the model gets it wrong.</span></h3>
+        <p style="color:#aebac1;font-size:18px;line-height:1.6;max-width:720px;margin:22px 0;"><span class="t-pt">Ele falha quando ninguém definiu qual sinal importa, quando o contexto chega quebrado, quando a ação não tem limite ou quando não existe caminho para revisão humana. Modelo é uma parte da equação. Sistema é a outra.</span><span class="t-en">It fails when no one defined which signal matters, when context arrives broken, when action has no boundary or when there is no path for human review. The model is one part of the equation. The system is the other.</span></p>
+        <span class="mono" style="color:#63d9ec;font-size:10px;letter-spacing:1.15px;"><span class="t-pt">Leitura de 2 min</span><span class="t-en">2 min read</span> · FINDER LAB</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:0 24px 100px;background:#0b0d11;">
+  <div class="reveal" data-reveal style="max-width:1180px;margin:0 auto;border-radius:24px;background:linear-gradient(125deg,#142b31,#0c1217);border:1px solid rgba(40,215,247,.22);text-align:center;padding:64px 32px;position:relative;overflow:hidden;">
+    <div style="position:absolute;width:520px;height:520px;right:-180px;top:-220px;border:1px solid rgba(40,215,247,.22);border-radius:50%;pointer-events:none;"></div>
+    <div class="mono" style="font-size:11px;letter-spacing:2px;color:#28d7f7;margin-bottom:14px;position:relative;">APPLIED, NOT THEORETICAL</div>
+    <h2 style="font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-spacing:-1px;color:#fff;max-width:720px;margin:0 auto 14px;position:relative;"><span class="t-pt">Pesquisa só importa quando melhora uma decisão real.</span><span class="t-en">Research only matters when it improves a real decision.</span></h2>
+    <p style="color:#aeb7c9;max-width:600px;margin:0 auto 28px;font-size:17px;position:relative;"><span class="t-pt">Se a sua operação tem uma pergunta difícil, podemos investigá-la e construir a resposta com você.</span><span class="t-en">If your operation has a hard question, we can investigate it and build the answer with you.</span></p>
+    <a href="contato.html" style="background:#fff;color:#07080a;font-weight:700;padding:16px 34px;border-radius:999px;font-size:16px;display:inline-block;box-shadow:0 0 44px rgba(40,215,247,.34);position:relative;"><span class="t-pt">Construir com a Finder</span><span class="t-en">Build with Finder</span></a>
+  </div>
+</section>
+
+<footer style="background:#08090b;color:#9aa7b8;padding:56px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;" data-footer>
+    <div>
+      <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:12px;">FINDER<b style="color:#28d7f7;">LAB</b></div>
+      <div class="mono" style="font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
+      <p style="max-width:340px;font-size:14.5px;line-height:1.6;"><span class="t-pt">Pesquisamos, validamos e aplicamos inteligência artificial em sistemas que resolvem problemas reais.</span><span class="t-en">We research, validate and apply artificial intelligence in systems that solve real problems.</span></p>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Explorar</span><span class="t-en">Explore</span></h4>
+      <a href="research.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Research</a>
+      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a href="servicos.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Contato</span><span class="t-en">Contact</span></h4>
+      <a href="sobre.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
+      <a href="contato.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Construir com a Finder</span><span class="t-en">Build with Finder</span></a>
+      <a href="mailto:contato@finderlab.com.br" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">contato@finderlab.com.br</a>
+    </div>
+  </div>
+  <div style="max-width:1180px;margin:40px auto 0;border-top:1px solid rgba(255,255,255,.1);padding-top:22px;font-size:13px;color:#7c869b;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <span>© 2026 Finder Lab · Applied Intelligence Lab</span>
+    <span>Building Living Intelligence</span>
+  </div>
+</footer>
+</div>
+</x-dc>
+
+<script>
+(function(){
+  var root=document.querySelector('[data-lang]');
+  function setLang(l){ if(root)root.setAttribute('data-lang',l); document.documentElement.setAttribute('lang',l==='pt'?'pt-BR':'en');
+    document.querySelectorAll('.langlabel').forEach(function(x){x.textContent=l==='pt'?'EN':'PT';});
+    try{localStorage.setItem('fl_lang',l);}catch(e){} }
+  window.toggleLang=function(){ var c=(root&&root.getAttribute('data-lang'))||'pt'; setLang(c==='pt'?'en':'pt'); };
+  var sv='pt'; try{sv=localStorage.getItem('fl_lang')||'pt';}catch(e){} setLang(sv);
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+    requestAnimationFrame(function(){document.querySelectorAll('[data-reveal]').forEach(function(el){
+      var r=el.getBoundingClientRect(); if(r.top>=(window.innerHeight||800)*0.9){el.classList.add('reveal');io.observe(el);} else {el.classList.add('reveal','in');}
+    });});
+  }
+  var cw=document.getElementById('cw');
+  if(cw){var W={pt:['sistema','produto','operação','decisão','execução'],en:['system','product','operation','decision','execution']},i=0;
+    setInterval(function(){var l=(root&&root.getAttribute('data-lang'))||'pt',a=W[l];i=(i+1)%a.length;cw.style.opacity=0;
+      setTimeout(function(){cw.textContent=a[i];cw.style.opacity=1;},180);},2200);}
+  window.submitForm=function(){var g=function(id){var e=document.getElementById(id);return e?e.value:'';};
+    var n=g('f_nome'),em=g('f_email'),ep=g('f_empresa'),m=g('f_msg');
+    var body='Nome: '+n+'%0D%0AEmpresa: '+ep+'%0D%0AEmail: '+em+'%0D%0A%0D%0A'+encodeURIComponent(m);
+    window.location.href='mailto:contato@finderlab.com.br?subject='+encodeURIComponent('Contato via site - '+(n||''))+'&body='+body; return false;};
+})();
+</script>
+</body>
+</html>

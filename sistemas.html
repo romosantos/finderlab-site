@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistemas · Finder Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Instrument Sans','Helvetica Neue',sans-serif;background:#07080a;color:#e6ebf2;-webkit-font-smoothing:antialiased;letter-spacing:-.1px;line-height:1.6;}
+  a{color:#28d7f7;text-decoration:none;}
+  a:hover{color:#74e7ff;}
+  img{display:block;max-width:100%;}
+  [data-lang="pt"] .t-en{display:none;}
+  [data-lang="en"] .t-pt{display:none;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+  @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-24px,18px) scale(1.06)}}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1);}
+  .reveal.in{opacity:1;transform:none;}
+  .navlink:hover{color:#fff!important;}
+  .navlink::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:2px;background:#28d7f7;transition:right .25s ease;}
+  .navlink:hover::after{right:0;}
+  .prod-card:hover .prod-media img{transform:scale(1.06);}
+  .prod-card:hover{border-color:rgba(40,215,247,.55)!important;box-shadow:0 0 0 1px rgba(40,215,247,.25),0 26px 60px rgba(0,0,0,.5),0 0 46px rgba(40,215,247,.1)!important;transform:translateY(-4px);}
+
+  @media(max-width:900px){
+    .nav-links{display:none!important;position:absolute;top:calc(100% + 12px);left:0;right:0;flex-direction:column;align-items:stretch!important;gap:14px!important;background:#0d1016;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;box-shadow:0 24px 54px rgba(0,0,0,.55);z-index:80;}
+    .navtog:checked ~ .nav-links{display:flex!important;}
+    .burger{display:flex!important;}
+  }
+</style>
+<link rel="icon" type="image/png" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+</head>
+<body>
+
+<div data-lang="pt" style="min-height:100vh;overflow-x:hidden;background:radial-gradient(1100px 620px at 78% -6%,rgba(40,215,247,.11),transparent 60%),#07080a;">
+
+<header style="position:sticky;top:0;z-index:60;padding:16px 24px 0;">
+  <div style="max-width:1180px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:11px 14px 11px 26px;box-shadow:0 12px 40px rgba(0,0,0,.42);">
+    <a href="index.html" style="font-size:20px;font-weight:800;letter-spacing:.4px;color:#fff;">FINDER<b style="color:#28d7f7;">LAB</b></a>
+    <input class="navtog" id="navtog" type="checkbox" style="display:none;"/><label class="burger" for="navtog" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.2);cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></label><nav class="nav-links" style="display:flex;align-items:center;gap:26px;">
+      <a class="navlink" href="index.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Início</span><span class="t-en">Home</span></a>
+      <a class="navlink" href="research.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;">Research</a>
+      <a class="navlink" href="sistemas.html" style="position:relative;color:#fff;font-size:14.5px;font-weight:500;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a class="navlink" href="servicos.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <a class="navlink" href="sobre.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
+      <button onclick="toggleLang()" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
+      <a href="contato.html" style="background:#fff;color:#07080a;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Vamos conversar</span><span class="t-en">Let's talk</span></a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section style="position:relative;padding:92px 24px 56px;overflow:hidden;">
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(40,215,247,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(40,215,247,.05) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(circle at 80% 20%,#000,transparent 64%);pointer-events:none;"></div>
+  <div style="position:absolute;right:-120px;top:-150px;width:560px;height:560px;background:radial-gradient(circle,rgba(40,215,247,.16),transparent 62%);pointer-events:none;animation:drift 12s ease-in-out infinite;"></div>
+  <div style="max-width:900px;margin:0 auto;position:relative;z-index:2;">
+    <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:20px;display:inline-flex;align-items:center;gap:9px;"><span style="width:7px;height:7px;border-radius:50%;background:#28d7f7;box-shadow:0 0 12px #28d7f7;animation:blink 2.4s ease-in-out infinite;"></span><span class="t-pt">Sistemas aplicados</span><span class="t-en">Applied systems</span></div>
+    <h1 style="font-size:clamp(38px,5vw,60px);font-weight:800;line-height:1.04;letter-spacing:-1.6px;color:#f6fbfd;"><span class="t-pt">Onde a pesquisa aplicada encontra uma operação real.</span><span class="t-en">Where applied research meets a real operation.</span></h1>
+    <p style="color:#9aa7b8;font-size:19px;line-height:1.55;max-width:720px;margin-top:20px;"><span class="t-pt">São sistemas próprios, em saúde, gestão de pessoas, SST e operações, que transformam hipóteses em uso, evidência e aprendizado.</span><span class="t-en">They are our own systems in health, people management, occupational safety and operations that turn hypotheses into use, evidence and learning.</span></p>
+  </div>
+</section>
+
+<!-- GRID -->
+<section style="padding:20px 24px 100px;">
+  <div class="reveal" data-reveal style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;" data-grid>
+
+    <a href="anchora.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+      <div class="prod-media" style="height:184px;overflow:hidden;background:#08090b;"><img src="assets/img/anc02.png" alt="Anchora" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
+      <div style="padding:26px;display:flex;flex-direction:column;flex:1;">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">HR TECH</span>
+        <h3 style="font-size:25px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Anchora</h3>
+        <div style="color:#28d7f7;font-weight:700;font-size:14px;margin-bottom:12px;"><span class="t-pt">Performance Management Agêntico</span><span class="t-en">Agentic Performance Management</span></div>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Gestão de performance nativa da era dos agentes: avaliação ancorada em evidência, não em achismo.</span><span class="t-en">Performance management native to the age of agents: evaluation anchored in evidence, not guesswork.</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 0;">
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Agentes Colab/Gestor/RH</span><span class="t-en">Collab/Manager/HR agents</span></span>
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Ontologia de skills</span><span class="t-en">Skills ontology</span></span>
+        </div>
+        <span style="margin-top:auto;padding-top:20px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+      </div>
+    </a>
+
+    <a href="zelus-health.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+      <div class="prod-media" style="height:184px;overflow:hidden;background:#08090b;"><img src="assets/img/n_hl1.png" alt="Zelus Health" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
+      <div style="padding:26px;display:flex;flex-direction:column;flex:1;">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">HEALTHTECH</span>
+        <h3 style="font-size:25px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Zelus Health</h3>
+        <div style="color:#28d7f7;font-weight:700;font-size:14px;margin-bottom:12px;"><span class="t-pt">Saúde preventiva humana</span><span class="t-en">Human preventive health</span></div>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Centraliza exames, sintomas, indicadores e histórico clínico, com IA contextual para apoio à decisão.</span><span class="t-en">Centralizes exams, symptoms, indicators and clinical history, with contextual AI for decision support.</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 0;">
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Marcadores no tempo</span><span class="t-en">Marker tracking</span></span>
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Chat com IA</span><span class="t-en">AI chat</span></span>
+        </div>
+        <span style="margin-top:auto;padding-top:20px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+      </div>
+    </a>
+
+    <a href="zelus-pet.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+      <div class="prod-media" style="height:184px;overflow:hidden;background:#08090b;"><img src="assets/img/n_pet1.png" alt="Zelus Pet" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
+      <div style="padding:26px;display:flex;flex-direction:column;flex:1;">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">PETTECH</span>
+        <h3 style="font-size:25px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Zelus Pet</h3>
+        <div style="color:#28d7f7;font-weight:700;font-size:14px;margin-bottom:12px;"><span class="t-pt">Saúde preventiva animal</span><span class="t-en">Animal preventive health</span></div>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Plataforma multi-pet que lê e classifica marcadores laboratoriais por espécie.</span><span class="t-en">Multi-pet platform that reads and classifies lab markers by species.</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 0;">
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Exames por espécie</span><span class="t-en">Exams by species</span></span>
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Relatório ao vet</span><span class="t-en">Vet report</span></span>
+        </div>
+        <span style="margin-top:auto;padding-top:20px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+      </div>
+    </a>
+
+    <a href="viva.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+      <div class="prod-media" style="height:184px;overflow:hidden;background:#08090b;"><img src="assets/img/viva-dash.png" alt="Viva" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
+      <div style="padding:26px;display:flex;flex-direction:column;flex:1;">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">PROPTECH</span>
+        <h3 style="font-size:25px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Viva</h3>
+        <div style="color:#28d7f7;font-weight:700;font-size:14px;margin-bottom:12px;"><span class="t-pt">Gestão condominial</span><span class="t-en">Condo management</span></div>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">O sistema de gestão condominial que o síndico usa sozinho e a administradora oferece à carteira inteira.</span><span class="t-en">The condo system the manager runs alone and the administrator offers to its whole portfolio.</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 0;">
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">PIX com conciliação</span><span class="t-en">PIX + reconciliation</span></span>
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Edi cita a convenção</span><span class="t-en">Edi cites the bylaws</span></span>
+        </div>
+        <span style="margin-top:auto;padding-top:20px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+      </div>
+    </a>
+
+    <a href="themis.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+      <div class="prod-media" style="height:184px;overflow:hidden;background:#08090b;"><img src="assets/img/themis-painel.png" alt="Themis" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
+      <div style="padding:26px;display:flex;flex-direction:column;flex:1;">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">REGTECH · SST</span>
+        <h3 style="font-size:25px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Themis</h3>
+        <div style="color:#28d7f7;font-weight:700;font-size:14px;margin-bottom:12px;"><span class="t-pt">Riscos psicossociais · NR-1</span><span class="t-en">Psychosocial risk · NR-1</span></div>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Ecossistema de agentes que avalia riscos psicossociais e gera relatório e plano de ação no padrão do consultor.</span><span class="t-en">AI agent ecosystem that assesses psychosocial risk and produces the report and action plan in the consultant's standard.</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 0;">
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Plano 5W2H</span><span class="t-en">5W2H plan</span></span>
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Base legal citada</span><span class="t-en">Cited legal basis</span></span>
+        </div>
+        <span style="margin-top:auto;padding-top:20px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+      </div>
+    </a>
+
+    <a href="famulus.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+      <div class="prod-media" style="height:184px;overflow:hidden;background:#08090b;"><img src="assets/img/famulus-painel.png" alt="Famulus" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
+      <div style="padding:26px;display:flex;flex-direction:column;flex:1;">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">HEALTHTECH · SST</span>
+        <h3 style="font-size:25px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Famulus</h3>
+        <div style="color:#28d7f7;font-weight:700;font-size:14px;margin-bottom:12px;"><span class="t-pt">Saúde e segurança do trabalho</span><span class="t-en">Occupational health & safety</span></div>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">O portal que tira a saúde ocupacional do e-mail: o cliente pede, acompanha e a operação de SST resolve num fluxo só.</span><span class="t-en">The portal that takes occupational health out of email: the client requests, tracks, and the SST operation resolves it in one flow.</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 0;">
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Portal do cliente</span><span class="t-en">Client portal</span></span>
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Auditor de ASO</span><span class="t-en">ASO auditor</span></span>
+        </div>
+        <span style="margin-top:auto;padding-top:20px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:0 24px 100px;">
+  <div class="reveal" data-reveal style="max-width:1180px;margin:0 auto;border-radius:24px;background:linear-gradient(125deg,#142b31,#0c1217);border:1px solid rgba(40,215,247,.22);text-align:center;padding:64px 32px;position:relative;overflow:hidden;">
+    <div style="position:absolute;width:520px;height:520px;right:-180px;top:-220px;border:1px solid rgba(40,215,247,.22);border-radius:50%;pointer-events:none;"></div>
+    <h2 style="font-size:clamp(28px,3.4vw,40px);font-weight:800;letter-spacing:-1px;color:#fff;max-width:720px;margin:0 auto 24px;position:relative;"><span class="t-pt">Quer construir um produto AI-first com a gente?</span><span class="t-en">Want to build an AI-first product with us?</span></h2>
+    <a href="contato.html" style="background:#fff;color:#07080a;font-weight:700;padding:16px 34px;border-radius:999px;font-size:16px;display:inline-block;box-shadow:0 0 44px rgba(40,215,247,.34);position:relative;"><span class="t-pt">Falar com a Finder Lab</span><span class="t-en">Talk to Finder Lab</span></a>
+  </div>
+</section>
+
+<footer style="background:#08090b;color:#9aa7b8;padding:56px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;" data-footer>
+    <div>
+      <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:12px;">FINDER<b style="color:#28d7f7;">LAB</b></div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
+      <p style="max-width:340px;font-size:14.5px;line-height:1.6;"><span class="t-pt">Casa de produtos AI-first do grupo Finder. Arquitetura agêntica, método e governança por baixo de cada decisão.</span><span class="t-en">AI-first product house of the Finder group. Agentic architecture, method and governance under every decision.</span></p>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Navegação</span><span class="t-en">Navigate</span></h4>
+      <a href="research.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Research</a>
+      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a href="servicos.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <a href="sobre.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></h4>
+      <a href="anchora.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Anchora</a>
+      <a href="zelus-health.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Zelus Health</a>
+      <a href="themis.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Themis</a>
+      <a href="famulus.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Famulus</a>
+    </div>
+  </div>
+  <div style="max-width:1180px;margin:40px auto 0;border-top:1px solid rgba(255,255,255,.1);padding-top:22px;font-size:13px;color:#7c869b;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <span>© 2026 Finder Lab · Applied Intelligence Lab</span>
+    <span>contato@finderlab.com.br</span>
+  </div>
+</footer>
+</div>
+</x-dc>
+
+<script>
+(function(){
+  var root=document.querySelector('[data-lang]');
+  function setLang(l){ if(root)root.setAttribute('data-lang',l); document.documentElement.setAttribute('lang',l==='pt'?'pt-BR':'en');
+    document.querySelectorAll('.langlabel').forEach(function(x){x.textContent=l==='pt'?'EN':'PT';});
+    try{localStorage.setItem('fl_lang',l);}catch(e){} }
+  window.toggleLang=function(){ var c=(root&&root.getAttribute('data-lang'))||'pt'; setLang(c==='pt'?'en':'pt'); };
+  var sv='pt'; try{sv=localStorage.getItem('fl_lang')||'pt';}catch(e){} setLang(sv);
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+    requestAnimationFrame(function(){document.querySelectorAll('[data-reveal]').forEach(function(el){
+      var r=el.getBoundingClientRect(); if(r.top>=(window.innerHeight||800)*0.9){el.classList.add('reveal');io.observe(el);} else {el.classList.add('reveal','in');}
+    });});
+  }
+  var cw=document.getElementById('cw');
+  if(cw){var W={pt:['sistema','produto','operação','decisão','execução'],en:['system','product','operation','decision','execution']},i=0;
+    setInterval(function(){var l=(root&&root.getAttribute('data-lang'))||'pt',a=W[l];i=(i+1)%a.length;cw.style.opacity=0;
+      setTimeout(function(){cw.textContent=a[i];cw.style.opacity=1;},180);},2200);}
+  window.submitForm=function(){var g=function(id){var e=document.getElementById(id);return e?e.value:'';};
+    var n=g('f_nome'),em=g('f_email'),ep=g('f_empresa'),m=g('f_msg');
+    var body='Nome: '+n+'%0D%0AEmpresa: '+ep+'%0D%0AEmail: '+em+'%0D%0A%0D%0A'+encodeURIComponent(m);
+    window.location.href='mailto:contato@finderlab.com.br?subject='+encodeURIComponent('Contato via site - '+(n||''))+'&body='+body; return false;};
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finder Lab · Applied Intelligence Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Instrument Sans','Helvetica Neue',sans-serif;background:#07080a;color:#e6ebf2;-webkit-font-smoothing:antialiased;letter-spacing:-.1px;line-height:1.6;}
+  a{color:#28d7f7;text-decoration:none;}
+  a:hover{color:#74e7ff;}
+  img{display:block;max-width:100%;}
+  [data-lang="pt"] .t-en{display:none;}
+  [data-lang="en"] .t-pt{display:none;}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  @keyframes floaty2{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
+  @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+  @keyframes spinr{to{transform:translate(-50%,-50%) rotate(-360deg)}}
+  @keyframes corepulse{0%,100%{box-shadow:0 0 70px rgba(40,215,247,.42),0 0 120px rgba(40,215,247,.18)}50%{box-shadow:0 0 110px rgba(40,215,247,.64),0 0 175px rgba(40,215,247,.32)}}
+  @keyframes marquee{to{transform:translateX(-50%)}}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1);}
+  .reveal.in{opacity:1;transform:none;}
+  .prod-card:hover .prod-media img{transform:scale(1.06);}
+  .prod-card:hover{border-color:rgba(40,215,247,.55)!important;box-shadow:0 0 0 1px rgba(40,215,247,.25),0 26px 60px rgba(0,0,0,.5),0 0 46px rgba(40,215,247,.1)!important;transform:translateY(-4px);}
+  .navlink:hover{color:#fff!important;}
+  .navlink::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:2px;background:#28d7f7;transition:right .25s ease;}
+  .navlink:hover::after{right:0;}
+
+  @media(max-width:900px){
+    .nav-links{display:none!important;position:absolute;top:calc(100% + 12px);left:0;right:0;flex-direction:column;align-items:stretch!important;gap:14px!important;background:#0d1016;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;box-shadow:0 24px 54px rgba(0,0,0,.55);z-index:80;}
+    .navtog:checked ~ .nav-links{display:flex!important;}
+    .burger{display:flex!important;}
+  }
+</style>
+<link rel="icon" type="image/png" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+</head>
+<body>
+
+<div data-lang="pt" style="min-height:100vh;overflow-x:hidden;background:radial-gradient(1100px 620px at 78% -6%,rgba(40,215,247,.11),transparent 60%),#07080a;">
+
+<header style="position:sticky;top:0;z-index:60;padding:16px 24px 0;">
+  <div style="max-width:1180px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:11px 14px 11px 26px;box-shadow:0 12px 40px rgba(0,0,0,.42);">
+    <a href="#top" style="font-size:20px;font-weight:800;letter-spacing:.4px;color:#fff;">FINDER<b style="color:#28d7f7;">LAB</b></a>
+    <input class="navtog" id="navtog" type="checkbox" style="display:none;"/><label class="burger" for="navtog" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.2);cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></label><nav class="nav-links" style="display:flex;align-items:center;gap:26px;">
+      <a class="navlink" href="#top" style="position:relative;color:#fff;font-size:14.5px;font-weight:500;"><span class="t-pt">Início</span><span class="t-en">Home</span></a>
+      <a class="navlink" href="#research" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;">Research</a>
+      <a class="navlink" href="#systems" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a class="navlink" href="#capabilities" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <button onclick="toggleLang()" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
+      <a href="#contact" style="background:#fff;color:#07080a;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Vamos conversar</span><span class="t-en">Let's talk</span></a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section id="top" style="position:relative;padding:78px 24px 92px;overflow:hidden;">
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(40,215,247,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(40,215,247,.05) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(circle at 72% 28%,#000,transparent 68%);pointer-events:none;"></div>
+  <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center;position:relative;z-index:2;" data-hero-grid>
+    <div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:22px;display:inline-flex;align-items:center;gap:9px;"><span style="width:7px;height:7px;border-radius:50%;background:#28d7f7;box-shadow:0 0 12px #28d7f7;animation:blink 2.4s ease-in-out infinite;"></span>Applied Intelligence Lab</div>
+      <h1 style="font-size:clamp(40px,5.4vw,68px);font-weight:800;line-height:1.02;letter-spacing:-1.8px;color:#f6fbfd;margin-bottom:24px;">
+        <span class="t-pt">Pesquisa que vira </span><span class="t-en">Research that becomes </span><span style="white-space:nowrap;">
+        <span style="color:#28d7f7;text-shadow:0 0 38px rgba(40,215,247,.5);display:inline-block;min-width:1ch;"><span id="cw">sistema</span></span>.</span>
+      </h1>
+      <p style="color:#9aa7b8;font-size:19px;line-height:1.55;max-width:520px;margin-bottom:32px;"><span class="t-pt">Pesquisamos, validamos e aplicamos inteligência artificial para criar sistemas que resolvem problemas reais — com método, evidência e governança desde a arquitetura.</span><span class="t-en">We research, validate and apply artificial intelligence to build systems that solve real problems — with method, evidence and governance from the architecture up.</span></p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;">
+        <a href="#research" style="background:#fff;color:#07080a;font-weight:700;padding:15px 30px;border-radius:999px;font-size:15px;box-shadow:0 0 40px rgba(40,215,247,.28);"><span class="t-pt">Explorar pesquisas</span><span class="t-en">Explore research</span></a>
+        <a href="#capabilities" style="background:transparent;color:#e6ebf2;font-weight:700;padding:15px 30px;border-radius:999px;font-size:15px;border:1.5px solid rgba(255,255,255,.24);"><span class="t-pt">Aplicar na sua empresa</span><span class="t-en">Apply it to your company</span></a>
+      </div>
+      <div style="margin-top:32px;display:flex;flex-wrap:wrap;gap:22px;">
+        <span style="color:#9aa6ba;font-size:13px;display:inline-flex;align-items:center;gap:9px;"><span style="width:6px;height:6px;border-radius:50%;background:#28d7f7;"></span><span class="t-pt">6 sistemas próprios</span><span class="t-en">6 own systems</span></span>
+        <span style="color:#9aa6ba;font-size:13px;display:inline-flex;align-items:center;gap:9px;"><span style="width:6px;height:6px;border-radius:50%;background:#28d7f7;"></span><span class="t-pt">Experimentos aplicados</span><span class="t-en">Applied experiments</span></span>
+        <span style="color:#9aa6ba;font-size:13px;display:inline-flex;align-items:center;gap:9px;"><span style="width:6px;height:6px;border-radius:50%;background:#28d7f7;"></span><span class="t-pt">LGPD by design</span><span class="t-en">Privacy by design</span></span>
+      </div>
+    </div>
+    <div style="position:relative;height:470px;" data-hero-visual>
+      <div style="position:absolute;right:-80px;top:-110px;width:540px;height:540px;background:radial-gradient(circle,rgba(40,215,247,.18),transparent 62%);pointer-events:none;"></div>
+      <!-- browser -->
+      <div style="position:absolute;right:0;top:6px;width:96%;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 1px rgba(40,215,247,.06),inset 0 1px 0 rgba(255,255,255,.05);background:#0f1420;">
+        <div style="height:38px;background:linear-gradient(#20252f,#171b23);display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.06);">
+          <i style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></i><i style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></i><i style="width:11px;height:11px;border-radius:50%;background:#28c840;"></i>
+          <div style="flex:1;margin-left:12px;max-width:260px;height:22px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:7px;display:flex;align-items:center;gap:7px;padding:0 11px;font-family:'DM Mono',monospace;font-size:11px;color:#7f8aa0;">
+            <svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:none;stroke:#28d7f7;stroke-width:2.4;"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>app.finderlab.com.br
+          </div>
+        </div>
+        <div style="height:302px;overflow:hidden;"><img src="assets/img/themis-painel.png" alt="Themis" style="width:100%;display:block;"></div>
+      </div>
+      <!-- phone -->
+      <div style="position:absolute;left:0;bottom:-30px;width:214px;z-index:5;padding:7px;border-radius:42px;background:linear-gradient(155deg,#3a4149,#0a0c10 68%);box-shadow:0 34px 66px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.08),inset 0 0 0 6px #070809;">
+        <div style="border-radius:35px;overflow:hidden;background:#eef2fb;">
+          <div style="height:32px;background:#eef2fb;display:flex;align-items:center;justify-content:space-between;padding:0 15px;position:relative;">
+            <span style="font-size:11px;font-weight:700;color:#1c2431;font-family:'DM Mono',monospace;letter-spacing:-.3px;">9:41</span>
+            <div style="position:absolute;top:9px;left:50%;transform:translateX(-50%);width:58px;height:17px;background:#070809;border-radius:99px;"></div>
+            <div style="display:flex;align-items:center;gap:5px;">
+              <svg viewBox="0 0 24 18" style="width:15px;height:11px;fill:#1c2431;"><rect x="0" y="12" width="4" height="6" rx="1"/><rect x="6" y="8" width="4" height="10" rx="1"/><rect x="12" y="4" width="4" height="14" rx="1"/><rect x="18" y="0" width="4" height="18" rx="1"/></svg>
+              <span style="width:20px;height:11px;border:1.4px solid #1c2431;border-radius:3px;position:relative;display:inline-block;"><span style="position:absolute;top:1.5px;bottom:1.5px;left:1.5px;width:11px;background:#1c2431;border-radius:1px;"></span><span style="position:absolute;top:3px;bottom:3px;right:-3px;width:1.6px;background:#1c2431;border-radius:0 1px 1px 0;"></span></span>
+            </div>
+          </div>
+          <div style="height:300px;overflow:hidden;"><img src="assets/img/n_hl1.png" alt="Zelus Health" style="width:100%;display:block;"></div>
+        </div>
+      </div>
+      <!-- agent cards (static) -->
+      <div style="position:absolute;right:0;top:-18px;width:214px;display:flex;gap:10px;align-items:flex-start;background:rgba(13,18,26,.92);backdrop-filter:blur(8px);border:1px solid rgba(40,215,247,.28);border-radius:14px;padding:12px 13px;box-shadow:0 18px 40px rgba(0,0,0,.5);z-index:6;">
+        <span style="width:30px;height:30px;border-radius:9px;background:rgba(40,215,247,.14);display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#28d7f7;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+        <div><b style="color:#fff;font-size:12.5px;display:block;"><span class="t-pt">Agente de Pesquisa</span><span class="t-en">Research Agent</span></b><small style="color:#9aa7b8;font-size:10.5px;line-height:1.35;display:block;margin-top:2px;"><span class="t-pt">Coleta e analisa dados em tempo real</span><span class="t-en">Collects and analyzes data in real time</span></small></div>
+      </div>
+      <div style="position:absolute;right:34px;top:182px;width:222px;display:flex;gap:10px;align-items:flex-start;background:rgba(13,18,26,.92);backdrop-filter:blur(8px);border:1px solid rgba(40,215,247,.28);border-radius:14px;padding:12px 13px;box-shadow:0 18px 40px rgba(0,0,0,.5);z-index:6;">
+        <span style="width:30px;height:30px;border-radius:9px;background:rgba(40,215,247,.14);display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#28d7f7;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.4"/></svg></span>
+        <div><b style="color:#fff;font-size:12.5px;display:block;"><span class="t-pt">Agente de Decisão</span><span class="t-en">Decision Agent</span></b><small style="color:#9aa7b8;font-size:10.5px;line-height:1.35;display:block;margin-top:2px;"><span class="t-pt">Decide com base no contexto e nos objetivos</span><span class="t-en">Decides based on context and goals</span></small></div>
+      </div>
+      <div style="position:absolute;right:10px;bottom:2px;width:214px;display:flex;gap:10px;align-items:flex-start;background:rgba(13,18,26,.92);backdrop-filter:blur(8px);border:1px solid rgba(40,215,247,.28);border-radius:14px;padding:12px 13px;box-shadow:0 18px 40px rgba(0,0,0,.5);z-index:6;">
+        <span style="width:30px;height:30px;border-radius:9px;background:rgba(40,215,247,.14);display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#28d7f7;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg></span>
+        <div><b style="color:#fff;font-size:12.5px;display:block;"><span class="t-pt">Agente de Execução</span><span class="t-en">Execution Agent</span></b><small style="color:#9aa7b8;font-size:10.5px;line-height:1.35;display:block;margin-top:2px;"><span class="t-pt">Executa ações e entrega resultado contínuo</span><span class="t-en">Executes actions and delivers continuous results</span></small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- METRICS -->
+<section style="border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);background:#0d1016;">
+  <div style="max-width:1180px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:repeat(4,1fr);" data-metrics>
+    <div style="padding:38px 26px 38px 0;border-right:1px solid rgba(255,255,255,.07);">
+      <div style="font-size:34px;font-weight:800;color:#28d7f7;letter-spacing:-1.5px;line-height:1;">~5x</div>
+      <h4 style="color:#fff;font-size:15px;margin:10px 0 5px;font-weight:700;"><span class="t-pt">Mais rápido</span><span class="t-en">Faster</span></h4>
+      <p style="color:#9aa6ba;font-size:13px;line-height:1.5;"><span class="t-pt">Entregáveis que levavam dias saem em horas.</span><span class="t-en">Deliverables that took days come out in hours.</span></p>
+    </div>
+    <div style="padding:38px 26px;border-right:1px solid rgba(255,255,255,.07);">
+      <div style="font-size:34px;font-weight:800;color:#28d7f7;letter-spacing:-1.5px;line-height:1;"><span class="t-pt">Escala</span><span class="t-en">Scale</span></div>
+      <h4 style="color:#fff;font-size:15px;margin:10px 0 5px;font-weight:700;"><span class="t-pt">Sem inchar o time</span><span class="t-en">Without growing the team</span></h4>
+      <p style="color:#9aa6ba;font-size:13px;line-height:1.5;"><span class="t-pt">O que exigiria contratar roda com agentes supervisionados.</span><span class="t-en">What would need hiring runs with supervised agents.</span></p>
+    </div>
+    <div style="padding:38px 26px;border-right:1px solid rgba(255,255,255,.07);">
+      <div style="font-size:34px;font-weight:800;color:#28d7f7;letter-spacing:-1.5px;line-height:1;"><span class="t-pt">Sob medida</span><span class="t-en">Tailored</span></div>
+      <h4 style="color:#fff;font-size:15px;margin:10px 0 5px;font-weight:700;"><span class="t-pt">Não é prateleira</span><span class="t-en">Not off-the-shelf</span></h4>
+      <p style="color:#9aa6ba;font-size:13px;line-height:1.5;"><span class="t-pt">Soluções desenhadas para o seu processo e as suas regras.</span><span class="t-en">Built for your process and your rules.</span></p>
+    </div>
+    <div style="padding:38px 0 38px 26px;">
+      <div style="font-size:34px;font-weight:800;color:#28d7f7;letter-spacing:-1.5px;line-height:1;">LGPD</div>
+      <h4 style="color:#fff;font-size:15px;margin:10px 0 5px;font-weight:700;"><span class="t-pt">Governança by design</span><span class="t-en">Governance by design</span></h4>
+      <p style="color:#9aa6ba;font-size:13px;line-height:1.5;"><span class="t-pt">Trilhas auditáveis e controle de acesso desde a arquitetura.</span><span class="t-en">Audit trails and access control from the architecture up.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- RESEARCH -->
+<section id="research" style="padding:110px 24px;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:780px;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:16px;"><span class="t-pt">O que pesquisamos</span><span class="t-en">What we research</span></div>
+      <h2 style="font-size:clamp(30px,3.6vw,44px);font-weight:800;letter-spacing:-1px;line-height:1.08;color:#f4f7fb;"><span class="t-pt">Não seguimos o hype. Testamos o que muda a operação.</span><span class="t-en">We don't follow hype. We test what changes operations.</span></h2>
+      <p style="color:#9aa7b8;font-size:18px;margin-top:16px;line-height:1.55;"><span class="t-pt">Investigamos como sistemas inteligentes pesquisam, decidem, executam e aprendem sob restrições reais: contexto, custo, segurança e responsabilidade.</span><span class="t-en">We investigate how intelligent systems research, decide, execute and learn under real constraints: context, cost, security and accountability.</span></p>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:46px;" data-pillars>
+      <div style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;">
+        <div style="font-family:'DM Mono',monospace;color:#28d7f7;font-weight:500;font-size:13px;letter-spacing:1px;">01</div>
+        <h3 style="font-size:20px;margin:14px 0 10px;color:#f2f6fb;"><span class="t-pt">Sistemas agênticos</span><span class="t-en">Agentic systems</span></h3>
+        <p style="color:#9aa7b8;font-size:15px;line-height:1.55;"><span class="t-pt">Como agentes especialistas cooperam, sabem quando parar e deixam decisões rastreáveis.</span><span class="t-en">How specialist agents cooperate, know when to stop and leave decisions traceable.</span></p>
+      </div>
+      <div style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;">
+        <div style="font-family:'DM Mono',monospace;color:#28d7f7;font-weight:500;font-size:13px;letter-spacing:1px;">02</div>
+        <h3 style="font-size:20px;margin:14px 0 10px;color:#f2f6fb;"><span class="t-pt">Conhecimento contextual</span><span class="t-en">Contextual knowledge</span></h3>
+        <p style="color:#9aa7b8;font-size:15px;line-height:1.55;"><span class="t-pt">Memória, RAG, ontologias e grafos: qual base dá contexto sem inventar respostas?</span><span class="t-en">Memory, RAG, ontologies and graphs: what foundation provides context without inventing answers?</span></p>
+      </div>
+      <div style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;">
+        <div style="font-family:'DM Mono',monospace;color:#28d7f7;font-weight:500;font-size:13px;letter-spacing:1px;">03</div>
+        <h3 style="font-size:20px;margin:14px 0 10px;color:#f2f6fb;"><span class="t-pt">IA em produção</span><span class="t-en">AI in production</span></h3>
+        <p style="color:#9aa7b8;font-size:15px;line-height:1.55;"><span class="t-pt">Qualidade, custo, segurança e supervisão humana quando a IA deixa o laboratório.</span><span class="t-en">Quality, cost, security and human oversight when AI leaves the lab.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE + ORBIT -->
+<section style="padding:100px 24px;background:#0b0e13;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;" data-arch>
+    <div class="reveal" data-reveal>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:16px;"><span class="t-pt">Arquitetura</span><span class="t-en">Architecture</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.08;color:#f4f7fb;"><span class="t-pt">Um sistema que pesquisa, decide, executa e aprende.</span><span class="t-en">A system that researches, decides, executes and learns.</span></h2>
+      <p style="color:#9aa7b8;font-size:18px;margin-top:16px;line-height:1.55;"><span class="t-pt">Não é um agente solto. É uma malha de agentes especialistas orquestrados, que fecham o ciclo e melhoram com o uso, sob governança.</span><span class="t-en">Not a lone agent. It is a mesh of orchestrated specialist agents that close the loop and improve with use, under governance.</span></p>
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:28px;">
+        <span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:13px;font-weight:600;padding:9px 15px;border-radius:999px;"><span class="t-pt">Pesquisa</span><span class="t-en">Research</span></span><i style="color:#28d7f7;font-style:normal;font-weight:700;">→</i>
+        <span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:13px;font-weight:600;padding:9px 15px;border-radius:999px;"><span class="t-pt">Decisão</span><span class="t-en">Decision</span></span><i style="color:#28d7f7;font-style:normal;font-weight:700;">→</i>
+        <span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:13px;font-weight:600;padding:9px 15px;border-radius:999px;"><span class="t-pt">Execução</span><span class="t-en">Execution</span></span><i style="color:#28d7f7;font-style:normal;font-weight:700;">→</i>
+        <span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:13px;font-weight:600;padding:9px 15px;border-radius:999px;"><span class="t-pt">Aprendizado</span><span class="t-en">Learning</span></span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;height:420px;">
+      <div style="position:relative;width:360px;height:360px;">
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:360px;height:360px;border:1px dashed rgba(40,215,247,.18);border-radius:50%;animation:spin 44s linear infinite;"></div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:290px;height:290px;border:1px solid rgba(255,255,255,.07);border-radius:50%;animation:spinr 60s linear infinite;"></div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;border:1px solid rgba(255,255,255,.07);border-radius:50%;"></div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:116px;height:116px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#7df0ff,#28d7f7 46%,#0b3b46);animation:corepulse 4.5s ease-in-out infinite;"></div>
+        <div style="position:absolute;top:-4px;left:50%;transform:translateX(-50%);background:#12161d;border:1px solid rgba(40,215,247,.4);color:#e6ebf2;font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;white-space:nowrap;box-shadow:0 0 22px rgba(40,215,247,.18);">Research</div>
+        <div style="position:absolute;right:-26px;top:50%;transform:translateY(-50%);background:#12161d;border:1px solid rgba(40,215,247,.4);color:#e6ebf2;font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;white-space:nowrap;box-shadow:0 0 22px rgba(40,215,247,.18);">Decision</div>
+        <div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:#12161d;border:1px solid rgba(40,215,247,.4);color:#e6ebf2;font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;white-space:nowrap;box-shadow:0 0 22px rgba(40,215,247,.18);">Execution</div>
+        <div style="position:absolute;left:-26px;top:50%;transform:translateY(-50%);background:#12161d;border:1px solid rgba(40,215,247,.4);color:#e6ebf2;font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;white-space:nowrap;box-shadow:0 0 22px rgba(40,215,247,.18);">Learning</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SYSTEMS -->
+<section id="systems" style="padding:110px 24px;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="display:flex;align-items:end;justify-content:space-between;gap:40px;flex-wrap:wrap;max-width:100%;">
+      <div style="max-width:720px;">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:16px;"><span class="t-pt">Sistemas aplicados</span><span class="t-en">Applied systems</span></div>
+        <h2 style="font-size:clamp(30px,3.6vw,44px);font-weight:800;letter-spacing:-1px;line-height:1.08;color:#f4f7fb;"><span class="t-pt">Pesquisa aplicada em sistemas que já encontram o mundo real.</span><span class="t-en">Applied research in systems that already meet the real world.</span></h2>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:12px;color:#657681;letter-spacing:1px;padding-bottom:6px;">06 <span class="t-pt">SISTEMAS</span><span class="t-en">SYSTEMS</span></div>
+    </div>
+
+    <!-- Featured -->
+    <a href="#systems" class="prod-card reveal" data-reveal data-featured style="display:grid;grid-template-columns:1.15fr .85fr;gap:0;margin-top:44px;border:1px solid rgba(255,255,255,.09);border-radius:22px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+      <div style="padding:44px 44px 40px;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;"><span style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1.5px;color:#28d7f7;">01 · HR TECH</span></div>
+        <h3 style="font-size:36px;font-weight:800;letter-spacing:-.8px;color:#f2f6fb;">Anchora</h3>
+        <div style="color:#28d7f7;font-weight:700;font-size:15px;margin:6px 0 16px;"><span class="t-pt">Performance Management Agêntico</span><span class="t-en">Agentic Performance Management</span></div>
+        <p style="color:#9aa7b8;font-size:16px;line-height:1.6;max-width:440px;"><span class="t-pt">Gestão de performance nativa da era dos agentes: avaliação ancorada em evidência, não em achismo.</span><span class="t-en">Performance management native to the age of agents: evaluation anchored in evidence, not guesswork.</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 auto;">
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:6px 11px;"><span class="t-pt">Agentes Colaborador/Gestor/RH</span><span class="t-en">Collaborator/Manager/HR agents</span></span>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:6px 11px;"><span class="t-pt">Ontologia de skills em grafo</span><span class="t-en">Skills ontology graph</span></span>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:6px 11px;"><span class="t-pt">Método anti-alegoria</span><span class="t-en">Anti-guesswork method</span></span>
+        </div>
+        <span style="margin-top:24px;color:#28d7f7;font-weight:700;font-size:15px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+      </div>
+      <div class="prod-media" style="overflow:hidden;background:#0d1016;min-height:360px;display:flex;align-items:center;justify-content:center;padding:20px;"><img src="assets/img/anc02.png" alt="Anchora" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:8px;box-shadow:0 12px 30px rgba(0,0,0,.4);transition:transform .5s ease;"></div>
+    </a>
+
+    <!-- Grid 5 + CTA -->
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px;" data-systems-grid>
+      <a href="#systems" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+        <div class="prod-media" style="height:170px;overflow:hidden;background:#08090b;"><img src="assets/img/n_hl1.png" alt="Zelus Health" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
+        <div style="padding:24px;display:flex;flex-direction:column;flex:1;">
+          <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">02 · HEALTHTECH</span>
+          <h3 style="font-size:23px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Zelus Health</h3>
+          <div style="color:#28d7f7;font-weight:700;font-size:13.5px;margin-bottom:12px;"><span class="t-pt">Saúde preventiva humana</span><span class="t-en">Human preventive health</span></div>
+          <p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">Centraliza exames, sintomas, indicadores e histórico clínico, com IA contextual para apoio à decisão.</span><span class="t-en">Centralizes exams, symptoms, indicators and clinical history, with contextual AI for decision support.</span></p>
+          <span style="margin-top:auto;padding-top:18px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+        </div>
+      </a>
+      <a href="#systems" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+        <div class="prod-media" style="height:170px;overflow:hidden;background:#08090b;"><img src="assets/img/n_pet1.png" alt="Zelus Pet" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
+        <div style="padding:24px;display:flex;flex-direction:column;flex:1;">
+          <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">03 · PETTECH</span>
+          <h3 style="font-size:23px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Zelus Pet</h3>
+          <div style="color:#28d7f7;font-weight:700;font-size:13.5px;margin-bottom:12px;"><span class="t-pt">Saúde preventiva animal</span><span class="t-en">Animal preventive health</span></div>
+          <p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">Plataforma multi-pet que lê e classifica marcadores laboratoriais por espécie.</span><span class="t-en">Multi-pet platform that reads and classifies lab markers by species.</span></p>
+          <span style="margin-top:auto;padding-top:18px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+        </div>
+      </a>
+      <a href="#systems" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+        <div class="prod-media" style="height:170px;overflow:hidden;background:#08090b;"><img src="assets/img/viva-dash.png" alt="Viva" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
+        <div style="padding:24px;display:flex;flex-direction:column;flex:1;">
+          <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">04 · PROPTECH</span>
+          <h3 style="font-size:23px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Viva</h3>
+          <div style="color:#28d7f7;font-weight:700;font-size:13.5px;margin-bottom:12px;"><span class="t-pt">Gestão condominial</span><span class="t-en">Condo management</span></div>
+          <p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">O sistema de gestão condominial que o síndico usa sozinho e a administradora oferece à carteira inteira.</span><span class="t-en">The condo system the manager runs alone and the administrator offers to its whole portfolio.</span></p>
+          <span style="margin-top:auto;padding-top:18px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+        </div>
+      </a>
+      <a href="#systems" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+        <div class="prod-media" style="height:170px;overflow:hidden;background:#08090b;"><img src="assets/img/themis-painel.png" alt="Themis" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
+        <div style="padding:24px;display:flex;flex-direction:column;flex:1;">
+          <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">05 · REGTECH · SST</span>
+          <h3 style="font-size:23px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Themis</h3>
+          <div style="color:#28d7f7;font-weight:700;font-size:13.5px;margin-bottom:12px;"><span class="t-pt">Riscos psicossociais · NR-1</span><span class="t-en">Psychosocial risk · NR-1</span></div>
+          <p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">Ecossistema de agentes que avalia riscos psicossociais e gera relatório e plano de ação no padrão do consultor.</span><span class="t-en">AI agent ecosystem that assesses psychosocial risk and produces the report and action plan in the consultant's standard.</span></p>
+          <span style="margin-top:auto;padding-top:18px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+        </div>
+      </a>
+      <a href="#systems" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+        <div class="prod-media" style="height:170px;overflow:hidden;background:#08090b;"><img src="assets/img/famulus-painel.png" alt="Famulus" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
+        <div style="padding:24px;display:flex;flex-direction:column;flex:1;">
+          <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">06 · HEALTHTECH · SST</span>
+          <h3 style="font-size:23px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Famulus</h3>
+          <div style="color:#28d7f7;font-weight:700;font-size:13.5px;margin-bottom:12px;"><span class="t-pt">Saúde e segurança do trabalho</span><span class="t-en">Occupational health & safety</span></div>
+          <p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">O portal que tira a saúde ocupacional do e-mail: o cliente pede, acompanha e a operação de SST resolve num fluxo só.</span><span class="t-en">The portal that takes occupational health out of email: the client requests, tracks, and the SST operation resolves it in one flow.</span></p>
+          <span style="margin-top:auto;padding-top:18px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+        </div>
+      </a>
+      <a href="#contact" class="prod-card" style="display:flex;flex-direction:column;justify-content:center;border:1px solid rgba(40,215,247,.25);border-radius:18px;background:linear-gradient(160deg,rgba(40,215,247,.1),rgba(40,215,247,.02));padding:30px;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1.5px;color:#28d7f7;margin-bottom:14px;">→ ALL SYSTEMS</div>
+        <h3 style="font-size:26px;font-weight:800;color:#f2f6fb;line-height:1.1;"><span class="t-pt">Ver todos os sistemas</span><span class="t-en">See all systems</span></h3>
+        <p style="color:#9aa7b8;font-size:14px;margin-top:12px;line-height:1.55;"><span class="t-pt">Seis sistemas em produção — e a mesma capacidade a serviço do seu negócio.</span><span class="t-en">Six systems in production — and the same capability at the service of your business.</span></p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- WHY HARD TO COPY -->
+<section style="padding:100px 24px;background:#0b0e13;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:760px;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:16px;"><span class="t-pt">Por que é difícil de copiar</span><span class="t-en">Why it's hard to copy</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.08;color:#f4f7fb;"><span class="t-pt">O nosso diferencial é arquitetural, não cosmético.</span><span class="t-en">Our edge is architectural, not cosmetic.</span></h2>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px;" data-pillars>
+      <div style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;">
+        <div style="font-family:'DM Mono',monospace;color:#28d7f7;font-size:13px;letter-spacing:1px;">01</div>
+        <h3 style="font-size:19px;margin:14px 0 10px;color:#f2f6fb;"><span class="t-pt">Arquitetura agêntica proprietária</span><span class="t-en">Proprietary agentic architecture</span></h3>
+        <p style="color:#9aa7b8;font-size:15px;line-height:1.55;"><span class="t-pt">Orquestrador e agentes especialistas que conduzem processos, não IA colada por cima.</span><span class="t-en">An orchestrator and specialist agents that run processes, not AI bolted on top.</span></p>
+      </div>
+      <div style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;">
+        <div style="font-family:'DM Mono',monospace;color:#28d7f7;font-size:13px;letter-spacing:1px;">02</div>
+        <h3 style="font-size:19px;margin:14px 0 10px;color:#f2f6fb;"><span class="t-pt">Método e ontologia validados</span><span class="t-en">Validated method and ontology</span></h3>
+        <p style="color:#9aa7b8;font-size:15px;line-height:1.55;"><span class="t-pt">Ontologia de skills e método anti-alegoria destilados de anos de operação real.</span><span class="t-en">A skills ontology and anti-guesswork method distilled from years of real operation.</span></p>
+      </div>
+      <div style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;">
+        <div style="font-family:'DM Mono',monospace;color:#28d7f7;font-size:13px;letter-spacing:1px;">03</div>
+        <h3 style="font-size:19px;margin:14px 0 10px;color:#f2f6fb;"><span class="t-pt">Nativo, governança by design</span><span class="t-en">Native, governance by design</span></h3>
+        <p style="color:#9aa7b8;font-size:15px;line-height:1.55;"><span class="t-pt">Concebido na era dos agentes desde a primeira linha, com LGPD e auditoria na arquitetura.</span><span class="t-en">Conceived in the age of agents from line one, with privacy and audit in the architecture.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITIES -->
+<section id="capabilities" style="padding:110px 24px;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:780px;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:16px;"><span class="t-pt">Também para empresas</span><span class="t-en">Also for companies</span></div>
+      <h2 style="font-size:clamp(30px,3.6vw,44px);font-weight:800;letter-spacing:-1px;line-height:1.08;color:#f4f7fb;"><span class="t-pt">A mesma capacidade que constrói nossos produtos, a serviço do seu negócio.</span><span class="t-en">The same capability that builds our products, at the service of your business.</span></h2>
+      <p style="color:#9aa7b8;font-size:18px;margin-top:16px;line-height:1.55;"><span class="t-pt">Construímos soluções de IA sob medida, com a mesma arquitetura, método e governança.</span><span class="t-en">We build custom AI solutions, with the same architecture, method and governance.</span></p>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(2,1fr);gap:0;margin-top:44px;border:1px solid rgba(255,255,255,.08);border-radius:18px;overflow:hidden;" data-cap-grid>
+      <div style="padding:32px;border-right:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);">
+        <div style="font-family:'DM Mono',monospace;color:#28d7f7;font-size:13px;">01</div>
+        <h3 style="font-size:19px;margin:10px 0 8px;color:#f2f6fb;"><span class="t-pt">Produtos AI-first ponta a ponta</span><span class="t-en">End-to-end AI-first products</span></h3>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Concepção, design e construção de produtos digitais completos com arquitetura agêntica nativa.</span><span class="t-en">Concept, design and build of complete digital products with native agentic architecture.</span></p>
+      </div>
+      <div style="padding:32px;border-bottom:1px solid rgba(255,255,255,.08);">
+        <div style="font-family:'DM Mono',monospace;color:#28d7f7;font-size:13px;">02</div>
+        <h3 style="font-size:19px;margin:10px 0 8px;color:#f2f6fb;"><span class="t-pt">Arquitetura multi-agente</span><span class="t-en">Multi-agent architecture</span></h3>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Orquestrador e agentes especialistas para o domínio do cliente, em modo Human-on-the-Loop.</span><span class="t-en">Orchestrator and specialist agents for the client's domain, Human-on-the-Loop.</span></p>
+      </div>
+      <div style="padding:32px;border-right:1px solid rgba(255,255,255,.08);">
+        <div style="font-family:'DM Mono',monospace;color:#28d7f7;font-size:13px;">03</div>
+        <h3 style="font-size:19px;margin:10px 0 8px;color:#f2f6fb;"><span class="t-pt">Integração de IA no que já existe</span><span class="t-en">AI into what already exists</span></h3>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Agentes rodando processos dentro dos produtos e operações que o cliente já tem.</span><span class="t-en">Agents running processes inside the client's existing products and operations.</span></p>
+      </div>
+      <div style="padding:32px;">
+        <div style="font-family:'DM Mono',monospace;color:#28d7f7;font-size:13px;">04</div>
+        <h3 style="font-size:19px;margin:10px 0 8px;color:#f2f6fb;"><span class="t-pt">Conhecimento e dados</span><span class="t-en">Knowledge and data</span></h3>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Ontologias e grafos de conhecimento, RAG, leitura e classificação inteligente de dados.</span><span class="t-en">Ontologies and knowledge graphs, RAG, intelligent data reading and classification.</span></p>
+      </div>
+    </div>
+    <!-- process steps -->
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px;" data-steps>
+      <div style="padding:28px;border-radius:18px;background:#0d1016;border:1px solid rgba(255,255,255,.08);">
+        <div style="font-size:40px;font-weight:800;color:#28d7f7;opacity:.55;line-height:1;">01</div>
+        <h3 style="font-size:18px;margin:10px 0 8px;color:#fff;">Discovery</h3>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Entendemos o processo, o dado e a dor real antes de escrever a primeira linha.</span><span class="t-en">We understand the process, the data and the real pain before writing a line.</span></p>
+      </div>
+      <div style="padding:28px;border-radius:18px;background:#0d1016;border:1px solid rgba(255,255,255,.08);">
+        <div style="font-size:40px;font-weight:800;color:#28d7f7;opacity:.55;line-height:1;">02</div>
+        <h3 style="font-size:18px;margin:10px 0 8px;color:#fff;"><span class="t-pt">Arquitetura</span><span class="t-en">Architecture</span></h3>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Desenhamos a arquitetura agêntica e o método, com governança embutida.</span><span class="t-en">We design the agentic architecture and method, with governance built in.</span></p>
+      </div>
+      <div style="padding:28px;border-radius:18px;background:#0d1016;border:1px solid rgba(255,255,255,.08);">
+        <div style="font-size:40px;font-weight:800;color:#28d7f7;opacity:.55;line-height:1;">03</div>
+        <h3 style="font-size:18px;margin:10px 0 8px;color:#fff;"><span class="t-pt">Produto em produção</span><span class="t-en">Product live</span></h3>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Construímos, integramos e colocamos em produção, com execução garantida.</span><span class="t-en">We build, integrate and ship to production, with execution guaranteed.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STACK MARQUEE -->
+<section style="padding:70px 0;background:#0b0e13;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);overflow:hidden;">
+  <div style="max-width:1180px;margin:0 auto 30px;padding:0 24px;">
+    <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;">Stack</div>
+    <h2 style="font-size:clamp(24px,3vw,34px);font-weight:800;letter-spacing:-.8px;color:#f4f7fb;margin-top:12px;"><span class="t-pt">A engenharia por trás dos agentes.</span><span class="t-en">The engineering behind the agents.</span></h2>
+  </div>
+  <div style="display:flex;width:max-content;gap:14px;animation:marquee 32s linear infinite;">
+    <span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">Claude</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">GPT</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">Gemini</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">LangGraph</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">MCP</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">Supabase</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">PostgreSQL</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">AWS</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">Vercel</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">Qdrant</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">n8n</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">Python</span>
+    <span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">Claude</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">GPT</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">Gemini</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">LangGraph</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">MCP</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">Supabase</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">PostgreSQL</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">AWS</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">Vercel</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">Qdrant</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">n8n</span><span style="background:#12161d;border:1px solid rgba(255,255,255,.08);color:#c2cbd9;font-size:15px;font-weight:500;padding:12px 22px;border-radius:999px;">Python</span>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="contact" style="padding:110px 24px;">
+  <div class="reveal" data-reveal style="max-width:1180px;margin:0 auto;border-radius:24px;background:linear-gradient(125deg,#142b31,#0c1217);border:1px solid rgba(40,215,247,.22);text-align:center;padding:72px 32px;position:relative;overflow:hidden;">
+    <div style="position:absolute;width:520px;height:520px;right:-180px;top:-220px;border:1px solid rgba(40,215,247,.22);border-radius:50%;pointer-events:none;"></div>
+    <h2 style="font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-spacing:-1px;color:#fff;max-width:720px;margin:0 auto 16px;position:relative;"><span class="t-pt">Vamos construir algo que executa?</span><span class="t-en">Let's build something that acts?</span></h2>
+    <p style="color:#aeb7c9;max-width:600px;margin:0 auto 30px;font-size:17px;position:relative;"><span class="t-pt">Conheça os sistemas ou fale com a gente sobre a sua operação.</span><span class="t-en">Explore the systems or talk to us about your operation.</span></p>
+    <a href="#contact" style="background:#fff;color:#07080a;font-weight:700;padding:16px 34px;border-radius:999px;font-size:16px;display:inline-block;box-shadow:0 0 44px rgba(40,215,247,.34);position:relative;"><span class="t-pt">Falar com a Finder Lab</span><span class="t-en">Talk to Finder Lab</span></a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:#08090b;color:#9aa7b8;padding:64px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;" data-footer>
+    <div>
+      <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:12px;">FINDER<b style="color:#28d7f7;">LAB</b></div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
+      <p style="max-width:340px;font-size:14.5px;line-height:1.6;"><span class="t-pt">Pesquisamos, validamos e aplicamos inteligência artificial em sistemas que resolvem problemas reais.</span><span class="t-en">We research, validate and apply artificial intelligence in systems that solve real problems.</span></p>
+      <a href="https://www.linkedin.com/company/finderlab" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;color:#9aa7b8;font-size:14px;margin-top:16px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V23h-4v-6.6c0-1.57-.03-3.6-2.2-3.6-2.2 0-2.54 1.72-2.54 3.49V23h-4V8z"/></svg>LinkedIn</a>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Navegação</span><span class="t-en">Navigate</span></h4>
+      <a href="#research" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Research</a>
+      <a href="#systems" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a href="#capabilities" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <a href="#contact" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Contato</span><span class="t-en">Contact</span></a>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></h4>
+      <a href="#systems" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Anchora</a>
+      <a href="#systems" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Zelus Health</a>
+      <a href="#systems" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Viva</a>
+      <a href="#systems" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Themis</a>
+      <a href="#systems" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Famulus</a>
+    </div>
+  </div>
+  <div style="max-width:1180px;margin:40px auto 0;border-top:1px solid rgba(255,255,255,.1);padding-top:22px;font-size:13px;color:#7c869b;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <span>© 2026 Finder Lab · Applied Intelligence Lab</span>
+    <span>contato@finderlab.com.br</span>
+  </div>
+</footer>
+</div>
+</x-dc>
+
+<script>
+(function(){
+  var root=document.querySelector('[data-lang]');
+  function setLang(l){ if(root)root.setAttribute('data-lang',l); document.documentElement.setAttribute('lang',l==='pt'?'pt-BR':'en');
+    document.querySelectorAll('.langlabel').forEach(function(x){x.textContent=l==='pt'?'EN':'PT';});
+    try{localStorage.setItem('fl_lang',l);}catch(e){} }
+  window.toggleLang=function(){ var c=(root&&root.getAttribute('data-lang'))||'pt'; setLang(c==='pt'?'en':'pt'); };
+  var sv='pt'; try{sv=localStorage.getItem('fl_lang')||'pt';}catch(e){} setLang(sv);
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+    requestAnimationFrame(function(){document.querySelectorAll('[data-reveal]').forEach(function(el){
+      var r=el.getBoundingClientRect(); if(r.top>=(window.innerHeight||800)*0.9){el.classList.add('reveal');io.observe(el);} else {el.classList.add('reveal','in');}
+    });});
+  }
+  var cw=document.getElementById('cw');
+  if(cw){var W={pt:['sistema','produto','operação','decisão','execução'],en:['system','product','operation','decision','execution']},i=0;
+    setInterval(function(){var l=(root&&root.getAttribute('data-lang'))||'pt',a=W[l];i=(i+1)%a.length;cw.style.opacity=0;
+      setTimeout(function(){cw.textContent=a[i];cw.style.opacity=1;},180);},2200);}
+  window.submitForm=function(){var g=function(id){var e=document.getElementById(id);return e?e.value:'';};
+    var n=g('f_nome'),em=g('f_email'),ep=g('f_empresa'),m=g('f_msg');
+    var body='Nome: '+n+'%0D%0AEmpresa: '+ep+'%0D%0AEmail: '+em+'%0D%0A%0D%0A'+encodeURIComponent(m);
+    window.location.href='mailto:contato@finderlab.com.br?subject='+encodeURIComponent('Contato via site - '+(n||''))+'&body='+body; return false;};
+})();
+</script>
+</body>
+</html>

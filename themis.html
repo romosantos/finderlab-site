@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Themis · Finder Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Instrument Sans','Helvetica Neue',sans-serif;background:#07080a;color:#e6ebf2;-webkit-font-smoothing:antialiased;letter-spacing:-.1px;line-height:1.6;}
+  a{color:#28d7f7;text-decoration:none;}
+  a:hover{color:#74e7ff;}
+  img{display:block;max-width:100%;}
+  [data-lang="pt"] .t-en{display:none;}
+  [data-lang="en"] .t-pt{display:none;}
+  .mono{font-family:'DM Mono',monospace;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+  @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,20px) scale(1.07)}}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1);}
+  .reveal.in{opacity:1;transform:none;}
+  .navlink:hover{color:#fff!important;}
+  .navlink::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:2px;background:#28d7f7;transition:right .25s ease;}
+  .navlink:hover::after{right:0;}
+  .card-h:hover{border-color:rgba(40,215,247,.5)!important;transform:translateY(-3px);box-shadow:0 0 0 1px rgba(40,215,247,.18),0 16px 40px rgba(0,0,0,.4)!important;}
+  .shot:hover img{transform:scale(1.03);}
+
+  @media(max-width:900px){
+    .nav-links{display:none!important;position:absolute;top:calc(100% + 12px);left:0;right:0;flex-direction:column;align-items:stretch!important;gap:14px!important;background:#0d1016;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;box-shadow:0 24px 54px rgba(0,0,0,.55);z-index:80;}
+    .navtog:checked ~ .nav-links{display:flex!important;}
+    .burger{display:flex!important;}
+  }
+</style>
+<link rel="icon" type="image/png" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+</head>
+<body>
+
+<div data-lang="pt" style="min-height:100vh;overflow-x:hidden;background:radial-gradient(1100px 620px at 78% -6%,rgba(40,215,247,.11),transparent 60%),#07080a;">
+
+<header style="position:sticky;top:0;z-index:60;padding:16px 24px 0;">
+  <div style="max-width:1180px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:11px 14px 11px 26px;box-shadow:0 12px 40px rgba(0,0,0,.42);">
+    <a href="index.html" style="font-size:20px;font-weight:800;letter-spacing:.4px;color:#fff;">FINDER<b style="color:#28d7f7;">LAB</b></a>
+    <input class="navtog" id="navtog" type="checkbox" style="display:none;"/><label class="burger" for="navtog" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.2);cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></label><nav class="nav-links" style="display:flex;align-items:center;gap:26px;">
+      <a class="navlink" href="index.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Início</span><span class="t-en">Home</span></a>
+      <a class="navlink" href="research.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;">Research</a>
+      <a class="navlink" href="sistemas.html" style="position:relative;color:#fff;font-size:14.5px;font-weight:500;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a class="navlink" href="servicos.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <a class="navlink" href="sobre.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
+      <button onclick="toggleLang()" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
+      <a href="contato.html" style="background:#fff;color:#07080a;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Vamos conversar</span><span class="t-en">Let's talk</span></a>
+    </nav>
+  </div>
+</header>
+
+<!-- PHERO -->
+<section style="position:relative;padding:88px 24px 40px;overflow:hidden;">
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(40,215,247,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(40,215,247,.05) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(circle at 82% 24%,#000,transparent 62%);pointer-events:none;"></div>
+  <div style="position:absolute;right:-120px;top:-150px;width:560px;height:560px;background:radial-gradient(circle,rgba(40,215,247,.16),transparent 62%);pointer-events:none;animation:drift 13s ease-in-out infinite;"></div>
+  <div style="max-width:1180px;margin:0 auto;position:relative;z-index:2;">
+    <div class="mono" style="font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:18px;display:inline-flex;align-items:center;gap:9px;"><span style="width:7px;height:7px;border-radius:50%;background:#28d7f7;box-shadow:0 0 12px #28d7f7;animation:blink 2.4s ease-in-out infinite;"></span>REGTECH · SST · <span class="t-pt">Produto</span><span class="t-en">Product</span></div>
+    <h1 style="font-size:clamp(46px,6vw,76px);font-weight:800;line-height:1;letter-spacing:-2px;color:#f6fbfd;">Themis</h1>
+    <div style="color:#28d7f7;font-weight:700;font-size:19px;margin:12px 0 16px;"><span class="t-pt">Riscos psicossociais · NR-1</span><span class="t-en">Psychosocial risk · NR-1</span></div>
+    <p style="color:#9aa7b8;font-size:19px;line-height:1.55;max-width:680px;"><span class="t-pt">A plataforma que clona o método do consultor de SST e entrega a avaliação de risco psicossocial em uma fração do tempo.</span><span class="t-en">The platform that clones the SST consultant's method and delivers psychosocial risk assessment in a fraction of the time.</span></p>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:28px;">
+      <a href="contato.html" style="background:#fff;color:#07080a;font-weight:700;padding:15px 30px;border-radius:999px;font-size:15px;box-shadow:0 0 40px rgba(40,215,247,.28);"><span class="t-pt">Vamos conversar</span><span class="t-en">Let's talk</span></a>
+      <a href="sistemas.html" style="background:transparent;color:#e6ebf2;font-weight:700;padding:15px 30px;border-radius:999px;font-size:15px;border:1.5px solid rgba(255,255,255,.24);"><span class="t-pt">Voltar aos sistemas</span><span class="t-en">Back to systems</span></a>
+    </div>
+    <div style="margin-top:52px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 40px 90px rgba(0,0,0,.55);background:#0f1420;">
+      <div style="height:38px;background:linear-gradient(#20252f,#171b23);display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.06);"><i style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></i><i style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></i><i style="width:11px;height:11px;border-radius:50%;background:#28c840;"></i><div class="mono" style="flex:1;margin-left:12px;max-width:260px;height:22px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:7px;display:flex;align-items:center;padding:0 11px;font-size:11px;color:#7f8aa0;">app.themis.com.br</div></div>
+      <img src="assets/img/themis-painel.png" alt="Themis" style="width:100%;">
+    </div>
+  </div>
+</section>
+
+<!-- PAIN -->
+<section style="padding:90px 24px;">
+  <div class="reveal" data-reveal style="max-width:820px;margin:0 auto;text-align:center;">
+    <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">A dor</span><span class="t-en">The pain</span></div>
+    <h2 style="font-size:clamp(28px,3.6vw,44px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Avaliação de risco psicossocial é obrigatória, e manual.</span><span class="t-en">Psychosocial risk assessment is mandatory, and manual.</span></h2>
+    <p style="color:#9aa7b8;font-size:18px;line-height:1.6;margin-top:16px;"><span class="t-pt">Desde 26/05/2026 a fiscalização da NR-1 é punitiva, e quem faz à mão trava no e-mail e num relatório de dezenas de páginas. Não dá para escalar.</span><span class="t-en">Since 26/05/2026 NR-1 enforcement is punitive, and doing it by hand means getting stuck in email and a dozens-of-pages report. There is no way to scale.</span></p>
+  </div>
+</section>
+
+<!-- SHIFT / CONTRAST -->
+<section style="padding:90px 24px;background:#0b0e13;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:820px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">A virada</span><span class="t-en">The shift</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Formulário é declaração. Três fontes cruzadas são evidência.</span><span class="t-en">A form is declaration. Three cross-referenced sources are evidence.</span></h2>
+      <p style="color:#9aa7b8;font-size:17px;line-height:1.6;margin-top:16px;"><span class="t-pt">Uma pesquisa de clima pergunta e acredita. A Themis cruza a resposta dos trabalhadores com dados epidemiológicos e medidas protetivas, e ancora o julgamento na base legal da norma.</span><span class="t-en">A climate survey asks and believes. Themis cross-references worker responses with epidemiological data and protective measures, and anchors judgment in the norm's legal basis.</span></p>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px;" data-two>
+      <div style="background:#0e1015;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:28px;">
+        <div class="mono" style="font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:#8a97a8;margin-bottom:16px;"><span class="t-pt">Pesquisa de clima</span><span class="t-en">Climate survey</span></div>
+        <ul style="list-style:none;">
+          <li style="position:relative;padding-left:26px;margin-bottom:12px;font-size:15px;color:#9aa7b8;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#e0794f;font-weight:800;">×</span><span class="t-pt">Um formulário que pergunta e para</span><span class="t-en">A form that asks and stops</span></li>
+          <li style="position:relative;padding-left:26px;margin-bottom:12px;font-size:15px;color:#9aa7b8;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#e0794f;font-weight:800;">×</span><span class="t-pt">Resultado sem base legal</span><span class="t-en">A result with no legal basis</span></li>
+          <li style="position:relative;padding-left:26px;margin-bottom:12px;font-size:15px;color:#9aa7b8;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#e0794f;font-weight:800;">×</span><span class="t-pt">Relatório manual de dezenas de páginas</span><span class="t-en">A manual dozens-of-pages report</span></li>
+          <li style="position:relative;padding-left:26px;font-size:15px;color:#9aa7b8;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#e0794f;font-weight:800;">×</span><span class="t-pt">Laudo que fica na gaveta</span><span class="t-en">A report that stays in the drawer</span></li>
+        </ul>
+      </div>
+      <div style="background:linear-gradient(165deg,#0f2530,#0a0f16);border:1px solid rgba(40,215,247,.34);border-radius:18px;padding:28px;box-shadow:0 0 0 1px rgba(40,215,247,.14),0 20px 50px rgba(40,215,247,.08);">
+        <div class="mono" style="font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:16px;"><span class="t-pt">Themis · evidência e norma</span><span class="t-en">Themis · evidence and norm</span></div>
+        <ul style="list-style:none;">
+          <li style="position:relative;padding-left:26px;margin-bottom:12px;font-size:15px;color:#dbe2ee;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#28d7f7;font-weight:800;">✓</span><span class="t-pt">Cruza 3 fontes, não uma só</span><span class="t-en">Cross-references 3 sources, not one</span></li>
+          <li style="position:relative;padding-left:26px;margin-bottom:12px;font-size:15px;color:#dbe2ee;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#28d7f7;font-weight:800;">✓</span><span class="t-pt">Base legal da NR-1 citada</span><span class="t-en">NR-1 legal basis cited</span></li>
+          <li style="position:relative;padding-left:26px;margin-bottom:12px;font-size:15px;color:#dbe2ee;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#28d7f7;font-weight:800;">✓</span><span class="t-pt">Relatório e plano de ação gerados</span><span class="t-en">Report and action plan generated</span></li>
+          <li style="position:relative;padding-left:26px;font-size:15px;color:#dbe2ee;line-height:1.5;"><span style="position:absolute;left:0;top:0;color:#28d7f7;font-weight:800;">✓</span><span class="t-pt">Plano 5W2H que vira intervenção</span><span class="t-en">A 5W2H plan that becomes intervention</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="reveal" data-reveal style="margin-top:40px;text-align:center;">
+      <p style="font-size:clamp(19px,2.2vw,24px);font-weight:700;color:#eef3f9;max-width:850px;margin:0 auto;line-height:1.4;letter-spacing:-.3px;"><span class="t-pt">Risco psicossocial não se resolve com um formulário. Se resolve cruzando <span style="color:#28d7f7;">evidência</span> e agindo dentro da norma.</span><span class="t-en">Psychosocial risk isn't solved with a form. It's solved by cross-referencing <span style="color:#28d7f7;">evidence</span> and acting within the norm.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section style="padding:100px 24px;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:820px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">Como funciona</span><span class="t-en">How it works</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Como a Themis entrega a avaliação.</span><span class="t-en">How Themis delivers the assessment.</span></h2>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:42px;" data-mechs>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:13px;">01</div><h3 style="font-size:17px;margin:12px 0 9px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Cruzamento de 3 fontes</span><span class="t-en">Three-source analysis</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">Pesquisa dos trabalhadores, dados epidemiológicos e medidas protetivas, num só lugar.</span><span class="t-en">Worker survey, epidemiological data and protective measures, in one place.</span></p></div>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:13px;">02</div><h3 style="font-size:17px;margin:12px 0 9px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Julgamento pela NR-1</span><span class="t-en">Judgment by NR-1</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">O agente especialista responde com a base legal citada e aponta gaps.</span><span class="t-en">The specialist agent answers with cited legal basis and flags gaps.</span></p></div>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:13px;">03</div><h3 style="font-size:17px;margin:12px 0 9px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Intervenção 5W2H</span><span class="t-en">5W2H intervention</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">Gera o relatório e o plano de ação por grupo de risco e função.</span><span class="t-en">Generates the report and the action plan by risk group and role.</span></p></div>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:26px;transition:transform .3s,box-shadow .3s,border-color .3s;"><div class="mono" style="color:#28d7f7;font-size:13px;">04</div><h3 style="font-size:17px;margin:12px 0 9px;color:#f2f6fb;line-height:1.2;"><span class="t-pt">Human-in-the-loop</span><span class="t-en">Human-in-the-loop</span></h3><p style="color:#9aa7b8;font-size:14px;line-height:1.55;"><span class="t-pt">Os agentes produzem; o consultor revisa e aprova antes de qualquer entrega.</span><span class="t-en">Agents produce; the consultant reviews and approves before any delivery.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREENS -->
+<section style="padding:100px 24px;background:#0b0e13;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:820px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">Por dentro</span><span class="t-en">Inside</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">Telas do produto</span><span class="t-en">Product screens</span></h2>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:42px;" data-shots>
+      <figure class="shot" style="margin:0;"><div style="border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 46px rgba(0,0,0,.4);background:#0f1420;"><div style="height:32px;background:linear-gradient(#20252f,#171b23);display:flex;align-items:center;gap:7px;padding:0 13px;"><i style="width:9px;height:9px;border-radius:50%;background:#ff5f57;"></i><i style="width:9px;height:9px;border-radius:50%;background:#febc2e;"></i><i style="width:9px;height:9px;border-radius:50%;background:#28c840;"></i></div><img src="assets/img/themis-painel.png" alt="Painel" style="width:100%;transition:transform .5s ease;"></div><figcaption class="mono" style="margin-top:11px;font-size:12px;color:#8a97a8;"><span class="t-pt">Painel da operação</span><span class="t-en">Operation dashboard</span></figcaption></figure>
+      <figure class="shot" style="margin:0;"><div style="border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 46px rgba(0,0,0,.4);background:#0f1420;"><div style="height:32px;background:linear-gradient(#20252f,#171b23);display:flex;align-items:center;gap:7px;padding:0 13px;"><i style="width:9px;height:9px;border-radius:50%;background:#ff5f57;"></i><i style="width:9px;height:9px;border-radius:50%;background:#febc2e;"></i><i style="width:9px;height:9px;border-radius:50%;background:#28c840;"></i></div><img src="assets/img/themis-analise.png" alt="Análise" style="width:100%;transition:transform .5s ease;"></div><figcaption class="mono" style="margin-top:11px;font-size:12px;color:#8a97a8;"><span class="t-pt">Análise: cruza as 3 fontes</span><span class="t-en">Analysis: crossing the 3 sources</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- FOUNDATION -->
+<section style="padding:100px 24px;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="reveal" data-reveal style="max-width:820px;">
+      <div class="mono" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#28d7f7;margin-bottom:14px;"><span class="t-pt">A fundação</span><span class="t-en">The foundation</span></div>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.1;color:#f4f7fb;"><span class="t-pt">A fundação por baixo.</span><span class="t-en">The foundation underneath.</span></h2>
+    </div>
+    <div class="reveal" data-reveal style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:42px;" data-three>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:18px;margin-bottom:10px;color:#f2f6fb;"><span class="t-pt">A NR-1 como régua</span><span class="t-en">NR-1 as the ruler</span></h3><p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Cada achado e recomendação se ancora na norma, com base legal citada.</span><span class="t-en">Each finding and recommendation anchors in the norm, with cited legal basis.</span></p></div>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:18px;margin-bottom:10px;color:#f2f6fb;"><span class="t-pt">Método do consultor clonado</span><span class="t-en">The consultant's method, cloned</span></h3><p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">O relatório e o plano saem no padrão do consultor, não num template genérico.</span><span class="t-en">The report and plan come out in the consultant's standard, not a generic template.</span></p></div>
+      <div class="card-h" style="background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;transition:transform .3s,box-shadow .3s,border-color .3s;"><h3 style="font-size:18px;margin-bottom:10px;color:#f2f6fb;"><span class="t-pt">Governança e LGPD by design</span><span class="t-en">Governance and privacy by design</span></h3><p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Human-in-the-loop, trilhas e proteção de dados sensíveis desde a arquitetura.</span><span class="t-en">Human-in-the-loop, audit trails and sensitive-data protection from the architecture up.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:0 24px 100px;">
+  <div class="reveal" data-reveal style="max-width:1180px;margin:0 auto;border-radius:24px;background:linear-gradient(125deg,#142b31,#0c1217);border:1px solid rgba(40,215,247,.22);text-align:center;padding:64px 32px;position:relative;overflow:hidden;">
+    <div style="position:absolute;width:520px;height:520px;right:-180px;top:-220px;border:1px solid rgba(40,215,247,.22);border-radius:50%;pointer-events:none;"></div>
+    <h2 style="font-size:clamp(28px,3.4vw,40px);font-weight:800;letter-spacing:-1px;color:#fff;max-width:720px;margin:0 auto 24px;position:relative;"><span class="t-pt">Quer ver o Themis funcionando?</span><span class="t-en">Want to see Themis in action?</span></h2>
+    <a href="contato.html" style="background:#fff;color:#07080a;font-weight:700;padding:16px 34px;border-radius:999px;font-size:16px;display:inline-block;box-shadow:0 0 44px rgba(40,215,247,.34);position:relative;"><span class="t-pt">Falar com a Finder Lab</span><span class="t-en">Talk to Finder Lab</span></a>
+  </div>
+</section>
+
+<footer style="background:#08090b;color:#9aa7b8;padding:56px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;" data-footer>
+    <div>
+      <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:12px;">FINDER<b style="color:#28d7f7;">LAB</b></div>
+      <div class="mono" style="font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
+      <p style="max-width:340px;font-size:14.5px;line-height:1.6;"><span class="t-pt">Casa de produtos AI-first do grupo Finder. Arquitetura agêntica, método e governança por baixo de cada decisão.</span><span class="t-en">AI-first product house of the Finder group. Agentic architecture, method and governance under every decision.</span></p>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Navegação</span><span class="t-en">Navigate</span></h4>
+      <a href="research.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Research</a>
+      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a href="servicos.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <a href="sobre.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></h4>
+      <a href="anchora.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Anchora</a>
+      <a href="zelus-health.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Zelus Health</a>
+      <a href="themis.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Themis</a>
+      <a href="famulus.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Famulus</a>
+    </div>
+  </div>
+  <div style="max-width:1180px;margin:40px auto 0;border-top:1px solid rgba(255,255,255,.1);padding-top:22px;font-size:13px;color:#7c869b;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <span>© 2026 Finder Lab · Applied Intelligence Lab</span>
+    <span>contato@finderlab.com.br</span>
+  </div>
+</footer>
+</div>
+</x-dc>
+
+<script>
+(function(){
+  var root=document.querySelector('[data-lang]');
+  function setLang(l){ if(root)root.setAttribute('data-lang',l); document.documentElement.setAttribute('lang',l==='pt'?'pt-BR':'en');
+    document.querySelectorAll('.langlabel').forEach(function(x){x.textContent=l==='pt'?'EN':'PT';});
+    try{localStorage.setItem('fl_lang',l);}catch(e){} }
+  window.toggleLang=function(){ var c=(root&&root.getAttribute('data-lang'))||'pt'; setLang(c==='pt'?'en':'pt'); };
+  var sv='pt'; try{sv=localStorage.getItem('fl_lang')||'pt';}catch(e){} setLang(sv);
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+    requestAnimationFrame(function(){document.querySelectorAll('[data-reveal]').forEach(function(el){
+      var r=el.getBoundingClientRect(); if(r.top>=(window.innerHeight||800)*0.9){el.classList.add('reveal');io.observe(el);} else {el.classList.add('reveal','in');}
+    });});
+  }
+  var cw=document.getElementById('cw');
+  if(cw){var W={pt:['sistema','produto','operação','decisão','execução'],en:['system','product','operation','decision','execution']},i=0;
+    setInterval(function(){var l=(root&&root.getAttribute('data-lang'))||'pt',a=W[l];i=(i+1)%a.length;cw.style.opacity=0;
+      setTimeout(function(){cw.textContent=a[i];cw.style.opacity=1;},180);},2200);}
+  window.submitForm=function(){var g=function(id){var e=document.getElementById(id);return e?e.value:'';};
+    var n=g('f_nome'),em=g('f_email'),ep=g('f_empresa'),m=g('f_msg');
+    var body='Nome: '+n+'%0D%0AEmpresa: '+ep+'%0D%0AEmail: '+em+'%0D%0A%0D%0A'+encodeURIComponent(m);
+    window.location.href='mailto:contato@finderlab.com.br?subject='+encodeURIComponent('Contato via site - '+(n||''))+'&body='+body; return false;};
+})();
+</script>
+</body>
+</html>

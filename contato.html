@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contato · Finder Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Instrument Sans','Helvetica Neue',sans-serif;background:#07080a;color:#e6ebf2;-webkit-font-smoothing:antialiased;letter-spacing:-.1px;line-height:1.6;}
+  a{color:#28d7f7;text-decoration:none;}
+  a:hover{color:#74e7ff;}
+  [data-lang="pt"] .t-en{display:none;}
+  [data-lang="en"] .t-pt{display:none;}
+  .navlink:hover{color:#fff!important;}
+  .navlink::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:2px;background:#28d7f7;transition:right .25s ease;}
+  .navlink:hover::after{right:0;}
+  .fld:focus{outline:none;border-color:#28d7f7!important;box-shadow:0 0 0 3px rgba(40,215,247,.15);}
+  .fld::placeholder{color:#6e7787;}
+
+  @media(max-width:900px){
+    .nav-links{display:none!important;position:absolute;top:calc(100% + 12px);left:0;right:0;flex-direction:column;align-items:stretch!important;gap:14px!important;background:#0d1016;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;box-shadow:0 24px 54px rgba(0,0,0,.55);z-index:80;}
+    .navtog:checked ~ .nav-links{display:flex!important;}
+    .burger{display:flex!important;}
+  }
+</style>
+<link rel="icon" type="image/png" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+</head>
+<body>
+
+<div data-lang="pt" style="min-height:100vh;overflow-x:hidden;background:radial-gradient(1100px 620px at 78% -6%,rgba(40,215,247,.11),transparent 60%),#07080a;display:flex;flex-direction:column;">
+
+<header style="position:sticky;top:0;z-index:60;padding:16px 24px 0;">
+  <div style="max-width:1180px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:11px 14px 11px 26px;box-shadow:0 12px 40px rgba(0,0,0,.42);">
+    <a href="index.html" style="font-size:20px;font-weight:800;letter-spacing:.4px;color:#fff;">FINDER<b style="color:#28d7f7;">LAB</b></a>
+    <input class="navtog" id="navtog" type="checkbox" style="display:none;"/><label class="burger" for="navtog" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.2);cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></label><nav class="nav-links" style="display:flex;align-items:center;gap:26px;">
+      <a class="navlink" href="index.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Início</span><span class="t-en">Home</span></a>
+      <a class="navlink" href="research.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;">Research</a>
+      <a class="navlink" href="sistemas.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a class="navlink" href="servicos.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <a class="navlink" href="sobre.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
+      <button onclick="toggleLang()" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
+      <a href="contato.html" style="background:#fff;color:#07080a;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Vamos conversar</span><span class="t-en">Let's talk</span></a>
+    </nav>
+  </div>
+</header>
+
+<section style="position:relative;padding:92px 24px 60px;overflow:hidden;flex:1;">
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(40,215,247,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(40,215,247,.05) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(circle at 82% 14%,#000,transparent 60%);pointer-events:none;"></div>
+  <div style="max-width:1180px;margin:0 auto;position:relative;z-index:2;">
+    <div style="max-width:780px;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:18px;"><span class="t-pt">Construir com a Finder</span><span class="t-en">Build with Finder</span></div>
+      <h1 style="font-size:clamp(34px,4.4vw,54px);font-weight:800;line-height:1.05;letter-spacing:-1.4px;color:#f6fbfd;"><span class="t-pt">Tem uma pergunta difícil? Vamos investigá-la juntos.</span><span class="t-en">Have a hard question? Let's investigate it together.</span></h1>
+      <p style="color:#9aa7b8;font-size:18px;line-height:1.55;max-width:640px;margin-top:18px;"><span class="t-pt">Conte o contexto, o processo e o que precisa mudar. A gente volta com uma primeira leitura e um caminho possível.</span><span class="t-en">Tell us the context, the process and what needs to change. We'll come back with a first read and a possible path.</span></p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:.85fr 1.15fr;gap:48px;margin-top:56px;align-items:start;" data-cgrid>
+      <div>
+        <h2 style="font-size:22px;font-weight:800;color:#f4f7fb;"><span class="t-pt">Fale direto</span><span class="t-en">Reach us directly</span></h2>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:24px;">
+          <span style="width:40px;height:40px;border-radius:10px;background:#12161d;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#28d7f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg></span>
+          <a href="mailto:contato@finderlab.com.br" style="font-size:15.5px;color:#e6ebf2;">contato@finderlab.com.br</a>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
+          <span style="width:40px;height:40px;border-radius:10px;background:#12161d;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#28d7f7"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V23h-4v-6.6c0-1.57-.03-3.6-2.2-3.6-2.2 0-2.54 1.72-2.54 3.49V23h-4V8z"/></svg></span>
+          <a href="https://www.linkedin.com/company/finderlab" target="_blank" rel="noopener" style="font-size:15.5px;color:#e6ebf2;">linkedin.com/company/finderlab</a>
+        </div>
+        <div style="margin-top:32px;padding:22px;background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:1.5px;color:#28d7f7;margin-bottom:10px;">LGPD BY DESIGN</div>
+          <p style="color:#9aa7b8;font-size:13.5px;line-height:1.55;"><span class="t-pt">Seus dados são tratados com governança e trilha auditável desde o primeiro contato.</span><span class="t-en">Your data is handled with governance and an audit trail from the first contact.</span></p>
+        </div>
+      </div>
+
+      <div style="background:#0d1016;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px;">
+        <div style="display:flex;flex-direction:column;gap:18px;">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Nome</span><span class="t-en">Name</span></label>
+            <input class="fld" id="f_nome" style="width:100%;background:#12161d;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">E-mail</span><span class="t-en">Email</span></label>
+            <input class="fld" type="email" id="f_email" style="width:100%;background:#12161d;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Empresa</span><span class="t-en">Company</span></label>
+            <input class="fld" id="f_empresa" style="width:100%;background:#12161d;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">O que vale a pena investigar?</span><span class="t-en">What is worth investigating?</span></label>
+            <textarea class="fld" rows="4" id="f_msg" style="width:100%;background:#12161d;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;resize:vertical;"></textarea>
+          </div>
+          <button onclick="submitForm()" style="background:#fff;color:#07080a;font-weight:700;padding:15px 30px;border:0;border-radius:999px;font-size:15px;cursor:pointer;box-shadow:0 0 40px rgba(40,215,247,.28);align-self:flex-start;"><span class="t-pt">Enviar mensagem</span><span class="t-en">Send message</span></button>
+          <p style="font-size:12.5px;color:#7c869b;margin-top:2px;"><span class="t-pt">Ao enviar, abrimos seu e-mail já com a mensagem preenchida.</span><span class="t-en">On submit, we'll open your email client with the message filled in.</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer style="background:#08090b;color:#9aa7b8;padding:56px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
+  <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;" data-footer>
+    <div>
+      <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:12px;">FINDER<b style="color:#28d7f7;">LAB</b></div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
+      <p style="max-width:340px;font-size:14.5px;line-height:1.6;"><span class="t-pt">Casa de produtos AI-first do grupo Finder. Arquitetura agêntica, método e governança por baixo de cada decisão.</span><span class="t-en">AI-first product house of the Finder group. Agentic architecture, method and governance under every decision.</span></p>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Navegação</span><span class="t-en">Navigate</span></h4>
+      <a href="research.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Research</a>
+      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
+      <a href="servicos.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+      <a href="sobre.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
+    </div>
+    <div>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></h4>
+      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Anchora</a>
+      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Zelus Health</a>
+      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Themis</a>
+      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Famulus</a>
+    </div>
+  </div>
+  <div style="max-width:1180px;margin:40px auto 0;border-top:1px solid rgba(255,255,255,.1);padding-top:22px;font-size:13px;color:#7c869b;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <span>© 2026 Finder Lab · Applied Intelligence Lab</span>
+    <span>contato@finderlab.com.br</span>
+  </div>
+</footer>
+</div>
+</x-dc>
+
+<script>
+(function(){
+  var root=document.querySelector('[data-lang]');
+  function setLang(l){ if(root)root.setAttribute('data-lang',l); document.documentElement.setAttribute('lang',l==='pt'?'pt-BR':'en');
+    document.querySelectorAll('.langlabel').forEach(function(x){x.textContent=l==='pt'?'EN':'PT';});
+    try{localStorage.setItem('fl_lang',l);}catch(e){} }
+  window.toggleLang=function(){ var c=(root&&root.getAttribute('data-lang'))||'pt'; setLang(c==='pt'?'en':'pt'); };
+  var sv='pt'; try{sv=localStorage.getItem('fl_lang')||'pt';}catch(e){} setLang(sv);
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+    requestAnimationFrame(function(){document.querySelectorAll('[data-reveal]').forEach(function(el){
+      var r=el.getBoundingClientRect(); if(r.top>=(window.innerHeight||800)*0.9){el.classList.add('reveal');io.observe(el);} else {el.classList.add('reveal','in');}
+    });});
+  }
+  var cw=document.getElementById('cw');
+  if(cw){var W={pt:['sistema','produto','operação','decisão','execução'],en:['system','product','operation','decision','execution']},i=0;
+    setInterval(function(){var l=(root&&root.getAttribute('data-lang'))||'pt',a=W[l];i=(i+1)%a.length;cw.style.opacity=0;
+      setTimeout(function(){cw.textContent=a[i];cw.style.opacity=1;},180);},2200);}
+  window.submitForm=function(){var g=function(id){var e=document.getElementById(id);return e?e.value:'';};
+    var n=g('f_nome'),em=g('f_email'),ep=g('f_empresa'),m=g('f_msg');
+    var body='Nome: '+n+'%0D%0AEmpresa: '+ep+'%0D%0AEmail: '+em+'%0D%0A%0D%0A'+encodeURIComponent(m);
+    window.location.href='mailto:contato@finderlab.com.br?subject='+encodeURIComponent('Contato via site - '+(n||''))+'&body='+body; return false;};
+})();
+</script>
+</body>
+</html>

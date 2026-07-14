@@ -1,0 +1,6 @@
+.DS_Store
+Sistemas-prints/
+build_site.py
+*.py
+*.py.bak
+.vercelignore
