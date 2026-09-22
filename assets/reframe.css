@@ -18,8 +18,9 @@ body.editorial{--paper:var(--fl-paper);--ink:var(--fl-ink);--muted:var(--fl-copy
 .editorial .hero h1 em{color:var(--fl-cyan)}
 .editorial .hero p{font-size:17px;line-height:1.65;max-width:450px;color:#d5dee5}
 .editorial .hero-copy .eyebrow{color:#b4c6d4}
-.editorial .button,.editorial .site-nav a[href="contato.html"]{border-radius:999px;background:linear-gradient(105deg,#55c6ec,#92e0f3);color:#071a29}
-.editorial .button:hover,.editorial .site-nav a[href="contato.html"]:hover{background:linear-gradient(105deg,#81d9f2,#a7e8f6)}
+.editorial .button,.editorial .site-nav a[href^="contato.html"]{border-radius:999px;background:linear-gradient(105deg,#55c6ec,#92e0f3);color:#071a29}
+.editorial .site-nav a[href^="contato.html"]{padding:10px 18px}
+.editorial .button:hover,.editorial .site-nav a[href^="contato.html"]:hover{background:linear-gradient(105deg,#81d9f2,#a7e8f6)}
 .editorial .button-outline{background:transparent;border-color:#8ea7b8;color:#fff}
 .editorial .button-outline:hover{background:#1c3042}
 .editorial .hero-device-stage{position:relative;display:flex;align-items:center;justify-content:center;min-height:600px;padding:62px 0 65px 8px}
@@ -76,7 +77,7 @@ body.editorial{--paper:var(--fl-paper);--ink:var(--fl-ink);--muted:var(--fl-copy
 .editorial .product-hero.zelus-feature .section-intro,.editorial .product-hero.edivita-feature .section-intro{grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);align-items:center;gap:clamp(45px,6vw,90px);min-height:620px}
 .editorial .product-hero.zelus-feature .section-intro>div:first-child,.editorial .product-hero.edivita-feature .section-intro>div:first-child{padding:85px 0}
 .editorial .product-hero.zelus-feature h1{font-family:'Playfair Display',Georgia,serif;font-weight:400;letter-spacing:-.055em;line-height:1.08;font-size:clamp(49px,4.8vw,69px);margin:20px 0 23px}
-.editorial .product-hero.zelus-feature h1 span{color:#397fa9}
+.editorial .product-hero.zelus-feature h1 .accent{color:#397fa9}
 .editorial .product-hero.edivita-feature h1{font-size:clamp(64px,7vw,96px);margin:16px 0 19px}
 .editorial .product-hero.edivita-feature .feature-lead{font-family:'Playfair Display',Georgia,serif;font-size:clamp(23px,2.2vw,30px);line-height:1.25;color:var(--fl-ink)!important;max-width:540px;margin-bottom:20px}
 .editorial .product-hero.zelus-feature p,.editorial .product-hero.edivita-feature p{font-size:16px;line-height:1.65;max-width:480px;color:var(--fl-copy)!important}

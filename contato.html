@@ -35,7 +35,7 @@
 
 <header style="position:sticky;top:0;z-index:60;padding:16px 24px 0;">
   <div style="max-width:1180px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:11px 14px 11px 26px;box-shadow:0 12px 40px rgba(0,0,0,.42);">
-    <a class="brand-logo" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R<span class="finder-lab">LAB</span></a>
+    <a class="brand-logo" translate="no" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R<span class="finder-lab">LAB</span></a>
     <input class="navtog" id="navtog" type="checkbox" style="display:none;"/><label class="burger" for="navtog" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.2);cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></label><nav class="nav-links" style="display:flex;align-items:center;gap:26px;">
       <a class="navlink" href="zelus.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Zelus</span><span class="t-en">Zelus</span></a>
       <a class="navlink" href="edi-vita.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">EDI VITA</span><span class="t-en">EDI VITA</span></a>
@@ -67,6 +67,10 @@
           <span style="width:40px;height:40px;border-radius:10px;background:#0b1f3c;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1fb8f5"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V23h-4v-6.6c0-1.57-.03-3.6-2.2-3.6-2.2 0-2.54 1.72-2.54 3.49V23h-4V8z"/></svg></span>
           <a href="https://www.linkedin.com/company/finderlab" target="_blank" rel="noopener" style="font-size:15.5px;color:#e6ebf2;">linkedin.com/company/finderlab</a>
         </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
+          <span style="width:40px;height:40px;border-radius:10px;background:#0b1f3c;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1fb8f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-3.6-.8L3 21l1.8-4.9A8.5 8.5 0 1 1 20 11.5Z"/><path d="M8.5 8.5c.5 2.8 2.2 4.5 5 5"/></svg></span>
+          <a id="whatsapp-contact" href="https://wa.me/551131643783" target="_blank" rel="noopener" style="font-size:15.5px;color:#e6ebf2;"><span class="t-pt">WhatsApp: +55 11 3164-3783 ↗</span><span class="t-en">WhatsApp: +55 11 3164-3783 ↗</span></a>
+        </div>
         <div style="margin-top:32px;padding:22px;background:#0b1f3c;border:1px solid rgba(255,255,255,.08);border-radius:16px;">
           <div style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:1.5px;color:#1fb8f5;margin-bottom:10px;"><span class="t-pt">Contato comercial</span><span class="t-en">Business contact</span></div>
           <p style="color:#9aa7b8;font-size:13.5px;line-height:1.55;"><span class="t-pt">Use este formulário para conversar sobre produtos e parcerias. Não envie exames nem informações de saúde por aqui.</span><span class="t-en">Use this form to discuss products and partnerships. Please do not send exams or health information here.</span></p>
@@ -77,14 +81,25 @@
         <form id="contact-form" style="display:flex;flex-direction:column;gap:18px;">
           <div>
             <label for="f_interesse" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Como podemos ajudar?</span><span class="t-en">How can we help?</span></label>
-            <select class="fld" id="f_interesse" required style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+            <select class="fld" id="f_interesse" name="interesse" required style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
               <option value="">Selecione um assunto / Select a topic</option>
-              <option value="Zelus">Zelus</option>
-              <option value="Zelus Health">Zelus Health</option>
-              <option value="Zelus Pet">Zelus Pet</option>
+              <option value="Zelus">Zelus · escolher produto / choose a product</option>
               <option value="EDI VITA">EDI VITA · gestão condominial</option>
+              <option value="Anchora">Anchora</option>
+              <option value="Themis">Themis</option>
+              <option value="Famulus">Famulus</option>
               <option value="Outros produtos">Outros produtos / Other products</option>
               <option value="Parcerias e projetos">Parcerias e projetos / Partnerships and projects</option>
+            </select>
+          </div>
+          <div id="zelus-product-field" hidden>
+            <label for="f_zelus" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Sobre qual produto Zelus?</span><span class="t-en">Which Zelus product?</span></label>
+            <select class="fld" id="f_zelus" name="produto_zelus" style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+              <option value="">Selecione / Select</option>
+              <option value="Zelus Health">Zelus Health</option>
+              <option value="Zelus Pet">Zelus Pet</option>
+              <option value="Zelus Health e Zelus Pet">Ambos / Both</option>
+              <option value="Zelus - ainda não sei">Ainda não sei / Not sure yet</option>
             </select>
           </div>
           <div>
@@ -114,7 +129,7 @@
 <footer style="background:#010d20;color:#9aa7b8;padding:56px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
   <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;" data-footer>
     <div>
-      <div style="margin-bottom:12px;"><a class="brand-logo" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R<span class="finder-lab">LAB</span></a></div>
+      <div style="margin-bottom:12px;"><a class="brand-logo" translate="no" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R<span class="finder-lab">LAB</span></a></div>
       <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#1fb8f5;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
       <p style="max-width:340px;font-size:14.5px;line-height:1.6;"><span class="t-pt">Tecnologia aplicada a problemas reais. Pesquisa, arquitetura e produtos feitos para funcionar no dia a dia.</span><span class="t-en">Technology applied to real problems. Research, architecture and products built for everyday use.</span></p>
     </div>
@@ -148,7 +163,7 @@
   var root=document.querySelector('[data-lang]');
   function setLang(l){ if(root)root.setAttribute('data-lang',l); document.documentElement.setAttribute('lang',l==='pt'?'pt-BR':'en');
     document.querySelectorAll('.langlabel').forEach(function(x){x.textContent=l==='pt'?'EN':'PT';});
-    try{localStorage.setItem('fl_lang',l);}catch(e){} }
+    try{localStorage.setItem('fl_lang',l);}catch(e){} updateWhatsAppLink(); }
   window.toggleLang=function(){ var c=(root&&root.getAttribute('data-lang'))||'pt'; setLang(c==='pt'?'en':'pt'); };
   var sv='pt'; try{sv=localStorage.getItem('fl_lang')||'pt';}catch(e){} setLang(sv);
   if('IntersectionObserver' in window){
@@ -162,14 +177,42 @@
     setInterval(function(){var l=(root&&root.getAttribute('data-lang'))||'pt',a=W[l];i=(i+1)%a.length;cw.style.opacity=0;
       setTimeout(function(){cw.textContent=a[i];cw.style.opacity=1;},180);},2200);}
   var interest=document.getElementById('f_interesse');
+  var zelusField=document.getElementById('zelus-product-field');
+  var zelusProduct=document.getElementById('f_zelus');
   var selected=new URLSearchParams(window.location.search).get('interesse');
   if(selected==='Outros')selected='Outros produtos';
-  if(interest&&selected&&Array.from(interest.options).some(function(option){return option.value===selected;}))interest.value=selected;
+  if(interest&&selected){
+    if(selected==='Zelus Health'||selected==='Zelus Pet'){
+      interest.value='Zelus';
+      zelusProduct.value=selected;
+    }else if(Array.from(interest.options).some(function(option){return option.value===selected;}))interest.value=selected;
+  }
+  function syncZelusProduct(){
+    var isZelus=interest&&interest.value==='Zelus';
+    if(zelusField)zelusField.hidden=!isZelus;
+    if(zelusProduct){zelusProduct.required=!!isZelus;if(!isZelus)zelusProduct.value='';}
+    updateWhatsAppLink();
+  }
+  function updateWhatsAppLink(){
+    var link=document.getElementById('whatsapp-contact');
+    if(!link)return;
+    var topic=interest&&interest.value;
+    var product=topic==='Zelus'&&zelusProduct&&zelusProduct.value?zelusProduct.value:topic;
+    var lang=(root&&root.getAttribute('data-lang'))||'pt';
+    var message=lang==='en'
+      ? 'Hello, I found Finder Lab through the website and would like to discuss'+(product?' '+product:'')+'.'
+      : 'Olá, vim pelo site da Finder Lab e gostaria de conversar'+(product?' sobre '+product:'')+'.';
+    link.href='https://wa.me/551131643783?text='+encodeURIComponent(message);
+  }
+  if(interest)interest.addEventListener('change',syncZelusProduct);
+  if(zelusProduct)zelusProduct.addEventListener('change',updateWhatsAppLink);
+  syncZelusProduct();
   var form=document.getElementById('contact-form');
   if(form)form.addEventListener('submit',function(event){event.preventDefault();submitForm();});
   window.submitForm=function(){
     var g=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
-    var interesse=g('f_interesse'),n=g('f_nome'),em=g('f_email'),ep=g('f_empresa'),m=g('f_msg');
+    var interesse=g('f_interesse'),produtoZelus=g('f_zelus'),n=g('f_nome'),em=g('f_email'),ep=g('f_empresa'),m=g('f_msg');
+    var assunto=interesse==='Zelus'?produtoZelus:interesse;
     var st=document.getElementById('f_status'),btn=document.getElementById('f_btn');
     var lang=(root&&root.getAttribute('data-lang'))||'pt';
     var T=function(pt,en){return lang==='en'?en:pt;};
@@ -179,10 +222,10 @@
     if(btn){btn.disabled=true;btn.style.opacity=.6;btn.style.cursor='progress';}
     say(T('Enviando...','Sending...'),'#9aa7b8');
     fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body:JSON.stringify({access_key:'583f7bc1-8249-43b1-ad76-6426e076a745',subject:'Novo contato via site Finder Lab — '+interesse,from_name:'Site Finder Lab',name:n,email:em,interesse:interesse,empresa:ep||'-',message:m})
+      body:JSON.stringify({access_key:'583f7bc1-8249-43b1-ad76-6426e076a745',subject:'Novo contato via site Finder Lab — '+assunto,from_name:'Site Finder Lab',name:n,email:em,interesse:interesse,produto_zelus:produtoZelus||'-',empresa:ep||'-',message:m})
     }).then(function(r){return r.json();}).then(function(d){
       if(d&&d.success){say(T('Mensagem enviada! Retornamos em breve.','Message sent! We will get back to you soon.'),'#1fb8f5');
-        ['f_nome','f_email','f_empresa','f_msg'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+        if(form){form.reset();syncZelusProduct();}
       }else{say(T('Não foi possível enviar. Tente de novo ou escreva para contato@finderlab.com.br.','Could not send. Try again or email contato@finderlab.com.br.'),'#ff6b6b');}
     }).catch(function(){say(T('Falha de conexão. Escreva para contato@finderlab.com.br.','Connection failed. Please email contato@finderlab.com.br.'),'#ff6b6b');
     }).finally(function(){if(btn){btn.disabled=false;btn.style.opacity=1;btn.style.cursor='pointer';}});
