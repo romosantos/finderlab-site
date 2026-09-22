@@ -51,6 +51,7 @@ body.editorial{--paper:var(--fl-paper);--ink:var(--fl-ink);--muted:var(--fl-copy
 .editorial .product-card .product-text{position:relative;z-index:1;width:60%;min-height:325px;padding:30px 25px 28px 33px;color:var(--fl-ink)}
 .editorial .product-card .product-text h3{font-family:'Instrument Sans','DM Sans',sans-serif;color:var(--fl-ink);font-size:clamp(31px,3vw,42px);font-weight:600;line-height:1.02;margin:15px 0}
 .editorial .product-card .product-text h3 span{color:#338bb0}
+.editorial .product-card.pet-photo .product-text h3 span{color:#f69010}
 .editorial .product-card .product-text p{color:#314653;font-size:14px;line-height:1.55;max-width:235px;margin-bottom:15px}
 .editorial .product-card .eyebrow{font-size:9px;color:#445967}
 .editorial .product-card .product-media{display:none}
