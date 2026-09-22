@@ -6,3 +6,12 @@
 @media(max-width:620px){.product-card{grid-template-columns:1fr}.product-text{padding:26px}.product-text h3{font-size:35px}.product-text p{font-size:15px;max-width:none}.product-media{height:250px}.product-media .frame{height:275px;max-width:78%}}
 @media(max-width:620px){.product-hero h1{font-size:42px!important}}
 .edivita-media .edivita-logo{width:100%;max-width:560px;max-height:none;height:auto;box-shadow:none;object-fit:contain}.edivita-media .edi-assistant-image{width:auto;max-width:100%;max-height:440px;height:auto;box-shadow:none;object-fit:contain}
+
+/* Deliberate, restrained motion on the editorial pages. */
+.method-mark{overflow:hidden;background:#263437;transform:none;isolation:isolate}
+.method-mark img{width:100%;height:100%;object-fit:cover;transition:transform .9s cubic-bezier(.2,.7,.2,1);filter:saturate(.78) contrast(1.02)}
+@media(hover:hover){.method-mark:hover img{transform:scale(1.055)}.product-card:hover .product-media img{transform:translateY(-5px)}.minor-grid a:hover strong{transform:translateX(4px)}}
+.product-media img,.minor-grid strong{transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+.motion-ready{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.motion-ready.is-visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.motion-ready{opacity:1;transform:none;transition:none}.product-media img,.method-mark img,.minor-grid strong,.button{transition:none!important}}
