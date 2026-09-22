@@ -8,19 +8,19 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   html{scroll-behavior:smooth;}
-  body{font-family:'Instrument Sans','Helvetica Neue',sans-serif;background:#07182b;color:#e6ebf2;-webkit-font-smoothing:antialiased;letter-spacing:-.1px;line-height:1.6;}
-  a{color:#5bb6ec;text-decoration:none;}
-  a:hover{color:#a2dafa;}
+  body{font-family:'Instrument Sans','Helvetica Neue',sans-serif;background:#010d20;color:#e6ebf2;-webkit-font-smoothing:antialiased;letter-spacing:-.1px;line-height:1.6;}
+  a{color:#1fb8f5;text-decoration:none;}
+  a:hover{color:#8be3ff;}
   [data-lang="pt"] .t-en{display:none;}
   [data-lang="en"] .t-pt{display:none;}
   .navlink:hover{color:#fff!important;}
-  .navlink::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:2px;background:#5bb6ec;transition:right .25s ease;}
+  .navlink::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:2px;background:#1fb8f5;transition:right .25s ease;}
   .navlink:hover::after{right:0;}
-  .fld:focus{outline:none;border-color:#5bb6ec!important;box-shadow:0 0 0 3px rgba(80,165,225,.15);}
+  .fld:focus{outline:none;border-color:#1fb8f5!important;box-shadow:0 0 0 3px rgba(80,165,225,.15);}
   .fld::placeholder{color:#6e7787;}
 
   @media(max-width:900px){
-    .nav-links{display:none!important;position:absolute;top:calc(100% + 12px);left:0;right:0;flex-direction:column;align-items:stretch!important;gap:14px!important;background:#0e263e;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;box-shadow:0 24px 54px rgba(0,0,0,.55);z-index:80;}
+    .nav-links{display:none!important;position:absolute;top:calc(100% + 12px);left:0;right:0;flex-direction:column;align-items:stretch!important;gap:14px!important;background:#0a1c37;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;box-shadow:0 24px 54px rgba(0,0,0,.55);z-index:80;}
     .navtog:checked ~ .nav-links{display:flex!important;}
     .burger{display:flex!important;}
   }
@@ -31,18 +31,18 @@
 </head>
 <body class="legacy">
 
-<div data-lang="pt" style="min-height:100vh;overflow-x:clip;background:radial-gradient(1100px 620px at 78% -6%,rgba(80,165,225,.11),transparent 60%),#07182b;display:flex;flex-direction:column;">
+<div data-lang="pt" style="min-height:100vh;overflow-x:clip;background:radial-gradient(1100px 620px at 78% -6%,rgba(80,165,225,.11),transparent 60%),#010d20;display:flex;flex-direction:column;">
 
 <header style="position:sticky;top:0;z-index:60;padding:16px 24px 0;">
   <div style="max-width:1180px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:11px 14px 11px 26px;box-shadow:0 12px 40px rgba(0,0,0,.42);">
-    <a class="brand-logo" href="index.html" aria-label="Finder Lab, início">Finder <span>Lab</span></a>
+    <a class="brand-logo" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R <span class="finder-lab">LAB</span></a>
     <input class="navtog" id="navtog" type="checkbox" style="display:none;"/><label class="burger" for="navtog" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.2);cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></label><nav class="nav-links" style="display:flex;align-items:center;gap:26px;">
       <a class="navlink" href="zelus.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Zelus</span><span class="t-en">Zelus</span></a>
       <a class="navlink" href="edi-vita.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">EDI VITA</span><span class="t-en">EDI VITA</span></a>
       <a class="navlink" href="sistemas.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Produtos</span><span class="t-en">Products</span></a>
       <a class="navlink" href="sobre.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">A Finder</span><span class="t-en">About Finder</span></a>
       <button type="button" onclick="toggleLang()" aria-label="Alternar idioma / Switch language" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
-      <a href="contato.html" style="background:#fff;color:#07182b;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Contato</span><span class="t-en">Contact</span></a>
+      <a href="contato.html" style="background:#fff;color:#010d20;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Contato</span><span class="t-en">Contact</span></a>
     </nav>
   </div>
 </header>
@@ -51,7 +51,7 @@
   <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(80,165,225,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(80,165,225,.05) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(circle at 82% 14%,#000,transparent 60%);pointer-events:none;"></div>
   <div style="max-width:1180px;margin:0 auto;position:relative;z-index:2;">
     <div style="max-width:780px;">
-      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#5bb6ec;margin-bottom:18px;"><span class="t-pt">Construir com a Finder</span><span class="t-en">Build with Finder</span></div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#1fb8f5;margin-bottom:18px;"><span class="t-pt">Construir com a Finder</span><span class="t-en">Build with Finder</span></div>
       <h1 style="font-size:clamp(34px,4.4vw,54px);font-weight:800;line-height:1.05;letter-spacing:-1.4px;color:#f6fbfd;"><span class="t-pt">Vamos conversar sobre o que você precisa.</span><span class="t-en">Let's talk about what you need.</span></h1>
       <p style="color:#9aa7b8;font-size:18px;line-height:1.55;max-width:640px;margin-top:18px;"><span class="t-pt">Escolha o assunto e conte seu contexto. Assim a conversa começa pelo produto ou pela equipe certa.</span><span class="t-en">Choose a topic and share your context so the conversation starts with the right product or team.</span></p>
     </div>
@@ -60,24 +60,24 @@
       <div>
         <h2 style="font-size:22px;font-weight:800;color:#f4f7fb;"><span class="t-pt">Fale direto</span><span class="t-en">Reach us directly</span></h2>
         <div style="display:flex;align-items:center;gap:12px;margin-top:24px;">
-          <span style="width:40px;height:40px;border-radius:10px;background:#102a43;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5bb6ec" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg></span>
+          <span style="width:40px;height:40px;border-radius:10px;background:#0b1f3c;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1fb8f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg></span>
           <a href="mailto:contato@finderlab.com.br" style="font-size:15.5px;color:#e6ebf2;">contato@finderlab.com.br</a>
         </div>
         <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
-          <span style="width:40px;height:40px;border-radius:10px;background:#102a43;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#5bb6ec"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V23h-4v-6.6c0-1.57-.03-3.6-2.2-3.6-2.2 0-2.54 1.72-2.54 3.49V23h-4V8z"/></svg></span>
+          <span style="width:40px;height:40px;border-radius:10px;background:#0b1f3c;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1fb8f5"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V23h-4v-6.6c0-1.57-.03-3.6-2.2-3.6-2.2 0-2.54 1.72-2.54 3.49V23h-4V8z"/></svg></span>
           <a href="https://www.linkedin.com/company/finderlab" target="_blank" rel="noopener" style="font-size:15.5px;color:#e6ebf2;">linkedin.com/company/finderlab</a>
         </div>
-        <div style="margin-top:32px;padding:22px;background:#102a43;border:1px solid rgba(255,255,255,.08);border-radius:16px;">
-          <div style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:1.5px;color:#5bb6ec;margin-bottom:10px;"><span class="t-pt">Contato comercial</span><span class="t-en">Business contact</span></div>
+        <div style="margin-top:32px;padding:22px;background:#0b1f3c;border:1px solid rgba(255,255,255,.08);border-radius:16px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:1.5px;color:#1fb8f5;margin-bottom:10px;"><span class="t-pt">Contato comercial</span><span class="t-en">Business contact</span></div>
           <p style="color:#9aa7b8;font-size:13.5px;line-height:1.55;"><span class="t-pt">Use este formulário para conversar sobre produtos e parcerias. Não envie exames nem informações de saúde por aqui.</span><span class="t-en">Use this form to discuss products and partnerships. Please do not send exams or health information here.</span></p>
         </div>
       </div>
 
-      <div style="background:#0e263e;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px;">
+      <div style="background:#0a1c37;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px;">
         <form id="contact-form" style="display:flex;flex-direction:column;gap:18px;">
           <div>
             <label for="f_interesse" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Como podemos ajudar?</span><span class="t-en">How can we help?</span></label>
-            <select class="fld" id="f_interesse" required style="width:100%;background:#102a43;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+            <select class="fld" id="f_interesse" required style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
               <option value="">Selecione um assunto / Select a topic</option>
               <option value="Zelus">Zelus</option>
               <option value="Zelus Health">Zelus Health</option>
@@ -89,21 +89,21 @@
           </div>
           <div>
             <label for="f_nome" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Nome</span><span class="t-en">Name</span></label>
-            <input class="fld" id="f_nome" name="nome" autocomplete="name" required style="width:100%;background:#102a43;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+            <input class="fld" id="f_nome" name="nome" autocomplete="name" required style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
           </div>
           <div>
             <label for="f_email" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">E-mail</span><span class="t-en">Email</span></label>
-            <input class="fld" type="email" id="f_email" name="email" autocomplete="email" required style="width:100%;background:#102a43;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+            <input class="fld" type="email" id="f_email" name="email" autocomplete="email" required style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
           </div>
           <div>
             <label for="f_empresa" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Empresa</span><span class="t-en">Company</span></label>
-            <input class="fld" id="f_empresa" name="empresa" autocomplete="organization" style="width:100%;background:#102a43;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+            <input class="fld" id="f_empresa" name="empresa" autocomplete="organization" style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
           </div>
           <div>
             <label for="f_msg" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Conte o que você precisa</span><span class="t-en">Tell us what you need</span></label>
-            <textarea class="fld" rows="4" id="f_msg" name="mensagem" required style="width:100%;background:#102a43;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;resize:vertical;"></textarea>
+            <textarea class="fld" rows="4" id="f_msg" name="mensagem" required style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;resize:vertical;"></textarea>
           </div>
-          <button id="f_btn" type="submit" style="background:#fff;color:#07182b;font-weight:700;padding:15px 30px;border:0;border-radius:999px;font-size:15px;cursor:pointer;box-shadow:0 0 40px rgba(80,165,225,.28);align-self:flex-start;"><span class="t-pt">Enviar mensagem</span><span class="t-en">Send message</span></button>
+          <button id="f_btn" type="submit" style="background:#fff;color:#010d20;font-weight:700;padding:15px 30px;border:0;border-radius:999px;font-size:15px;cursor:pointer;box-shadow:0 0 40px rgba(80,165,225,.28);align-self:flex-start;"><span class="t-pt">Enviar mensagem</span><span class="t-en">Send message</span></button>
           <p id="f_status" role="status" aria-live="polite" style="font-size:13.5px;color:#7c869b;margin-top:2px;min-height:19px;"><span class="t-pt">Retornamos após analisar sua mensagem.</span><span class="t-en">We reply after reviewing your message.</span></p>
         </form>
       </div>
@@ -111,11 +111,11 @@
   </div>
 </section>
 
-<footer style="background:#07182b;color:#9aa7b8;padding:56px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
+<footer style="background:#010d20;color:#9aa7b8;padding:56px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
   <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;" data-footer>
     <div>
-      <div style="margin-bottom:12px;"><a class="brand-logo" href="index.html">Finder <span>Lab</span></a></div>
-      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#5bb6ec;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
+      <div style="margin-bottom:12px;"><a class="brand-logo" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R <span class="finder-lab">LAB</span></a></div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#1fb8f5;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
       <p style="max-width:340px;font-size:14.5px;line-height:1.6;"><span class="t-pt">Tecnologia aplicada a problemas reais. Pesquisa, arquitetura e produtos feitos para funcionar no dia a dia.</span><span class="t-en">Technology applied to real problems. Research, architecture and products built for everyday use.</span></p>
     </div>
     <div>
@@ -181,7 +181,7 @@
     fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({access_key:'583f7bc1-8249-43b1-ad76-6426e076a745',subject:'Novo contato via site Finder Lab — '+interesse,from_name:'Site Finder Lab',name:n,email:em,interesse:interesse,empresa:ep||'-',message:m})
     }).then(function(r){return r.json();}).then(function(d){
-      if(d&&d.success){say(T('Mensagem enviada! Retornamos em breve.','Message sent! We will get back to you soon.'),'#5bb6ec');
+      if(d&&d.success){say(T('Mensagem enviada! Retornamos em breve.','Message sent! We will get back to you soon.'),'#1fb8f5');
         ['f_nome','f_email','f_empresa','f_msg'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
       }else{say(T('Não foi possível enviar. Tente de novo ou escreva para contato@finderlab.com.br.','Could not send. Try again or email contato@finderlab.com.br.'),'#ff6b6b');}
     }).catch(function(){say(T('Falha de conexão. Escreva para contato@finderlab.com.br.','Connection failed. Please email contato@finderlab.com.br.'),'#ff6b6b');
