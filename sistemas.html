@@ -30,6 +30,7 @@
     .burger{display:flex!important;}
   }
 </style>
+<link rel="stylesheet" href="assets/responsive.css">
 <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 </head>
 <body>
@@ -40,13 +41,12 @@
   <div style="max-width:1180px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:11px 14px 11px 26px;box-shadow:0 12px 40px rgba(0,0,0,.42);">
     <a href="index.html" style="font-size:20px;font-weight:800;letter-spacing:.4px;color:#fff;">FINDER<b style="color:#28d7f7;">LAB</b></a>
     <input class="navtog" id="navtog" type="checkbox" style="display:none;"/><label class="burger" for="navtog" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.2);cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></label><nav class="nav-links" style="display:flex;align-items:center;gap:26px;">
-      <a class="navlink" href="index.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Início</span><span class="t-en">Home</span></a>
-      <a class="navlink" href="research.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;">Research</a>
-      <a class="navlink" href="sistemas.html" style="position:relative;color:#fff;font-size:14.5px;font-weight:500;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
-      <a class="navlink" href="servicos.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
-      <a class="navlink" href="sobre.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
-      <button onclick="toggleLang()" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
-      <a href="contato.html" style="background:#fff;color:#07080a;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Vamos conversar</span><span class="t-en">Let's talk</span></a>
+      <a class="navlink" href="zelus.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Zelus</span><span class="t-en">Zelus</span></a>
+      <a class="navlink" href="viva.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Viva</span><span class="t-en">Viva</span></a>
+      <a class="navlink" href="sistemas.html" aria-current="page" style="position:relative;color:#fff;font-size:14.5px;font-weight:500;"><span class="t-pt">Produtos</span><span class="t-en">Products</span></a>
+      <a class="navlink" href="sobre.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">A Finder</span><span class="t-en">About Finder</span></a>
+      <button type="button" onclick="toggleLang()" aria-label="Alternar idioma / Switch language" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
+      <a href="contato.html" style="background:#fff;color:#07080a;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Contato</span><span class="t-en">Contact</span></a>
     </nav>
   </div>
 </header>
@@ -57,29 +57,15 @@
   <div style="position:absolute;right:-120px;top:-150px;width:560px;height:560px;background:radial-gradient(circle,rgba(40,215,247,.16),transparent 62%);pointer-events:none;animation:drift 12s ease-in-out infinite;"></div>
   <div style="max-width:900px;margin:0 auto;position:relative;z-index:2;">
     <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:20px;display:inline-flex;align-items:center;gap:9px;"><span style="width:7px;height:7px;border-radius:50%;background:#28d7f7;box-shadow:0 0 12px #28d7f7;animation:blink 2.4s ease-in-out infinite;"></span><span class="t-pt">Sistemas aplicados</span><span class="t-en">Applied systems</span></div>
-    <h1 style="font-size:clamp(38px,5vw,60px);font-weight:800;line-height:1.04;letter-spacing:-1.6px;color:#f6fbfd;"><span class="t-pt">Onde a pesquisa aplicada encontra uma operação real.</span><span class="t-en">Where applied research meets a real operation.</span></h1>
-    <p style="color:#9aa7b8;font-size:19px;line-height:1.55;max-width:720px;margin-top:20px;"><span class="t-pt">São sistemas próprios, em saúde, gestão de pessoas, SST e operações, que transformam hipóteses em uso, evidência e aprendizado.</span><span class="t-en">They are our own systems in health, people management, occupational safety and operations that turn hypotheses into use, evidence and learning.</span></p>
+    <h1 style="font-size:clamp(38px,5vw,60px);font-weight:800;line-height:1.04;letter-spacing:-1.6px;color:#f6fbfd;"><span class="t-pt">Produtos para saúde, gestão e operação.</span><span class="t-en">Products for health, management and operations.</span></h1>
+    <p style="color:#9aa7b8;font-size:19px;line-height:1.55;max-width:720px;margin-top:20px;"><span class="t-pt">Conheça primeiro o ecossistema Zelus e o Viva. Depois, explore as demais soluções construídas pela Finder Lab.</span><span class="t-en">Start with the Zelus ecosystem and Viva. Then explore the other products built by Finder Lab.</span></p>
+    <a href="zelus.html" style="display:inline-block;margin-top:22px;color:#a5edf5;font-weight:700;font-size:15px;"><span class="t-pt">Conhecer o ecossistema Zelus</span><span class="t-en">Explore the Zelus ecosystem</span> →</a>
   </div>
 </section>
 
 <!-- GRID -->
 <section style="padding:20px 24px 100px;">
   <div class="reveal" data-reveal style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;" data-grid>
-
-    <a href="anchora.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
-      <div class="prod-media" style="height:184px;overflow:hidden;background:#08090b;"><img src="assets/img/anc02.png" alt="Anchora" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
-      <div style="padding:26px;display:flex;flex-direction:column;flex:1;">
-        <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">HR TECH</span>
-        <h3 style="font-size:25px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Anchora</h3>
-        <div style="color:#28d7f7;font-weight:700;font-size:14px;margin-bottom:12px;"><span class="t-pt">Performance Management Agêntico</span><span class="t-en">Agentic Performance Management</span></div>
-        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Gestão de performance nativa da era dos agentes: avaliação ancorada em evidência, não em achismo.</span><span class="t-en">Performance management native to the age of agents: evaluation anchored in evidence, not guesswork.</span></p>
-        <div style="display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 0;">
-          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Agentes Colab/Gestor/RH</span><span class="t-en">Collab/Manager/HR agents</span></span>
-          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Ontologia de skills</span><span class="t-en">Skills ontology</span></span>
-        </div>
-        <span style="margin-top:auto;padding-top:20px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
-      </div>
-    </a>
 
     <a href="zelus-health.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
       <div class="prod-media" style="height:184px;overflow:hidden;background:#08090b;"><img src="assets/img/n_hl1.png" alt="Zelus Health" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
@@ -126,6 +112,21 @@
       </div>
     </a>
 
+    <a href="anchora.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
+      <div class="prod-media" style="height:184px;overflow:hidden;background:#08090b;"><img src="assets/img/anc02.png" alt="Anchora" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
+      <div style="padding:26px;display:flex;flex-direction:column;flex:1;">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#28d7f7;">HR TECH</span>
+        <h3 style="font-size:25px;font-weight:800;color:#f2f6fb;margin:12px 0 3px;">Anchora</h3>
+        <div style="color:#28d7f7;font-weight:700;font-size:14px;margin-bottom:12px;"><span class="t-pt">Performance Management Agêntico</span><span class="t-en">Agentic Performance Management</span></div>
+        <p style="color:#9aa7b8;font-size:14.5px;line-height:1.55;"><span class="t-pt">Gestão de performance nativa da era dos agentes: avaliação ancorada em evidência, não em achismo.</span><span class="t-en">Performance management native to the age of agents: evaluation anchored in evidence, not guesswork.</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 0;">
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Agentes Colab/Gestor/RH</span><span class="t-en">Collab/Manager/HR agents</span></span>
+          <span style="font-family:'DM Mono',monospace;font-size:9.5px;color:#c3d0d6;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 10px;"><span class="t-pt">Ontologia de skills</span><span class="t-en">Skills ontology</span></span>
+        </div>
+        <span style="margin-top:auto;padding-top:20px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
+      </div>
+    </a>
+
     <a href="themis.html" class="prod-card" style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden;background:#12161d;transition:transform .3s,box-shadow .3s,border-color .3s;color:inherit;">
       <div class="prod-media" style="height:184px;overflow:hidden;background:#08090b;"><img src="assets/img/themis-painel.png" alt="Themis" style="width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease;"></div>
       <div style="padding:26px;display:flex;flex-direction:column;flex:1;">
@@ -155,7 +156,6 @@
         <span style="margin-top:auto;padding-top:20px;color:#28d7f7;font-weight:700;font-size:14px;"><span class="t-pt">Ver produto</span><span class="t-en">See product</span> →</span>
       </div>
     </a>
-
   </div>
 </section>
 
@@ -196,7 +196,6 @@
   </div>
 </footer>
 </div>
-</x-dc>
 
 <script>
 (function(){
