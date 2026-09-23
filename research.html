@@ -34,21 +34,21 @@
 <link rel="stylesheet" href="assets/responsive.css">
 <link rel="stylesheet" href="assets/brand.css"><link rel="stylesheet" href="assets/reframe.css?v=20260923nav">
 <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/site-shell.css?v=20260923b">
 </head>
 <body class="legacy page-research">
 
 <div data-lang="pt" style="min-height:100vh;overflow-x:clip;">
 
-<header style="position:sticky;top:0;z-index:60;padding:16px 24px 0;">
-  <div style="max-width:1180px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:11px 14px 11px 26px;box-shadow:0 12px 40px rgba(0,0,0,.42);">
-    <a class="brand-logo" translate="no" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R<span class="finder-lab">LAB</span></a>
-    <input class="navtog" id="navtog" type="checkbox" style="display:none;"/><label class="burger" for="navtog" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.2);cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></label><nav class="nav-links" style="display:flex;align-items:center;gap:26px;">
-      <a class="navlink" href="zelus.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Zelus</span><span class="t-en">Zelus</span></a>
-      <a class="navlink" href="edi-vita.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">EDI VITA</span><span class="t-en">EDI VITA</span></a>
-      <a class="navlink" href="sistemas.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Produtos</span><span class="t-en">Products</span></a>
-      <a class="navlink" href="sobre.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">A Finder</span><span class="t-en">About Finder</span></a>
-      <button type="button" onclick="toggleLang()" aria-label="Alternar idioma / Switch language" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
-      <a href="contato.html" style="background:#fff;color:#010d20;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Contato</span><span class="t-en">Contact</span></a>
+<header class="site-head site-shell-head">
+  <div class="site-shell-wrap site-shell-row">
+    <a class="logo" translate="no" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R<span class="finder-lab">LAB</span></a>
+    <input class="site-shell-toggle" id="menu" type="checkbox" aria-label="Abrir menu de navegação">
+    <label class="site-shell-menu-button" for="menu"><span class="site-shell-visually-hidden">Menu</span></label>
+    <nav class="site-shell-nav site-nav" aria-label="Principal" id="primary-navigation">
+      <a href="zelus.html">Zelus</a><a href="edi-vita.html">EDI VITA</a><a href="sistemas.html"><span class="t-pt">Produtos</span><span class="t-en">Products</span></a><a href="sobre.html"><span class="t-pt">A Finder</span><span class="t-en">About Finder</span></a>
+      <button class="lang-button" id="lang" type="button" onclick="toggleLang()" aria-label="Alternar idioma / Switch language"><span class="langlabel">EN</span></button>
+      <a class="site-shell-contact-button" href="contato.html"><span class="t-pt">Contato</span><span class="t-en">Contact</span></a>
     </nav>
   </div>
 </header>
@@ -181,29 +181,45 @@
   </div>
 </section>
 
-<footer style="background:#010d20;color:#9aa7b8;padding:56px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
-  <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;" data-footer>
-    <div>
-      <div style="margin-bottom:12px;"><a class="brand-logo" translate="no" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R<span class="finder-lab">LAB</span></a></div>
-      <div class="mono" style="font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#1fb8f5;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
-      <p style="max-width:340px;font-size:14.5px;line-height:1.6;"><span class="t-pt">Pesquisamos, validamos e aplicamos inteligência artificial em sistemas que resolvem problemas reais.</span><span class="t-en">We research, validate and apply artificial intelligence in systems that solve real problems.</span></p>
+<footer class="site-shell-footer">
+  <div class="site-shell-wrap">
+    <div class="site-shell-footer-grid">
+      <div class="site-shell-footer-brand">
+        <a class="logo" translate="no" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R<span class="finder-lab">LAB</span></a>
+        <p class="site-shell-overline">Agentic Architecture Product House</p>
+        <p><span class="t-pt">Tecnologia aplicada a problemas reais. Pesquisa, arquitetura e produtos feitos para funcionar no dia a dia.</span><span class="t-en">Technology applied to real problems. Research, architecture and products built for everyday use.</span></p>
+      </div>
+      <nav aria-label="Navegação do rodapé">
+        <h2><span class="t-pt">Navegação</span><span class="t-en">Navigation</span></h2>
+        <a href="sobre.html"><span class="t-pt">A Finder</span><span class="t-en">About Finder</span></a>
+        <a href="research.html">Research</a>
+        <a href="servicos.html"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+        <a href="sistemas.html"><span class="t-pt">Todos os produtos</span><span class="t-en">All products</span></a>
+      </nav>
+      <nav aria-label="Produtos Finder Lab">
+        <h2><span class="t-pt">Produtos</span><span class="t-en">Products</span></h2>
+        <a href="zelus-health.html">Zelus Health</a>
+        <a href="zelus-pet.html">Zelus Pet</a>
+        <a href="zelus.html"><span class="t-pt">Ecossistema Zelus</span><span class="t-en">Zelus ecosystem</span></a>
+        <a href="edi-vita.html">EDI VITA</a>
+        <a href="anchora.html">Anchora</a>
+        <a href="themis.html">Themis</a>
+        <a href="famulus.html">Famulus</a>
+      </nav>
+      <div class="site-shell-footer-contact">
+        <h2><span class="t-pt">Contato</span><span class="t-en">Contact</span></h2>
+        <address>
+          <a href="mailto:contato@finderlab.com.br">contato@finderlab.com.br</a>
+          <a href="https://wa.me/551131643783" target="_blank" rel="noopener noreferrer">WhatsApp · +55 11 3164-3783 ↗</a>
+          <a href="https://www.linkedin.com/company/finderlab/" target="_blank" rel="noopener noreferrer">LinkedIn · Finder Lab ↗</a>
+        </address>
+        <a class="site-shell-footer-cta" href="contato.html"><span class="t-pt">Falar com a Finder</span><span class="t-en">Talk to Finder</span> ↗</a>
+      </div>
     </div>
-    <div>
-      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Explorar</span><span class="t-en">Explore</span></h4>
-      <a href="research.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Research</a>
-      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
-      <a href="servicos.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
+    <div class="site-shell-footer-bottom">
+      <span>© 2026 Finder Lab · Agentic Architecture Product House</span>
+      <a href="index.html"><span class="t-pt">Voltar ao início</span><span class="t-en">Back to home</span> ↑</a>
     </div>
-    <div>
-      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Contato</span><span class="t-en">Contact</span></h4>
-      <a href="sobre.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
-      <a href="contato.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Construir com a Finder</span><span class="t-en">Build with Finder</span></a>
-      <a href="mailto:contato@finderlab.com.br" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">contato@finderlab.com.br</a>
-    </div>
-  </div>
-  <div style="max-width:1180px;margin:40px auto 0;border-top:1px solid rgba(255,255,255,.1);padding-top:22px;font-size:13px;color:#7c869b;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-    <span>© 2026 Finder Lab · Applied Intelligence Lab</span>
-    <span>Building Living Intelligence</span>
   </div>
 </footer>
 </div>

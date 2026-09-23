@@ -1,0 +1,53 @@
+/* Shared navigation and contact footer for every public Finder Lab page. */
+html{scroll-padding-top:100px}
+body.editorial,body.legacy{padding-top:84px}
+.site-shell-wrap{width:min(100%,1232px);margin:0 auto;padding:0 24px}
+.site-shell-head{position:fixed!important;inset:0 0 auto;z-index:1000!important;height:84px;background:#010d20!important;border-bottom:1px solid #244466!important;color:#f6faff;font-family:'Instrument Sans','DM Sans',sans-serif}
+.site-shell-row{height:100%;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.site-shell-head .logo{flex:none;font-size:23px!important;text-decoration:none}
+.site-shell-nav{display:flex;align-items:center;gap:clamp(16px,2vw,30px);margin-left:auto}
+.site-shell-nav>a:not(.site-shell-contact-button){font:500 12px 'DM Mono',monospace;letter-spacing:.04em;text-transform:uppercase;color:#cbd5e1;text-decoration:none;white-space:nowrap}
+.site-shell-nav .lang-button{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:40px;padding:0 10px;border:1px solid #576b82;border-radius:5px;background:transparent;color:#fff;font:600 12px 'DM Mono',monospace;cursor:pointer}
+.site-shell-nav .lang-button:hover{border-color:#74cffa;background:#123150}
+body .site-shell-head .site-shell-nav a.site-shell-contact-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 25px;border:0;border-radius:5px!important;background:linear-gradient(105deg,#1478f2,#29bdf2)!important;color:#06162e!important;font:700 15px 'Instrument Sans','DM Sans',sans-serif;text-decoration:none;text-transform:none!important;white-space:nowrap}
+body .site-shell-head .site-shell-nav a.site-shell-contact-button:hover{background:linear-gradient(105deg,#388df5,#5bd3f6)!important;color:#06162e!important}
+.site-shell-toggle,.site-shell-menu-button{display:none}
+.site-shell-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+.site-shell-footer{background:#010d20!important;color:#bbcbdc!important;border-top:1px solid #244466!important;padding:64px 0 28px!important;font-family:'Instrument Sans','DM Sans',sans-serif}
+.site-shell-footer-grid{display:grid;grid-template-columns:minmax(250px,1.5fr) repeat(2,minmax(135px,.8fr)) minmax(220px,1.15fr);gap:clamp(28px,4vw,64px)}
+.site-shell-footer .logo{display:inline-flex;font-size:23px!important;text-decoration:none}
+.site-shell-footer-brand p:not(.site-shell-overline){max-width:320px;margin:14px 0 0;color:#aebfd0;font-size:14px;line-height:1.65}
+.site-shell-overline{margin:14px 0 0;color:#65caef;font:500 11px 'DM Mono',monospace;letter-spacing:.17em;text-transform:uppercase}
+.site-shell-footer h2{margin:2px 0 19px;color:#fff!important;font:600 12px 'DM Mono',monospace!important;letter-spacing:.11em!important;text-transform:uppercase}
+.site-shell-footer nav a,.site-shell-footer address a{display:block;width:fit-content;margin:0 0 11px;color:#bbcbdc!important;font-size:14px;line-height:1.45;text-decoration:none}
+.site-shell-footer nav a:hover,.site-shell-footer address a:hover,.site-shell-footer-bottom a:hover{color:#8be3ff!important}
+.site-shell-footer address{font-style:normal}
+.site-shell-footer-contact address a:first-child{overflow-wrap:anywhere}
+.site-shell-footer .site-shell-footer-cta{display:inline-flex;margin-top:13px;padding-bottom:5px;border-bottom:1px solid #45c7fa;color:#8be3ff!important;font-size:14px;font-weight:700;text-decoration:none}
+.site-shell-footer-bottom{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:50px;padding-top:22px;border-top:1px solid #244466;color:#8ea3b6;font-size:12px}
+.site-shell-footer-bottom a{color:#a9c0d4;text-decoration:none}
+
+@media(max-width:900px){
+  body.editorial,body.legacy{padding-top:72px}
+  html{scroll-padding-top:88px}
+  .site-shell-head{height:72px}
+  .site-shell-head .logo{font-size:21px!important}
+  .site-shell-toggle{display:block;position:absolute;width:1px;height:1px;right:32px;opacity:0}
+  .site-shell-menu-button{position:relative;display:grid;place-items:center;flex:none;width:42px;height:42px;margin-left:auto;border:1px solid #576b82;border-radius:5px;cursor:pointer}
+  .site-shell-menu-button::before{content:"";display:block;width:19px;height:12px;border-top:2px solid #fff;border-bottom:2px solid #fff}
+  .site-shell-menu-button::after{content:"";position:absolute;width:19px;height:2px;background:#fff}
+  .site-shell-toggle:focus-visible+.site-shell-menu-button{outline:2px solid #45c7fa;outline-offset:3px}
+  .site-shell-nav{display:none;position:absolute;top:100%;left:0;right:0;max-height:calc(100vh - 72px);overflow:auto;margin:0;padding:22px 24px 26px;background:#06162e;border-bottom:1px solid #244466;box-shadow:0 20px 36px #010812a6;flex-direction:column;align-items:stretch;gap:18px}
+  .site-shell-toggle:checked~.site-shell-nav{display:flex}
+  .site-shell-nav>a:not(.site-shell-contact-button){width:fit-content;font-size:13px}
+  .site-shell-nav .lang-button{width:fit-content}
+  .site-shell-nav .site-shell-contact-button{width:100%}
+  .site-shell-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:40px}
+}
+@media(max-width:620px){
+  .site-shell-wrap{padding:0 20px}
+  .site-shell-footer{padding:48px 0 24px!important}
+  .site-shell-footer-grid{grid-template-columns:1fr;gap:32px}
+  .site-shell-footer-bottom{margin-top:34px}
+}
