@@ -8,102 +8,130 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   html{scroll-behavior:smooth;}
-  body{font-family:'Instrument Sans','Helvetica Neue',sans-serif;background:#07080a;color:#e6ebf2;-webkit-font-smoothing:antialiased;letter-spacing:-.1px;line-height:1.6;}
-  a{color:#28d7f7;text-decoration:none;}
-  a:hover{color:#74e7ff;}
+  body{font-family:'Instrument Sans','Helvetica Neue',sans-serif;background:#010d20;color:#e6ebf2;-webkit-font-smoothing:antialiased;letter-spacing:-.1px;line-height:1.6;}
+  a{color:#1fb8f5;text-decoration:none;}
+  a:hover{color:#8be3ff;}
   [data-lang="pt"] .t-en{display:none;}
   [data-lang="en"] .t-pt{display:none;}
   .navlink:hover{color:#fff!important;}
-  .navlink::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:2px;background:#28d7f7;transition:right .25s ease;}
+  .navlink::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:2px;background:#1fb8f5;transition:right .25s ease;}
   .navlink:hover::after{right:0;}
-  .fld:focus{outline:none;border-color:#28d7f7!important;box-shadow:0 0 0 3px rgba(40,215,247,.15);}
+  .fld:focus{outline:none;border-color:#1fb8f5!important;box-shadow:0 0 0 3px rgba(80,165,225,.15);}
   .fld::placeholder{color:#6e7787;}
 
   @media(max-width:900px){
-    .nav-links{display:none!important;position:absolute;top:calc(100% + 12px);left:0;right:0;flex-direction:column;align-items:stretch!important;gap:14px!important;background:#0d1016;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;box-shadow:0 24px 54px rgba(0,0,0,.55);z-index:80;}
+    .nav-links{display:none!important;position:absolute;top:calc(100% + 12px);left:0;right:0;flex-direction:column;align-items:stretch!important;gap:14px!important;background:#0a1c37;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;box-shadow:0 24px 54px rgba(0,0,0,.55);z-index:80;}
     .navtog:checked ~ .nav-links{display:flex!important;}
     .burger{display:flex!important;}
   }
 </style>
+<link rel="stylesheet" href="assets/responsive.css">
+<link rel="stylesheet" href="assets/brand.css"><link rel="stylesheet" href="assets/reframe.css?v=20260923nav">
 <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 </head>
-<body>
+<body class="legacy page-contact">
 
-<div data-lang="pt" style="min-height:100vh;overflow-x:clip;background:radial-gradient(1100px 620px at 78% -6%,rgba(40,215,247,.11),transparent 60%),#07080a;display:flex;flex-direction:column;">
+<div data-lang="pt" style="min-height:100vh;overflow-x:clip;background:radial-gradient(1100px 620px at 78% -6%,rgba(80,165,225,.11),transparent 60%),#010d20;display:flex;flex-direction:column;">
 
 <header style="position:sticky;top:0;z-index:60;padding:16px 24px 0;">
   <div style="max-width:1180px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:11px 14px 11px 26px;box-shadow:0 12px 40px rgba(0,0,0,.42);">
-    <a href="index.html" style="font-size:20px;font-weight:800;letter-spacing:.4px;color:#fff;">FINDER<b style="color:#28d7f7;">LAB</b></a>
+    <a class="brand-logo" translate="no" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R<span class="finder-lab">LAB</span></a>
     <input class="navtog" id="navtog" type="checkbox" style="display:none;"/><label class="burger" for="navtog" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.2);cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></label><nav class="nav-links" style="display:flex;align-items:center;gap:26px;">
-      <a class="navlink" href="index.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Início</span><span class="t-en">Home</span></a>
-      <a class="navlink" href="research.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;">Research</a>
-      <a class="navlink" href="sistemas.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></a>
-      <a class="navlink" href="servicos.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Capacidades</span><span class="t-en">Capabilities</span></a>
-      <a class="navlink" href="sobre.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
-      <button onclick="toggleLang()" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
-      <a href="contato.html" style="background:#fff;color:#07080a;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Vamos conversar</span><span class="t-en">Let's talk</span></a>
+      <a class="navlink" href="zelus.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Zelus</span><span class="t-en">Zelus</span></a>
+      <a class="navlink" href="edi-vita.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">EDI VITA</span><span class="t-en">EDI VITA</span></a>
+      <a class="navlink" href="sistemas.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">Produtos</span><span class="t-en">Products</span></a>
+      <a class="navlink" href="sobre.html" style="position:relative;color:#c2cbd9;font-size:14.5px;font-weight:500;"><span class="t-pt">A Finder</span><span class="t-en">About Finder</span></a>
+      <button type="button" onclick="toggleLang()" aria-label="Alternar idioma / Switch language" style="border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'DM Mono',monospace;"><span class="langlabel">EN</span></button>
+      <a href="contato.html" style="background:#fff;color:#010d20;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14px;"><span class="t-pt">Contato</span><span class="t-en">Contact</span></a>
     </nav>
   </div>
 </header>
 
 <section style="position:relative;padding:92px 24px 60px;overflow:hidden;flex:1;">
-  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(40,215,247,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(40,215,247,.05) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(circle at 82% 14%,#000,transparent 60%);pointer-events:none;"></div>
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(80,165,225,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(80,165,225,.05) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(circle at 82% 14%,#000,transparent 60%);pointer-events:none;"></div>
   <div style="max-width:1180px;margin:0 auto;position:relative;z-index:2;">
     <div style="max-width:780px;">
-      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;margin-bottom:18px;"><span class="t-pt">Construir com a Finder</span><span class="t-en">Build with Finder</span></div>
-      <h1 style="font-size:clamp(34px,4.4vw,54px);font-weight:800;line-height:1.05;letter-spacing:-1.4px;color:#f6fbfd;"><span class="t-pt">Tem uma pergunta difícil? Vamos investigá-la juntos.</span><span class="t-en">Have a hard question? Let's investigate it together.</span></h1>
-      <p style="color:#9aa7b8;font-size:18px;line-height:1.55;max-width:640px;margin-top:18px;"><span class="t-pt">Conte o contexto, o processo e o que precisa mudar. A gente volta com uma primeira leitura e um caminho possível.</span><span class="t-en">Tell us the context, the process and what needs to change. We'll come back with a first read and a possible path.</span></p>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#1fb8f5;margin-bottom:18px;"><span class="t-pt">Construir com a Finder</span><span class="t-en">Build with Finder</span></div>
+      <h1 style="font-size:clamp(34px,4.4vw,54px);font-weight:800;line-height:1.05;letter-spacing:-1.4px;color:#f6fbfd;"><span class="t-pt">Vamos conversar sobre o que você precisa.</span><span class="t-en">Let's talk about what you need.</span></h1>
+      <p style="color:#9aa7b8;font-size:18px;line-height:1.55;max-width:640px;margin-top:18px;"><span class="t-pt">Escolha o assunto e conte seu contexto. Assim a conversa começa pelo produto ou pela equipe certa.</span><span class="t-en">Choose a topic and share your context so the conversation starts with the right product or team.</span></p>
     </div>
 
     <div style="display:grid;grid-template-columns:.85fr 1.15fr;gap:48px;margin-top:56px;align-items:start;" data-cgrid>
       <div>
         <h2 style="font-size:22px;font-weight:800;color:#f4f7fb;"><span class="t-pt">Fale direto</span><span class="t-en">Reach us directly</span></h2>
         <div style="display:flex;align-items:center;gap:12px;margin-top:24px;">
-          <span style="width:40px;height:40px;border-radius:10px;background:#12161d;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#28d7f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg></span>
+          <span style="width:40px;height:40px;border-radius:10px;background:#0b1f3c;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1fb8f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg></span>
           <a href="mailto:contato@finderlab.com.br" style="font-size:15.5px;color:#e6ebf2;">contato@finderlab.com.br</a>
         </div>
         <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
-          <span style="width:40px;height:40px;border-radius:10px;background:#12161d;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#28d7f7"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V23h-4v-6.6c0-1.57-.03-3.6-2.2-3.6-2.2 0-2.54 1.72-2.54 3.49V23h-4V8z"/></svg></span>
+          <span style="width:40px;height:40px;border-radius:10px;background:#0b1f3c;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1fb8f5"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V23h-4v-6.6c0-1.57-.03-3.6-2.2-3.6-2.2 0-2.54 1.72-2.54 3.49V23h-4V8z"/></svg></span>
           <a href="https://www.linkedin.com/company/finderlab" target="_blank" rel="noopener" style="font-size:15.5px;color:#e6ebf2;">linkedin.com/company/finderlab</a>
         </div>
-        <div style="margin-top:32px;padding:22px;background:#12161d;border:1px solid rgba(255,255,255,.08);border-radius:16px;">
-          <div style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:1.5px;color:#28d7f7;margin-bottom:10px;">LGPD BY DESIGN</div>
-          <p style="color:#9aa7b8;font-size:13.5px;line-height:1.55;"><span class="t-pt">Seus dados são tratados com governança e trilha auditável desde o primeiro contato.</span><span class="t-en">Your data is handled with governance and an audit trail from the first contact.</span></p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
+          <span style="width:40px;height:40px;border-radius:10px;background:#0b1f3c;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1fb8f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-3.6-.8L3 21l1.8-4.9A8.5 8.5 0 1 1 20 11.5Z"/><path d="M8.5 8.5c.5 2.8 2.2 4.5 5 5"/></svg></span>
+          <a id="whatsapp-contact" href="https://wa.me/551131643783" target="_blank" rel="noopener" style="font-size:15.5px;color:#e6ebf2;"><span class="t-pt">WhatsApp: +55 11 3164-3783 ↗</span><span class="t-en">WhatsApp: +55 11 3164-3783 ↗</span></a>
+        </div>
+        <div style="margin-top:32px;padding:22px;background:#0b1f3c;border:1px solid rgba(255,255,255,.08);border-radius:16px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:1.5px;color:#1fb8f5;margin-bottom:10px;"><span class="t-pt">Contato comercial</span><span class="t-en">Business contact</span></div>
+          <p style="color:#9aa7b8;font-size:13.5px;line-height:1.55;"><span class="t-pt">Use este formulário para conversar sobre produtos e parcerias. Não envie exames nem informações de saúde por aqui.</span><span class="t-en">Use this form to discuss products and partnerships. Please do not send exams or health information here.</span></p>
         </div>
       </div>
 
-      <div style="background:#0d1016;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px;">
-        <div style="display:flex;flex-direction:column;gap:18px;">
+      <div style="background:#0a1c37;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px;">
+        <form id="contact-form" style="display:flex;flex-direction:column;gap:18px;">
           <div>
-            <label style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Nome</span><span class="t-en">Name</span></label>
-            <input class="fld" id="f_nome" style="width:100%;background:#12161d;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+            <label for="f_interesse" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Como podemos ajudar?</span><span class="t-en">How can we help?</span></label>
+            <select class="fld" id="f_interesse" name="interesse" required style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+              <option value="">Selecione um assunto / Select a topic</option>
+              <option value="Zelus">Zelus · escolher produto / choose a product</option>
+              <option value="EDI VITA">EDI VITA · gestão condominial</option>
+              <option value="Anchora">Anchora</option>
+              <option value="Themis">Themis</option>
+              <option value="Famulus">Famulus</option>
+              <option value="Outros produtos">Outros produtos / Other products</option>
+              <option value="Parcerias e projetos">Parcerias e projetos / Partnerships and projects</option>
+            </select>
+          </div>
+          <div id="zelus-product-field" hidden>
+            <label for="f_zelus" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Sobre qual produto Zelus?</span><span class="t-en">Which Zelus product?</span></label>
+            <select class="fld" id="f_zelus" name="produto_zelus" style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+              <option value="">Selecione / Select</option>
+              <option value="Zelus Health">Zelus Health</option>
+              <option value="Zelus Pet">Zelus Pet</option>
+              <option value="Zelus Health e Zelus Pet">Ambos / Both</option>
+              <option value="Zelus - ainda não sei">Ainda não sei / Not sure yet</option>
+            </select>
           </div>
           <div>
-            <label style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">E-mail</span><span class="t-en">Email</span></label>
-            <input class="fld" type="email" id="f_email" style="width:100%;background:#12161d;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+            <label for="f_nome" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Nome</span><span class="t-en">Name</span></label>
+            <input class="fld" id="f_nome" name="nome" autocomplete="name" required style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
           </div>
           <div>
-            <label style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Empresa</span><span class="t-en">Company</span></label>
-            <input class="fld" id="f_empresa" style="width:100%;background:#12161d;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
+            <label for="f_email" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">E-mail</span><span class="t-en">Email</span></label>
+            <input class="fld" type="email" id="f_email" name="email" autocomplete="email" required style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
           </div>
           <div>
-            <label style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">O que vale a pena investigar?</span><span class="t-en">What is worth investigating?</span></label>
-            <textarea class="fld" rows="4" id="f_msg" style="width:100%;background:#12161d;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;resize:vertical;"></textarea>
+            <label for="f_empresa" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Empresa</span><span class="t-en">Company</span></label>
+            <input class="fld" id="f_empresa" name="empresa" autocomplete="organization" style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;">
           </div>
-          <button id="f_btn" onclick="submitForm()" style="background:#fff;color:#07080a;font-weight:700;padding:15px 30px;border:0;border-radius:999px;font-size:15px;cursor:pointer;box-shadow:0 0 40px rgba(40,215,247,.28);align-self:flex-start;"><span class="t-pt">Enviar mensagem</span><span class="t-en">Send message</span></button>
-          <p id="f_status" style="font-size:13.5px;color:#7c869b;margin-top:2px;min-height:19px;"><span class="t-pt">Resposta em até 1 dia útil.</span><span class="t-en">We reply within one business day.</span></p>
-        </div>
+          <div>
+            <label for="f_msg" style="display:block;font-size:13px;font-weight:600;color:#c2cbd9;margin-bottom:7px;"><span class="t-pt">Conte o que você precisa</span><span class="t-en">Tell us what you need</span></label>
+            <textarea class="fld" rows="4" id="f_msg" name="mensagem" required style="width:100%;background:#0b1f3c;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 15px;font-family:inherit;font-size:15px;color:#e6ebf2;resize:vertical;"></textarea>
+          </div>
+          <button id="f_btn" type="submit" style="background:#fff;color:#010d20;font-weight:700;padding:15px 30px;border:0;border-radius:999px;font-size:15px;cursor:pointer;box-shadow:0 0 40px rgba(80,165,225,.28);align-self:flex-start;"><span class="t-pt">Enviar mensagem</span><span class="t-en">Send message</span></button>
+          <p id="f_status" role="status" aria-live="polite" style="font-size:13.5px;color:#7c869b;margin-top:2px;min-height:19px;"><span class="t-pt">Retornamos após analisar sua mensagem.</span><span class="t-en">We reply after reviewing your message.</span></p>
+        </form>
       </div>
     </div>
   </div>
 </section>
 
-<footer style="background:#08090b;color:#9aa7b8;padding:56px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
+<footer style="background:#010d20;color:#9aa7b8;padding:56px 24px 30px;border-top:1px solid rgba(255,255,255,.08);">
   <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;" data-footer>
     <div>
-      <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:12px;">FINDER<b style="color:#28d7f7;">LAB</b></div>
-      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#28d7f7;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
-      <p style="max-width:340px;font-size:14.5px;line-height:1.6;"><span class="t-pt">Casa de produtos AI-first do grupo Finder. Arquitetura agêntica, método e governança por baixo de cada decisão.</span><span class="t-en">AI-first product house of the Finder group. Agentic architecture, method and governance under every decision.</span></p>
+      <div style="margin-bottom:12px;"><a class="brand-logo" translate="no" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R<span class="finder-lab">LAB</span></a></div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#1fb8f5;font-weight:500;margin-bottom:14px;">Applied Intelligence Lab</div>
+      <p style="max-width:340px;font-size:14.5px;line-height:1.6;"><span class="t-pt">Tecnologia aplicada a problemas reais. Pesquisa, arquitetura e produtos feitos para funcionar no dia a dia.</span><span class="t-en">Technology applied to real problems. Research, architecture and products built for everyday use.</span></p>
     </div>
     <div>
       <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Navegação</span><span class="t-en">Navigate</span></h4>
@@ -113,11 +141,14 @@
       <a href="sobre.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;"><span class="t-pt">Sobre</span><span class="t-en">About</span></a>
     </div>
     <div>
-      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Sistemas</span><span class="t-en">Systems</span></h4>
-      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Anchora</a>
-      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Zelus Health</a>
-      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Themis</a>
-      <a href="sistemas.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Famulus</a>
+      <h4 style="color:#fff;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;"><span class="t-pt">Produtos</span><span class="t-en">Products</span></h4>
+      <a href="zelus.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Zelus</a>
+      <a href="zelus-health.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Zelus Health</a>
+      <a href="zelus-pet.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Zelus Pet</a>
+      <a href="edi-vita.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">EDI VITA</a>
+      <a href="anchora.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Anchora</a>
+      <a href="themis.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Themis</a>
+      <a href="famulus.html" style="display:block;color:#9aa7b8;font-size:14.5px;margin-bottom:9px;">Famulus</a>
     </div>
   </div>
   <div style="max-width:1180px;margin:40px auto 0;border-top:1px solid rgba(255,255,255,.1);padding-top:22px;font-size:13px;color:#7c869b;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
@@ -126,14 +157,13 @@
   </div>
 </footer>
 </div>
-</x-dc>
 
 <script>
 (function(){
   var root=document.querySelector('[data-lang]');
   function setLang(l){ if(root)root.setAttribute('data-lang',l); document.documentElement.setAttribute('lang',l==='pt'?'pt-BR':'en');
     document.querySelectorAll('.langlabel').forEach(function(x){x.textContent=l==='pt'?'EN':'PT';});
-    try{localStorage.setItem('fl_lang',l);}catch(e){} }
+    try{localStorage.setItem('fl_lang',l);}catch(e){} updateWhatsAppLink(); }
   window.toggleLang=function(){ var c=(root&&root.getAttribute('data-lang'))||'pt'; setLang(c==='pt'?'en':'pt'); };
   var sv='pt'; try{sv=localStorage.getItem('fl_lang')||'pt';}catch(e){} setLang(sv);
   if('IntersectionObserver' in window){
@@ -146,22 +176,56 @@
   if(cw){var W={pt:['sistema','produto','operação','decisão','execução'],en:['system','product','operation','decision','execution']},i=0;
     setInterval(function(){var l=(root&&root.getAttribute('data-lang'))||'pt',a=W[l];i=(i+1)%a.length;cw.style.opacity=0;
       setTimeout(function(){cw.textContent=a[i];cw.style.opacity=1;},180);},2200);}
+  var interest=document.getElementById('f_interesse');
+  var zelusField=document.getElementById('zelus-product-field');
+  var zelusProduct=document.getElementById('f_zelus');
+  var selected=new URLSearchParams(window.location.search).get('interesse');
+  if(selected==='Outros')selected='Outros produtos';
+  if(interest&&selected){
+    if(selected==='Zelus Health'||selected==='Zelus Pet'){
+      interest.value='Zelus';
+      zelusProduct.value=selected;
+    }else if(Array.from(interest.options).some(function(option){return option.value===selected;}))interest.value=selected;
+  }
+  function syncZelusProduct(){
+    var isZelus=interest&&interest.value==='Zelus';
+    if(zelusField)zelusField.hidden=!isZelus;
+    if(zelusProduct){zelusProduct.required=!!isZelus;if(!isZelus)zelusProduct.value='';}
+    updateWhatsAppLink();
+  }
+  function updateWhatsAppLink(){
+    var link=document.getElementById('whatsapp-contact');
+    if(!link)return;
+    var topic=interest&&interest.value;
+    var product=topic==='Zelus'&&zelusProduct&&zelusProduct.value?zelusProduct.value:topic;
+    var lang=(root&&root.getAttribute('data-lang'))||'pt';
+    var message=lang==='en'
+      ? 'Hello, I found Finder Lab through the website and would like to discuss'+(product?' '+product:'')+'.'
+      : 'Olá, vim pelo site da Finder Lab e gostaria de conversar'+(product?' sobre '+product:'')+'.';
+    link.href='https://wa.me/551131643783?text='+encodeURIComponent(message);
+  }
+  if(interest)interest.addEventListener('change',syncZelusProduct);
+  if(zelusProduct)zelusProduct.addEventListener('change',updateWhatsAppLink);
+  syncZelusProduct();
+  var form=document.getElementById('contact-form');
+  if(form)form.addEventListener('submit',function(event){event.preventDefault();submitForm();});
   window.submitForm=function(){
     var g=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
-    var n=g('f_nome'),em=g('f_email'),ep=g('f_empresa'),m=g('f_msg');
+    var interesse=g('f_interesse'),produtoZelus=g('f_zelus'),n=g('f_nome'),em=g('f_email'),ep=g('f_empresa'),m=g('f_msg');
+    var assunto=interesse==='Zelus'?produtoZelus:interesse;
     var st=document.getElementById('f_status'),btn=document.getElementById('f_btn');
     var lang=(root&&root.getAttribute('data-lang'))||'pt';
     var T=function(pt,en){return lang==='en'?en:pt;};
     var say=function(t,c){if(st){st.style.color=c;st.textContent=t;}};
-    if(!n||!em||!m){say(T('Preencha nome, e-mail e mensagem.','Please fill in name, email and message.'),'#f6b73c');return false;}
+    if(form&&!form.reportValidity())return false;
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){say(T('E-mail inválido.','Invalid email.'),'#f6b73c');return false;}
     if(btn){btn.disabled=true;btn.style.opacity=.6;btn.style.cursor='progress';}
     say(T('Enviando...','Sending...'),'#9aa7b8');
     fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body:JSON.stringify({access_key:'583f7bc1-8249-43b1-ad76-6426e076a745',subject:'Novo contato via site Finder Lab',from_name:'Site Finder Lab',name:n,email:em,empresa:ep||'-',message:m})
+      body:JSON.stringify({access_key:'583f7bc1-8249-43b1-ad76-6426e076a745',subject:'Novo contato via site Finder Lab — '+assunto,from_name:'Site Finder Lab',name:n,email:em,interesse:interesse,produto_zelus:produtoZelus||'-',empresa:ep||'-',message:m})
     }).then(function(r){return r.json();}).then(function(d){
-      if(d&&d.success){say(T('Mensagem enviada! Retornamos em breve.','Message sent! We will get back to you soon.'),'#28d7f7');
-        ['f_nome','f_email','f_empresa','f_msg'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+      if(d&&d.success){say(T('Mensagem enviada! Retornamos em breve.','Message sent! We will get back to you soon.'),'#1fb8f5');
+        if(form){form.reset();syncZelusProduct();}
       }else{say(T('Não foi possível enviar. Tente de novo ou escreva para contato@finderlab.com.br.','Could not send. Try again or email contato@finderlab.com.br.'),'#ff6b6b');}
     }).catch(function(){say(T('Falha de conexão. Escreva para contato@finderlab.com.br.','Connection failed. Please email contato@finderlab.com.br.'),'#ff6b6b');
     }).finally(function(){if(btn){btn.disabled=false;btn.style.opacity=1;btn.style.cursor='pointer';}});

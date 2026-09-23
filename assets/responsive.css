@@ -1,0 +1,35 @@
+/* Shared responsive rules for the original static pages. */
+html { scroll-padding-top: 115px; }
+@media (max-width: 900px) {
+  [data-phero], [data-cgrid], [data-two], [data-arch] {
+    grid-template-columns: 1fr !important;
+  }
+  [data-grid], [data-three], [data-mechs], [data-pillars], [data-steps], [data-footer] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  [data-shots], [data-cards], [data-cap-grid], [data-proof] {
+    grid-template-columns: 1fr !important;
+  }
+  [data-phero] > *, [data-cgrid] > *, [data-two] > *, [data-grid] > *, [data-three] > * {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  [data-grid], [data-three], [data-mechs], [data-pillars], [data-steps], [data-footer] {
+    grid-template-columns: 1fr !important;
+  }
+  [data-cgrid] { gap: 34px !important; }
+  [data-phero] { gap: 44px !important; }
+  [data-shots] { gap: 18px !important; }
+  [data-phones] { gap: 18px !important; }
+  [data-phones] > * { max-width: min(100%, 300px); }
+  [data-cap-grid] > *, [data-footer] > * { border-right: 0 !important; }
+  .reveal { transform: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  .reveal { transition: none !important; }
+  [style*="animation:"] { animation: none !important; }
+}
