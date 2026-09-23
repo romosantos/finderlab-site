@@ -29,7 +29,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .finder-e i{display:block;width:100%;height:.19em;border-radius:.1em;background:linear-gradient(90deg,#146ff2,#20c9f5)}
 .finder-lab{font-weight:500!important;letter-spacing:.12em;background:linear-gradient(95deg,#1478f2 5%,#20cdf4);background-clip:text;-webkit-background-clip:text;color:transparent}
 .about-hero-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(250px,.7fr);gap:clamp(30px,6vw,90px);align-items:center}
-.official-brand-card{border:1px solid var(--brand-line);background:#090e1b;border-radius:14px;overflow:hidden;box-shadow:0 28px 70px #0005}
+.official-brand-card{background:#090e1b;border-radius:17%;overflow:hidden;box-shadow:0 28px 70px #0005}
 .official-brand-card img{display:block;width:100%;height:auto}
 
 /* Shared editorial surfaces. */
