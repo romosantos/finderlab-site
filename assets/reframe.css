@@ -10,6 +10,13 @@
 /* Editorial home, Zelus and EDI VITA. */
 body.editorial{--paper:var(--fl-paper);--ink:var(--fl-ink);--muted:var(--fl-copy);--line:var(--fl-rule);background:var(--fl-paper);color:var(--fl-ink)}
 .editorial .site-head,.editorial .footer{background:var(--fl-navy)}
+/* One navigation signal across editorial and product pages. */
+.site-nav>a:not([href^="contato.html"]),.legacy .nav-links .navlink{position:relative}
+.site-nav>a:not([href^="contato.html"])::after,.legacy .nav-links .navlink::after{content:"";position:absolute;left:0;right:100%;bottom:-13px;height:3px;background:#45c7fa;transition:right .25s ease}
+.site-nav>a:not([href^="contato.html"]):is(:hover,:focus-visible,[aria-current="page"],[data-section-current])::after,.legacy .nav-links .navlink:is(:hover,:focus-visible,[aria-current="page"],[data-section-current])::after{right:0}
+.site-nav>a:not([href^="contato.html"]):is(:hover,:focus-visible,[aria-current="page"],[data-section-current]),.legacy .nav-links .navlink:is(:hover,:focus-visible,[aria-current="page"],[data-section-current]){color:#9fe4ff!important}
+@media(max-width:900px){.site-nav>a:not([href^="contato.html"])::after,.legacy .nav-links .navlink::after{bottom:-4px;height:2px}}
+@media(prefers-reduced-motion:reduce){.site-nav>a:not([href^="contato.html"])::after,.legacy .nav-links .navlink::after{transition:none}}
 .editorial .hero{background:radial-gradient(circle at 70% 28%,#142338 0,#091522 42%,var(--fl-navy) 85%);color:#fff}
 .editorial .hero:after{opacity:.09}
 .editorial .hero-grid{min-height:610px;grid-template-columns:.9fr 1.1fr}
