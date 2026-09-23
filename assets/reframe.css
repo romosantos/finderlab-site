@@ -125,6 +125,8 @@ body.editorial{--paper:var(--fl-paper);--ink:var(--fl-ink);--muted:var(--fl-copy
 .editorial .feature-list h3{color:var(--fl-ink)}
 .editorial .feature-list p{color:var(--fl-copy)}
 .editorial .method .method-system{background:#0b2035}
+.editorial .method-items>span{display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;min-height:48px}
+.editorial .method-items>span:before{flex:none;margin-right:0}
 .editorial .footer{color:#d6e1e8}
 
 /* All internal pages: same editorial rhythm, product imagery and typography. */
