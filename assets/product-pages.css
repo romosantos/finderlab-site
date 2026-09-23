@@ -44,6 +44,13 @@ body.page-zelus-pet [data-mechs] .card-h:before{box-shadow:0 0 0 4px #d66d0b1f}
 /* Keep product-specific details while matching the Finder Lab rhythm. */
 body.page-zelus-pet main>section:not(:first-child) .mono[style*="color:#1fb8f5"]{color:var(--product-accent)!important}
 body.page-zelus-health main>section:last-child>div,body.page-zelus-pet main>section:last-child>div{border-radius:3px!important;background:#0c2542!important;box-shadow:none!important}
+.product-final-copy{position:relative;max-width:650px;margin:0 auto 28px;color:#cbdbe5!important;font-size:16px;line-height:1.6}
+.product-final-actions{position:relative;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px}
+.product-final-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:14px 25px;border-radius:999px;font-size:15px;font-weight:700;text-decoration:none;transition:transform .2s ease,background .2s ease}
+.product-final-actions a:hover{transform:translateY(-2px)}
+.product-final-primary{background:linear-gradient(105deg,#55c6ec,#92e0f3);color:#071a29}
+.product-final-secondary{border:1px solid #9bb4c5;color:#f4f8fb}
+.product-final-secondary:hover{background:#ffffff16;color:#fff}
 body.page-zelus-health footer[style],body.page-zelus-pet footer[style]{background:#010d20!important;border-top:1px solid #ffffff1c!important}
 body.page-edi-vita .site-head .head-row{max-width:1180px;min-height:84px;padding-left:0;padding-right:0}
 body.page-edi-vita .product-hero .section-intro>div:first-child{max-width:510px}
@@ -65,6 +72,8 @@ body.page-edi-vita .feature-list article{border-top:2px solid #78b8d4}
   body.page-zelus-health main>section:first-child .phone-h,body.page-zelus-pet main>section:first-child .phone-h{width:205px!important}
   body.page-zelus-health [data-phones],body.page-zelus-pet [data-phones]{gap:18px!important}
   body.page-zelus-health [data-phones] figure,body.page-zelus-pet [data-phones] figure{width:min(100%,214px)}
+  .product-final-actions{flex-direction:column}
+  .product-final-actions a{width:100%}
 }
 @media(prefers-reduced-motion:reduce){
   body.page-zelus-health .phone-h,body.page-zelus-pet .phone-h{transition:none!important}
