@@ -18,10 +18,8 @@
 .hero h1 em{font-style:normal;display:inline;color:var(--aqua)}
 .hero p{max-width:490px}
 .hero-note{margin-top:34px;display:flex;align-items:center;justify-content:space-between;letter-spacing:.12em}
-.hero-note:after{content:'FL / 001';color:var(--aqua);font:500 11px 'DM Mono',monospace;letter-spacing:.04em}
 .hero-visual{padding:65px 0 55px 30px;align-items:center}
 .hero-visual:before{inset:9% -10% 8% 9%;opacity:1;clip-path:none;border:1px solid #355b84;background:linear-gradient(120deg,#1b427255,#06162e22);transform:skewY(-5deg)}
-.hero-visual:after{content:'01 / HEALTH SYSTEM';position:absolute;top:11%;right:-3%;color:#8be3ff;font:500 10px 'DM Mono',monospace;letter-spacing:.13em}
 .visual-window{width:min(100%,585px);transform:none;border:1px solid #3a6591;border-radius:2px;box-shadow:0 34px 80px #071213aa;background:#0b1f3c;padding:0}
 .visual-topline{height:37px;padding:0 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#c3d7e8;background:#0a1c37;border-bottom:1px solid #24476f;font:500 9px 'DM Mono',monospace;letter-spacing:.08em}
 .visual-topline span:last-child{color:var(--aqua)}
@@ -49,10 +47,6 @@
 .edivita-media:before,.edivita-media:after{content:'';position:absolute;width:24px;height:24px;border:2px solid #1fb8f5;pointer-events:none}
 .edivita-media:before{top:12px;left:12px;border-right:0;border-bottom:0}
 .edivita-media:after{right:12px;bottom:12px;border-left:0;border-top:0}
-.minor-grid a:before{display:block;color:var(--tech);font:500 10px 'DM Mono',monospace;letter-spacing:.08em;margin-bottom:18px}
-.minor-grid a:nth-child(1):before{content:"FL / 01"}
-.minor-grid a:nth-child(2):before{content:"FL / 02"}
-.minor-grid a:nth-child(3):before{content:"FL / 03"}
 .feature-list article{border-top-color:#24476f}
 .feature-list article:before{content:'+';display:block;color:var(--tech);font:500 16px 'DM Mono',monospace;margin-bottom:8px}
 .product-hero{position:relative;background-image:linear-gradient(90deg,#254c7244 1px,transparent 1px);background-size:96px 100%;border-bottom:1px solid var(--line)}
