@@ -1,0 +1,37 @@
+/* Keep the supplied EDI VITA artwork intact at every breakpoint. */
+.editorial #edi-vita .edivita-media {
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 1370 / 1148;
+  background: #fbf8f4;
+}
+
+.editorial #edi-vita .edivita-building {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  filter: none;
+  box-shadow: none;
+}
+
+.editorial .product-hero .edivita-feature-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fbf8f4;
+}
+
+.editorial .product-hero .edivita-feature-visual::after,
+.editorial .product-hero .edivita-feature-visual .feature-caption {
+  display: none;
+}
+
+.editorial .product-hero .edivita-feature-visual img {
+  width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  filter: none;
+}
