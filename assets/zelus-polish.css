@@ -18,6 +18,42 @@
   object-fit: contain;
 }
 
+/* Give the detailed life-stage visual enough width to remain readable. */
+.editorial .zelus-health-story .edivita-grid {
+  grid-template-columns: 1fr;
+  gap: clamp(32px, 4vw, 56px);
+}
+
+.editorial .zelus-health-story .edivita-grid > div:first-child {
+  max-width: 760px;
+}
+
+.editorial .zelus-health-story .edivita-media {
+  min-height: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #d9e5f4;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+.editorial .zelus-health-story .zelus-health-life-link {
+  display: block;
+  width: 100%;
+}
+
+.editorial .zelus-health-story .edivita-media .zelus-health-life-image {
+  width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  box-shadow: none;
+}
+
+.editorial .zelus-health-story .zelus-health-life-hint {
+  display: none;
+}
+
 @media (max-width: 900px) {
   .editorial .product-hero.zelus-feature {
     background: #f7f7f3;
@@ -27,5 +63,16 @@
     width: calc(100% + clamp(24px, 5vw, 76px) + clamp(24px, 5vw, 76px));
     margin-left: calc(-1 * clamp(24px, 5vw, 76px));
     background: radial-gradient(circle at 68% 28%, #254866, #0c192c 65%, #071424);
+  }
+
+  .editorial .zelus-health-story .zelus-health-life-hint {
+    display: block;
+    align-self: stretch;
+    padding: 11px 16px;
+    color: #164572;
+    background: #f3f8ff;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
   }
 }
