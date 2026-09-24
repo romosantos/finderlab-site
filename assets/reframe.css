@@ -152,6 +152,7 @@ body.editorial{--paper:var(--fl-paper);--ink:var(--fl-ink);--muted:var(--fl-copy
 .legacy section:nth-of-type(even) .cap,.legacy section:nth-of-type(even) .card-h,.legacy section:nth-of-type(even) .expc,.legacy section:nth-of-type(even) .prod-card{background:#fff!important;border-color:var(--fl-rule)!important;box-shadow:0 15px 35px #09223c0c!important}
 .legacy section:nth-of-type(even) .cap h3,.legacy section:nth-of-type(even) .card-h h3,.legacy section:nth-of-type(even) .expc h3,.legacy section:nth-of-type(even) .prod-card h3{color:var(--fl-ink)!important}
 .legacy section:nth-of-type(even) .cap p,.legacy section:nth-of-type(even) .card-h p,.legacy section:nth-of-type(even) .expc p,.legacy section:nth-of-type(even) .prod-card p{color:var(--fl-copy)!important}
+.legacy.page-anchora section:nth-of-type(even) .card-h .agent-question{color:#254760!important}
 .legacy section:nth-of-type(even) .prod-card [style*="color:#c3d0d6"]{color:#526a7a!important;border-color:#cbd7dd!important}
 .legacy section:nth-of-type(even) .about-cycle-card b{color:#f2f6fb!important}
 .legacy .about-cycle-marker{display:block;flex:none;width:8px;height:8px;border-radius:50%;background:#49c9f4;box-shadow:0 0 0 4px #49c9f419}
