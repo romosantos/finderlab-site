@@ -1,0 +1,31 @@
+/* Carry the Zelus hero's navy field to the viewport edge. */
+.editorial .product-hero.zelus-feature {
+  background:
+    radial-gradient(circle at 68% 28%, #254866, #0c192c 65%, #071424) right / calc(50% + 8px) 100% no-repeat,
+    #f7f7f3;
+}
+
+.editorial .product-hero .zelus-feature-visual {
+  background: transparent;
+}
+
+/* The product preview uses the unmodified mark from the official Zelus Pet site. */
+.editorial .site-preview-pet .site-preview-original-logo {
+  display: block;
+  width: 5.5cqw;
+  height: 5.5cqw;
+  max-width: none;
+  object-fit: contain;
+}
+
+@media (max-width: 900px) {
+  .editorial .product-hero.zelus-feature {
+    background: #f7f7f3;
+  }
+
+  .editorial .product-hero .zelus-feature-visual {
+    width: calc(100% + clamp(24px, 5vw, 76px) + clamp(24px, 5vw, 76px));
+    margin-left: calc(-1 * clamp(24px, 5vw, 76px));
+    background: radial-gradient(circle at 68% 28%, #254866, #0c192c 65%, #071424);
+  }
+}
