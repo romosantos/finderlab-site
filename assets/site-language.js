@@ -3,9 +3,9 @@
   var button = document.getElementById('lang');
 
   function setLanguage(language) {
-    var selected = language === 'en' ? 'en' : 'pt';
+    var selected = ['pt', 'en', 'es'].indexOf(language) >= 0 ? language : 'pt';
     root.dataset.lang = selected;
-    root.lang = selected === 'en' ? 'en' : 'pt-BR';
+    root.lang = selected === 'pt' ? 'pt-BR' : selected;
     if (button) button.textContent = selected === 'en' ? 'PT' : 'EN';
     try { localStorage.setItem('fl_lang', selected); } catch (error) { /* Storage can be unavailable. */ }
   }

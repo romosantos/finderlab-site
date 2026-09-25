@@ -9,6 +9,13 @@ body.editorial,body.legacy{padding-top:84px}
 .site-shell-nav>a:not(.site-shell-contact-button){font:500 12px 'DM Mono',monospace;letter-spacing:.04em;text-transform:uppercase;color:#cbd5e1;text-decoration:none;white-space:nowrap}
 .site-shell-nav .lang-button{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:40px;padding:0 10px;border:1px solid #576b82;border-radius:5px;background:transparent;color:#fff;font:600 12px 'DM Mono',monospace;cursor:pointer}
 .site-shell-nav .lang-button:hover{border-color:#74cffa;background:#123150}
+.site-shell-language{display:inline-grid;grid-template-columns:repeat(3,minmax(43px,1fr));align-items:stretch;height:42px;border:1px solid #576b82;border-radius:6px;overflow:hidden;flex:none}
+.site-shell-language button{min-width:43px;padding:0 9px;border:0;border-right:1px solid #38506b;background:transparent;color:#cbd5e1;font:600 12px 'DM Mono',monospace;cursor:pointer;transition:background .2s,color .2s}
+.site-shell-language button:last-child{border-right:0}
+.site-shell-language button:hover,.site-shell-language button:focus-visible{background:#123150;color:#fff}
+.site-shell-language button[aria-pressed="true"]{background:#1b7cba;color:#fff}
+.site-shell-language button:focus-visible{outline:2px solid #74cffa;outline-offset:-3px}
+[data-lang="pt"] .t-es,[data-lang="en"] .t-es,[data-lang="es"] .t-pt,[data-lang="es"] .t-en{display:none!important}
 body .site-shell-head .site-shell-nav a.site-shell-contact-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 25px;border:0;border-radius:5px!important;background:linear-gradient(105deg,#1478f2,#29bdf2)!important;color:#06162e!important;font:700 15px 'Instrument Sans','DM Sans',sans-serif;text-decoration:none;text-transform:none!important;white-space:nowrap}
 body .site-shell-head .site-shell-nav a.site-shell-contact-button:hover{background:linear-gradient(105deg,#388df5,#5bd3f6)!important;color:#06162e!important}
 .site-shell-toggle,.site-shell-menu-button{display:none}
@@ -42,6 +49,7 @@ body .site-shell-head .site-shell-nav a.site-shell-contact-button:hover{backgrou
   .site-shell-toggle:checked~.site-shell-nav{display:flex}
   .site-shell-nav>a:not(.site-shell-contact-button){width:fit-content;font-size:13px}
   .site-shell-nav .lang-button{width:fit-content}
+  .site-shell-nav .site-shell-language{width:fit-content}
   .site-shell-nav .site-shell-contact-button{width:100%}
   .site-shell-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:40px}
 }
