@@ -82,7 +82,7 @@ body.editorial{--paper:var(--fl-paper);--ink:var(--fl-ink);--muted:var(--fl-copy
 .editorial .product-grid{gap:0}
 .editorial .product-card{min-height:325px;display:block;border:1px solid #e8e8e4;background-color:#ecece8;background-size:cover;background-position:center;overflow:hidden}
 .editorial .product-card:before{display:none}
-.editorial .product-card.health-photo{background-image:linear-gradient(90deg,#fbfaf7 0%,#fbfaf7f2 39%,#fbfaf722 76%),url('img/editorial-health-clinic.jpg')}
+.editorial .product-card.health-photo{background-image:linear-gradient(90deg,#fff 0%,#fff 33%,#fffd 46%,#fff0 72%),url('img/zelus-health-fundo.png');background-position:center,center 43%}
 .editorial .product-card.pet-photo{background-image:linear-gradient(90deg,#fbfaf7 0%,#fbfaf7ed 38%,#fbfaf71a 77%),url('img/editorial-pet-companions.jpg')}
 .editorial .product-card .product-text{position:relative;z-index:1;width:60%;min-height:325px;padding:30px 25px 28px 33px;color:var(--fl-ink)}
 .editorial .product-card .product-text h3{font-family:'Instrument Sans','DM Sans',sans-serif;color:var(--fl-ink);font-size:clamp(31px,3vw,42px);font-weight:600;line-height:1.02;margin:15px 0}
