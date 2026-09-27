@@ -1,0 +1,20 @@
+{
+  "name": "maquina-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Recebe as inscrições da Máquina de Decisões e serve a tela de admin",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "pg": "^8.13.1"
+  }
+}

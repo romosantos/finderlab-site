@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin · Inscrições</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap">
+<style>
+:root{--accent:#7443F5;--accent2:#A88BFF;--muted:#AEA9C5}
+*{box-sizing:border-box}
+body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;
+  background-image:radial-gradient(ellipse 900px 700px at 20% -10%,rgba(116,67,245,.28),transparent 65%)}
+.wrap{max-width:1240px;margin:0 auto;padding:40px 56px 96px}
+.pill{display:inline-flex;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:10px 18px;border-radius:8px}
+h1{margin:24px 0 0;font-size:clamp(34px,4vw,54px);font-weight:700;letter-spacing:-.04em;line-height:1;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
+.sub{margin:16px 0 0;color:var(--muted);font-size:16px;line-height:1.7;max-width:620px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:36px}
+.stat{border:1px solid rgba(124,84,245,.5);background:rgba(20,12,46,.6);box-shadow:inset 0 0 24px rgba(116,67,245,.25),0 0 24px rgba(116,67,245,.12);border-radius:16px;padding:22px 24px}
+.stat b{display:block;font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.stat span{display:block;margin-top:8px;font-size:13px;color:var(--muted)}
+.bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:32px}
+.search{flex:1 1 280px;min-width:0;height:48px;padding:0 18px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-family:inherit;font-size:15px}
+.search::placeholder{color:#8F8AA8}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+button{font-family:inherit;cursor:pointer}
+.chip{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:transparent;color:#D2CEE6;font-size:13px;font-weight:600}
+.chip.on{background:rgba(116,67,245,.35);border-color:#8B63FF;color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:0;background:var(--accent);color:#fff;font-size:14px;font-weight:700;min-height:46px;padding:0 22px;border-radius:10px;box-shadow:0 4px 24px rgba(116,67,245,.28);text-decoration:none}
+.btn:hover{box-shadow:0 12px 44px rgba(116,67,245,.55)}
+:focus-visible{outline:2px solid #A88BFF;outline-offset:3px}
+.list{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.row{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,2fr) minmax(0,1.1fr) auto auto;gap:18px;align-items:center;border:1px solid rgba(124,84,245,.4);background:rgba(20,12,46,.55);border-radius:16px;padding:18px 22px}
+.n{font-size:16px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.s{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.4;overflow-wrap:anywhere}
+.row a.l{display:block;font-size:14px;color:#E4E0F4;line-height:1.6;text-decoration:none;overflow-wrap:anywhere}
+.row a.l:hover{color:var(--accent2)}
+.st{display:flex;gap:6px}
+.st button{min-height:44px;padding:0 12px;border-radius:9px;border:1px solid rgba(124,84,245,.35);background:transparent;color:var(--muted);font-size:12px;font-weight:600}
+.st button.on{color:#fff;border-color:transparent;background:var(--accent)}
+.st button.on.contatado{background:#B8892B}
+.st button.on.pago{background:#1E9E6A}
+.del{min-height:44px;padding:0 14px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:transparent;color:var(--muted);font-size:12px;font-weight:600}
+.del:hover{border-color:#FFB86B;color:#FFB86B}
+.del.arm{border-color:#FF7A7A;color:#FF9A9A;background:rgba(255,80,80,.12)}
+.empty{margin-top:28px;border:1px dashed rgba(124,84,245,.45);border-radius:16px;padding:48px 24px;text-align:center;color:var(--muted);line-height:1.7}
+@media(max-width:1100px){.wrap{padding-left:40px;padding-right:40px}.row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 20px}.st,.del{justify-self:start}}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.wrap{padding:28px 20px 72px}.stat{padding:18px}.stat b{font-size:28px}.row{grid-template-columns:1fr;padding:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pill">Área administrativa</div>
+  <h1>Inscrições recebidas</h1>
+  <p class="sub">Todos que preenchem o formulário da Máquina de Decisões aparecem aqui. Marque o andamento de cada pessoa e exporte a lista quando precisar.</p>
+
+  <div class="stats">
+    <div class="stat"><b id="nTotal">0</b><span>Inscrições</span></div>
+    <div class="stat"><b id="nNovo">0</b><span>Novas</span></div>
+    <div class="stat"><b id="nContatado">0</b><span>Contatadas</span></div>
+    <div class="stat"><b id="nPago">0</b><span>Pagas · de 20 vagas</span></div>
+  </div>
+
+  <div class="bar">
+    <input id="q" class="search" type="search" placeholder="Buscar por nome, email ou empresa" aria-label="Buscar inscrições">
+    <div class="chips" id="chips"></div>
+    <a class="btn" href="/admin/api/leads.csv">Exportar CSV</a>
+  </div>
+
+  <div class="list" id="list" aria-live="polite"></div>
+</div>
+
+<script>
+(function () {
+  var leads = [], filter = 'all', q = '', armed = null, armT = null;
+  var FILTERS = [['all', 'Todas'], ['novo', 'Novas'], ['contatado', 'Contatadas'], ['pago', 'Pagas']];
+  var LABELS = { novo: 'Nova', contatado: 'Contatada', pago: 'Paga' };
+  var $ = function (id) { return document.getElementById(id); };
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text; // textContent: nunca interpreta HTML
+    return e;
+  }
+
+  function api(method, url, body) {
+    return fetch(url, {
+      method: method,
+      credentials: 'same-origin',
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+  }
+
+  function load() {
+    return api('GET', '/admin/api/leads').then(function (rows) { leads = rows; render(); })
+      .catch(function () {
+        var l = $('list'); l.textContent = '';
+        l.appendChild(el('div', 'empty', 'Não foi possível carregar as inscrições. Recarregue a página.'));
+      });
+  }
+
+  function setStatus(id, status) {
+    api('PATCH', '/admin/api/leads/' + id, { status: status }).then(load);
+  }
+
+  function remove(id) {
+    if (armed !== id) {
+      armed = id; clearTimeout(armT);
+      armT = setTimeout(function () { armed = null; render(); }, 4000);
+      render(); return;
+    }
+    armed = null;
+    api('DELETE', '/admin/api/leads/' + id).then(load);
+  }
+
+  function shown() {
+    var t = q.trim().toLowerCase();
+    return leads.filter(function (l) {
+      if (filter !== 'all' && l.status !== filter) return false;
+      if (!t) return true;
+      return [l.nome, l.email, l.empresa, l.whats, l.cargo].join(' ').toLowerCase().indexOf(t) !== -1;
+    });
+  }
+
+  function render() {
+    var c = function (k) { return leads.filter(function (l) { return l.status === k; }).length; };
+    $('nTotal').textContent = leads.length;
+    $('nNovo').textContent = c('novo');
+    $('nContatado').textContent = c('contatado');
+    $('nPago').textContent = c('pago');
+
+    var chips = $('chips'); chips.textContent = '';
+    FILTERS.forEach(function (f) {
+      var b = el('button', 'chip' + (filter === f[0] ? ' on' : ''), f[1]);
+      b.onclick = function () { filter = f[0]; render(); };
+      chips.appendChild(b);
+    });
+
+    var list = $('list'); list.textContent = '';
+    var rows = shown();
+    if (!rows.length) {
+      list.appendChild(el('div', 'empty', leads.length ? 'Nenhuma inscrição encontrada com esse filtro.' : 'Nenhuma inscrição ainda. Quando alguém preencher o formulário, aparece aqui.'));
+      return;
+    }
+    rows.forEach(function (l) {
+      var row = el('div', 'row');
+
+      var a = el('div');
+      a.appendChild(el('div', 'n', l.nome));
+      var bits = [l.cargo, l.empresa].filter(Boolean);
+      a.appendChild(el('div', 's', bits.length ? bits.join(' · ') : 'Empresa e cargo não informados'));
+      row.appendChild(a);
+
+      var b = el('div');
+      var m = el('a', 'l', l.email); m.href = 'mailto:' + encodeURIComponent(l.email).replace('%40', '@');
+      var digits = String(l.whats || '').replace(/\D/g, '');
+      var w = el('a', 'l', l.whats); w.href = 'https://wa.me/' + (digits.length <= 11 ? '55' + digits : digits);
+      w.target = '_blank'; w.rel = 'noopener';
+      b.appendChild(m); b.appendChild(w);
+      row.appendChild(b);
+
+      var when = new Date(l.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      row.appendChild(el('div', 's', when));
+
+      var st = el('div', 'st');
+      st.setAttribute('role', 'group');
+      ['novo', 'contatado', 'pago'].forEach(function (k) {
+        var btn = el('button', l.status === k ? 'on ' + k : '', LABELS[k]);
+        btn.onclick = function () { setStatus(l.id, k); };
+        st.appendChild(btn);
+      });
+      row.appendChild(st);
+
+      var d = el('button', 'del' + (armed === l.id ? ' arm' : ''), armed === l.id ? 'Confirmar' : 'Excluir');
+      d.onclick = function () { remove(l.id); };
+      row.appendChild(d);
+
+      list.appendChild(row);
+    });
+  }
+
+  $('q').addEventListener('input', function (e) { q = e.target.value; render(); });
+  load();
+  setInterval(load, 30000);
+})();
+</script>
+</body>
+</html>
