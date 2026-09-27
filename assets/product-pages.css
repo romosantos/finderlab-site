@@ -1,0 +1,81 @@
+/* Shared product-page treatment. Finder navy is the frame; each product keeps its own accent. */
+.product-skip{position:absolute;top:-80px;left:24px;z-index:100;background:#fff;color:#10243a;padding:10px 16px}
+.product-skip:focus{top:12px}
+body.page-zelus-health,body.page-zelus-pet{--product-accent:#1a79b8;--product-soft:#d9edf8}
+body.page-zelus-pet{--product-accent:#d66d0b;--product-soft:#fff0df}
+
+/* Bring the legacy Zelus navigation into line with the editorial product pages. */
+body.page-zelus-health header[style],body.page-zelus-pet header[style]{padding:0 24px!important;background:#010d20!important;border-bottom:1px solid #ffffff1c}
+body.page-zelus-health header[style]>div,body.page-zelus-pet header[style]>div{min-height:84px;max-width:1180px!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+body.page-zelus-health header .nav-links,body.page-zelus-pet header .nav-links{gap:clamp(15px,2vw,29px)!important}
+body.page-zelus-health header .nav-links>a:last-child,body.page-zelus-pet header .nav-links>a:last-child{padding:10px 18px!important}
+
+/* Product heroes share EDI VITA's editorial light surface and split composition. */
+body.page-zelus-health main>section:first-child,body.page-zelus-pet main>section:first-child{padding:0 24px!important;background:#fbfaf7!important;color:#182a38!important}
+body.page-zelus-health main>section:first-child [data-phero],body.page-zelus-pet main>section:first-child [data-phero]{max-width:1132px!important;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr)!important;gap:clamp(36px,5vw,80px)!important;min-height:620px}
+body.page-zelus-health main>section:first-child [data-phero]>div:first-child,body.page-zelus-pet main>section:first-child [data-phero]>div:first-child{padding:78px 0}
+body.page-zelus-health main>section:first-child h1,body.page-zelus-pet main>section:first-child h1{color:#182a38!important;font-size:clamp(48px,5vw,69px)!important;line-height:1.07!important}
+body.page-zelus-health .product-name-accent{color:#317ead}
+body.page-zelus-pet .product-name-accent{color:#e9770b}
+body.page-zelus-pet main>section:first-child .mono>span:first-child{background:#e9770b!important;box-shadow:0 0 12px #e9770b55!important}
+body.page-zelus-health main>section:first-child p,body.page-zelus-pet main>section:first-child p{color:#526575!important;max-width:480px}
+body.page-zelus-health main>section:first-child [style*="color:#1fb8f5"],body.page-zelus-pet main>section:first-child [style*="color:#1fb8f5"]{color:var(--product-accent)!important}
+body.page-zelus-health main>section:first-child [data-phero]>div:last-child,body.page-zelus-pet main>section:first-child [data-phero]>div:last-child{min-height:620px;align-items:center;background:radial-gradient(circle at 60% 38%,#254a6e 0,#102943 48%,#071726 100%);position:relative;isolation:isolate}
+body.page-zelus-pet main>section:first-child [data-phero]>div:last-child{background:radial-gradient(circle at 60% 38%,#55402b 0,#283046 48%,#071726 100%)}
+body.page-zelus-health main>section:first-child [data-phero]>div:last-child:after,body.page-zelus-pet main>section:first-child [data-phero]>div:last-child:after{content:"";position:absolute;inset:24px;border:1px solid #ffffff20;pointer-events:none;z-index:-1}
+body.page-zelus-health main>section:first-child [data-phero]>div:first-child a[style*="background:transparent"],body.page-zelus-pet main>section:first-child [data-phero]>div:first-child a[style*="background:transparent"]{color:#18334a!important;border-color:#9bb2c1!important}
+body.page-zelus-health main>section:first-child .phone-h,body.page-zelus-pet main>section:first-child .phone-h{box-shadow:0 32px 64px #0009!important}
+
+/* Photos relate directly to the product, and screenshots remain complete. */
+body.page-zelus-health .editorial-side-photo,body.page-zelus-pet .editorial-side-photo{height:350px!important;object-fit:contain!important;background:#eaf0f3;box-shadow:none!important}
+body.page-zelus-pet .editorial-side-photo{background:#f2eee8}
+body.page-zelus-health .phone-h>div>div:first-child,body.page-zelus-pet .phone-h>div>div:first-child{display:none!important}
+body.page-zelus-health [data-phones] .phone-h>div>div:last-child,body.page-zelus-pet [data-phones] .phone-h>div>div:last-child{height:auto!important;overflow:visible!important}
+body.page-zelus-health [data-phones] .phone-h img,body.page-zelus-pet [data-phones] .phone-h img{width:100%;height:auto}
+body.page-zelus-health [data-phones] figure,body.page-zelus-pet [data-phones] figure{max-width:214px}
+
+/* Use simple signals in place of numbered feature tiles. */
+body.page-zelus-health [data-mechs] .card-h,body.page-zelus-pet [data-mechs] .card-h{border-radius:3px!important;border-top:2px solid var(--product-accent)!important}
+body.page-zelus-health [data-mechs] .card-h>.mono,body.page-zelus-pet [data-mechs] .card-h>.mono{display:none}
+body.page-zelus-health [data-mechs] .card-h:before,body.page-zelus-pet [data-mechs] .card-h:before{content:"";display:block;width:7px;height:7px;border-radius:50%;background:var(--product-accent);margin-bottom:16px}
+body.page-zelus-health [data-mechs] .card-h h3,body.page-zelus-pet [data-mechs] .card-h h3{margin-top:0!important}
+body.page-zelus-pet [data-mechs] .card-h:before{box-shadow:0 0 0 4px #d66d0b1f}
+
+/* Keep product-specific details while matching the Finder Lab rhythm. */
+body.page-zelus-pet main>section:not(:first-child) .mono[style*="color:#1fb8f5"]{color:var(--product-accent)!important}
+body.page-zelus-health main>section:last-child>div,body.page-zelus-pet main>section:last-child>div{border-radius:3px!important;background:#0c2542!important;box-shadow:none!important}
+.product-final-copy{position:relative;max-width:650px;margin:0 auto 28px;color:#cbdbe5!important;font-size:16px;line-height:1.6}
+.product-final-actions{position:relative;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px}
+.product-final-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:14px 25px;border-radius:999px;font-size:15px;font-weight:700;text-decoration:none;transition:transform .2s ease,background .2s ease}
+.product-final-actions a:hover{transform:translateY(-2px)}
+.product-final-primary{background:linear-gradient(105deg,#55c6ec,#92e0f3);color:#071a29}
+.product-final-secondary{border:1px solid #9bb4c5;color:#f4f8fb}
+.product-final-secondary:hover{background:#ffffff16;color:#fff}
+body.page-zelus-health footer[style],body.page-zelus-pet footer[style]{background:#010d20!important;border-top:1px solid #ffffff1c!important}
+body.page-edi-vita .site-head .head-row{max-width:1180px;min-height:84px;padding-left:0;padding-right:0}
+body.page-edi-vita .product-hero .section-intro>div:first-child{max-width:510px}
+body.page-edi-vita .feature-list article{border-top:2px solid #78b8d4}
+
+@media(max-width:900px){
+  body.page-edi-vita .menu-button{display:grid;place-items:center;width:42px;height:42px;padding:0;border:1px solid #ffffff33;border-radius:999px;font-size:0;position:relative}
+  body.page-edi-vita .menu-button:before{content:"";display:block;width:18px;height:12px;border-top:2px solid #fff;border-bottom:2px solid #fff}
+  body.page-edi-vita .menu-button:after{content:"";position:absolute;width:18px;height:2px;background:#fff}
+  body.page-zelus-health main>section:first-child [data-phero],body.page-zelus-pet main>section:first-child [data-phero]{grid-template-columns:1fr!important;gap:0!important}
+  body.page-zelus-health main>section:first-child [data-phero]>div:first-child,body.page-zelus-pet main>section:first-child [data-phero]>div:first-child{padding:62px 0 46px}
+  body.page-zelus-health main>section:first-child [data-phero]>div:last-child,body.page-zelus-pet main>section:first-child [data-phero]>div:last-child{min-height:490px}
+}
+@media(max-width:620px){
+  body.page-edi-vita .site-head .head-row{padding-left:20px;padding-right:20px}
+  body.page-zelus-health header[style],body.page-zelus-pet header[style]{padding:0 20px!important}
+  body.page-zelus-health main>section:first-child,body.page-zelus-pet main>section:first-child{padding:0 24px!important}
+  body.page-zelus-health main>section:first-child [data-phero]>div:last-child,body.page-zelus-pet main>section:first-child [data-phero]>div:last-child{min-height:390px}
+  body.page-zelus-health main>section:first-child .phone-h,body.page-zelus-pet main>section:first-child .phone-h{width:205px!important}
+  body.page-zelus-health [data-phones],body.page-zelus-pet [data-phones]{gap:18px!important}
+  body.page-zelus-health [data-phones] figure,body.page-zelus-pet [data-phones] figure{width:min(100%,214px)}
+  .product-final-actions{flex-direction:column}
+  .product-final-actions a{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  body.page-zelus-health .phone-h,body.page-zelus-pet .phone-h{transition:none!important}
+  body.page-zelus-health .phone-h:hover,body.page-zelus-pet .phone-h:hover{transform:none!important}
+}
