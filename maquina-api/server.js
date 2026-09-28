@@ -206,6 +206,22 @@ function stripInternalReasoning(text) {
   return out.trim();
 }
 
+// Rede de segurança: o chat exibe a resposta como texto puro (sem renderizar markdown),
+// então qualquer "**negrito**", "# título" ou lista numerada que o modelo escrever por engano
+// apareceria com os símbolos literais na tela. O prompt já instrui a nunca usar isso, mas
+// removemos aqui de qualquer forma antes de responder ou gravar o log.
+function stripMarkdown(text) {
+  if (!text) return text;
+  let out = text;
+  out = out.replace(/\*\*\*(.+?)\*\*\*/g, '$1');
+  out = out.replace(/\*\*(.+?)\*\*/g, '$1');
+  out = out.replace(/(^|\s)\*(\S(?:.*?\S)?)\*(?=\s|$)/g, '$1$2');
+  out = out.replace(/^\s{0,3}#{1,6}\s+/gm, '');
+  out = out.replace(/^\s*[-*•]\s+/gm, '');
+  out = out.replace(/^\s*\d+[.)]\s+/gm, '');
+  return out.trim();
+}
+
 app.options('/chat', publicCors);
 app.post('/chat', publicCors, chatLimiter, async (req, res) => {
   if (!chatReady || !anthropic) {
@@ -243,7 +259,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       .join('\n')
       .trim();
 
-    const reply = stripInternalReasoning(rawReply);
+    const reply = stripMarkdown(stripInternalReasoning(rawReply));
 
     if (!reply) return res.status(502).json({ error: 'Não veio resposta do assistente. Tenta de novo.' });
 
