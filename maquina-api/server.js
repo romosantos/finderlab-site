@@ -141,6 +141,38 @@ const leadLimiter = rateLimit({
   message: { error: 'Muitas tentativas. Tente novamente mais tarde.' },
 });
 
+// Validação + gravação de uma inscrição. Usado tanto pelo POST /leads (formulário
+// do site) quanto pela ferramenta registrar_inscricao que o agente de chat pode
+// chamar no meio da conversa, pra não duplicar a mesma lógica em dois lugares.
+async function saveLead(input) {
+  const b = input || {};
+  const nome = clean(b.nome, 160);
+  const email = clean(b.email, 200).toLowerCase();
+  const whats = clean(b.whats, 30);
+  const empresa = clean(b.empresa, 160);
+  const cargo = clean(b.cargo, 120);
+  const consent = b.consent === true;
+
+  const errors = {};
+  if (nome.length < 2) errors.nome = 'Informe o nome completo.';
+  if (!/^\S+@\S+\.\S+$/.test(email)) errors.email = 'Informe um email válido.';
+  if (whats.replace(/\D/g, '').length < 10) errors.whats = 'Informe o número com DDD.';
+  if (!consent) errors.consent = 'É necessário aceitar os termos.';
+  if (Object.keys(errors).length) return { ok: false, status: 400, error: 'Dados inválidos.', errors };
+
+  // mesma pessoa reenviando: atualiza os dados e preserva o andamento
+  const { rows } = await pool.query(
+    `INSERT INTO leads (nome, email, whats, empresa, cargo, consent)
+     VALUES ($1,$2,$3,$4,$5,$6)
+     ON CONFLICT (lower(email)) DO UPDATE
+       SET nome=EXCLUDED.nome, whats=EXCLUDED.whats, empresa=EXCLUDED.empresa,
+           cargo=EXCLUDED.cargo, consent=EXCLUDED.consent, updated_at=now()
+     RETURNING id`,
+    [nome, email, whats, empresa, cargo, consent]
+  );
+  return { ok: true, id: rows[0].id };
+}
+
 app.options('/leads', publicCors);
 app.post('/leads', publicCors, leadLimiter, async (req, res) => {
   try {
@@ -153,31 +185,9 @@ app.post('/leads', publicCors, leadLimiter, async (req, res) => {
       return res.status(403).json({ error: 'Origem não permitida.' });
     }
 
-    const nome = clean(b.nome, 160);
-    const email = clean(b.email, 200).toLowerCase();
-    const whats = clean(b.whats, 30);
-    const empresa = clean(b.empresa, 160);
-    const cargo = clean(b.cargo, 120);
-    const consent = b.consent === true;
-
-    const errors = {};
-    if (nome.length < 2) errors.nome = 'Informe o nome completo.';
-    if (!/^\S+@\S+\.\S+$/.test(email)) errors.email = 'Informe um email válido.';
-    if (whats.replace(/\D/g, '').length < 10) errors.whats = 'Informe o número com DDD.';
-    if (!consent) errors.consent = 'É necessário aceitar os termos.';
-    if (Object.keys(errors).length) return res.status(400).json({ error: 'Dados inválidos.', errors });
-
-    // mesma pessoa reenviando: atualiza os dados e preserva o andamento
-    const { rows } = await pool.query(
-      `INSERT INTO leads (nome, email, whats, empresa, cargo, consent)
-       VALUES ($1,$2,$3,$4,$5,$6)
-       ON CONFLICT (lower(email)) DO UPDATE
-         SET nome=EXCLUDED.nome, whats=EXCLUDED.whats, empresa=EXCLUDED.empresa,
-             cargo=EXCLUDED.cargo, consent=EXCLUDED.consent, updated_at=now()
-       RETURNING id`,
-      [nome, email, whats, empresa, cargo, consent]
-    );
-    res.status(201).json({ ok: true, id: rows[0].id });
+    const result = await saveLead(b);
+    if (!result.ok) return res.status(result.status).json({ error: result.error, errors: result.errors });
+    res.status(201).json({ ok: true, id: result.id });
   } catch (err) {
     console.error('POST /leads', err);
     res.status(500).json({ error: 'Não foi possível registrar agora.' });
@@ -222,6 +232,43 @@ function stripMarkdown(text) {
   return out.trim();
 }
 
+// Ferramenta que o agente pode chamar no meio da conversa pra registrar a inscrição
+// direto no banco (mesmo destino do formulário), sem a pessoa precisar preencher nada
+// no site. O prompt (knowledge/system-instructions.md) instrui quando e como usar isso.
+const CHAT_TOOLS = [
+  {
+    name: 'registrar_inscricao',
+    description:
+      'Registra a inscrição da pessoa no curso Máquina de Decisões, salvando nome, email, WhatsApp (e empresa/cargo se informados) no mesmo cadastro que o formulário do site usa. Só chame depois de ter nome completo, email e WhatsApp confirmados pela pessoa na conversa, de ter repetido esses dados pra ela confirmar que estão certos, e de ela ter confirmado explicitamente (algo como "sim", "aceito", "pode registrar") que concorda com os termos de uso e privacidade (LGPD). Nunca invente, deduza ou preencha nenhum desses campos sozinho.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        nome: { type: 'string', description: 'Nome completo, exatamente como a pessoa informou.' },
+        email: { type: 'string', description: 'Email, exatamente como a pessoa informou.' },
+        whats: { type: 'string', description: 'WhatsApp com DDD, exatamente como a pessoa informou.' },
+        empresa: { type: 'string', description: 'Empresa da pessoa, se ela informou. String vazia se não informou.' },
+        cargo: { type: 'string', description: 'Cargo da pessoa, se ela informou. String vazia se não informou.' },
+        consent: {
+          type: 'boolean',
+          description:
+            'true somente se a pessoa confirmou explicitamente, nesta conversa, que aceita os termos de uso e privacidade. Nunca true por suposição.',
+        },
+      },
+      required: ['nome', 'email', 'whats', 'consent'],
+    },
+  },
+];
+
+async function runChatTool(name, toolInput) {
+  if (name === 'registrar_inscricao') {
+    const result = await saveLead(toolInput);
+    return result.ok
+      ? { sucesso: true, id: result.id }
+      : { sucesso: false, erro: result.error, campos_invalidos: result.errors || null };
+  }
+  return { sucesso: false, erro: 'Ferramenta desconhecida.' };
+}
+
 app.options('/chat', publicCors);
 app.post('/chat', publicCors, chatLimiter, async (req, res) => {
   if (!chatReady || !anthropic) {
@@ -246,12 +293,36 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
 
     const messages = history.concat([{ role: 'user', content: message }]);
 
-    const response = await anthropic.messages.create({
+    let response = await anthropic.messages.create({
       model: ANTHROPIC_MODEL,
       max_tokens: CHAT_MAX_TOKENS,
       system: SYSTEM_PROMPT,
       messages,
+      tools: CHAT_TOOLS,
     });
+
+    // Loop de tool use: o modelo pode pedir pra chamar registrar_inscricao no meio da
+    // conversa. Executamos a ferramenta, devolvemos o resultado pra ele continuar, e
+    // repetimos até ele responder só com texto (ou até um limite de segurança).
+    let toolRounds = 0;
+    while (response.stop_reason === 'tool_use' && toolRounds < 3) {
+      toolRounds += 1;
+      const toolUseBlocks = (response.content || []).filter((block) => block.type === 'tool_use');
+      const toolResults = [];
+      for (const block of toolUseBlocks) {
+        const result = await runChatTool(block.name, block.input);
+        toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) });
+      }
+      messages.push({ role: 'assistant', content: response.content });
+      messages.push({ role: 'user', content: toolResults });
+      response = await anthropic.messages.create({
+        model: ANTHROPIC_MODEL,
+        max_tokens: CHAT_MAX_TOKENS,
+        system: SYSTEM_PROMPT,
+        messages,
+        tools: CHAT_TOOLS,
+      });
+    }
 
     const rawReply = (response.content || [])
       .filter((block) => block.type === 'text')
