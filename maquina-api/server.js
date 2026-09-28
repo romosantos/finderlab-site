@@ -305,7 +305,14 @@ app.get('/admin/api/leads.csv', async (_req, res) => {
 });
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
-app.get('/', (_req, res) => res.status(404).send('Not found'));
+
+// ---------- Site estático (landing + inscrição) ----------
+// Registrado DEPOIS das rotas /admin (protegidas por basicAuth) de propósito:
+// com { extensions: ['html'] } o Express resolveria /admin -> public/admin.html
+// diretamente por aqui, pulando a autenticação, se este middleware viesse antes.
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
+
+app.use((_req, res) => res.status(404).send('Not found'));
 
 migrate()
   .then(() => app.listen(PORT, () => console.log('maquina-api na porta ' + PORT)))

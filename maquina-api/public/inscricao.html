@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inscrição · Máquina de Decisões</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap">
+<style>
+body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+
+.page{position:relative;width:100%;min-height:960px;overflow:hidden;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif}
+.page *,.page *::before,.page *::after{box-sizing:border-box}
+.page img{display:block}
+.wrap{position:relative;max-width:1240px;margin:0 auto;padding:0 56px}
+
+.glow-a{position:absolute;left:-200px;top:-160px;width:900px;height:700px;background:radial-gradient(ellipse at 40% 40%,rgba(116,67,245,.32) 0%,rgba(116,67,245,0) 65%)}
+.glow-b{position:absolute;right:-240px;bottom:-200px;width:900px;height:700px;background:radial-gradient(ellipse at 60% 60%,rgba(116,67,245,.2) 0%,rgba(116,67,245,0) 65%)}
+.bg-photo{position:absolute;left:0;top:0;bottom:0;width:60%;overflow:hidden}
+.bg-photo img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:50% 0%;opacity:.34}
+.bp-r{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(to right,rgba(5,4,12,0) 0%,rgba(5,4,12,0) 25%,rgba(5,4,12,.55) 55%,rgba(5,4,12,.9) 80%,#05040C 100%)}
+.bp-t{position:absolute;left:0;right:0;top:0;height:14%;background:linear-gradient(to bottom,#05040C 0%,rgba(5,4,12,0) 100%)}
+.bp-b{position:absolute;left:0;right:0;bottom:0;height:30%;background:linear-gradient(to top,#05040C 0%,rgba(5,4,12,0) 100%)}
+
+.nav{height:96px;display:flex;align-items:center;justify-content:space-between}
+.nav img{height:40px;width:auto}
+.pill{display:inline-flex;align-items:center;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:10px 18px;border-radius:8px}
+.t{margin:0;font-weight:700;letter-spacing:-.04em;line-height:1;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
+.t-68{font-size:clamp(44px,4.7vw,68px)}
+.hl{color:var(--accent)}
+.lead{margin:0;font-size:17px;line-height:1.7;color:#B9B4CE}
+.cap{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2)}
+.muted{color:#AEA9C5}
+
+.btn{transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.btn-fill{display:flex;align-items:center;justify-content:center;text-align:center;width:100%;border:0;cursor:pointer;background:var(--accent);color:#fff;font-family:inherit;font-size:15px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;min-height:60px;padding:0 20px;border-radius:10px;box-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
+.btn-fill:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none}
+.btn-fill:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 44px rgba(116,67,245,.55)}
+.btn-line{display:flex;align-items:center;border:1.5px solid var(--accent);background:rgba(20,14,48,.3);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#F1EEFB;font-family:inherit;font-size:14px;font-weight:600;padding:0 24px;min-height:46px;border-radius:10px}
+.btn-line:hover{transform:translateY(-2px);background:rgba(116,67,245,.35)}
+.btn-ghost{width:100%;cursor:pointer;background:transparent;border:1px solid rgba(124,84,245,.4);color:#D2CEE6;font-family:inherit;font-size:14px;font-weight:600;min-height:52px;border-radius:10px;margin-top:14px}
+.btn-ghost:hover{background:rgba(116,67,245,.25)}
+
+.layout{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:56px;align-items:start;padding:40px 0 112px}
+.lcol{display:flex;flex-direction:column;min-width:0}
+.lcol .pill{align-self:flex-start}
+.gform{margin-top:40px;border:1px solid rgba(124,84,245,.55);background:rgba(20,12,46,.6);box-shadow:inset 0 0 24px rgba(116,67,245,.3),0 0 24px rgba(116,67,245,.14);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:18px;padding:40px}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 20px}
+.field-w{grid-column:1 / -1}
+.fw{display:flex;flex-direction:column;gap:8px}
+.fw label{font-size:13px;font-weight:600;color:#D2CEE6}
+.field{box-sizing:border-box;width:100%;height:54px;padding:0 18px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-family:inherit;font-size:15px;transition:border-color .2s ease,box-shadow .2s ease}
+.field::placeholder{color:#8F8AA8}
+.field:focus{outline:none;border-color:#8B63FF;box-shadow:0 0 0 3px rgba(116,67,245,.28)}
+.err{font-size:13px;color:#FFB86B}
+.field[aria-invalid="true"]{border-color:#FFB86B}
+.consent{display:flex;gap:12px;align-items:flex-start;margin-top:24px;font-size:13px;line-height:1.55;color:#B9B4CE;cursor:pointer}
+.consent input{flex-shrink:0;appearance:none;-webkit-appearance:none;width:22px;height:22px;margin:0;border:1.5px solid rgba(168,139,255,.6);border-radius:6px;background:rgba(8,6,20,.7);cursor:pointer;display:grid;place-content:center;transition:background .2s ease,border-color .2s ease}
+.consent input::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) scale(0);margin-top:-2px;transition:transform .15s ease}
+.consent input:checked{background:var(--accent);border-color:var(--accent2)}
+.consent input:checked::after{transform:rotate(45deg) scale(1)}
+a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px solid #A88BFF;outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+.secure{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;font-size:13px;line-height:1.5;color:#B9B4CE;text-align:center}
+.secure svg{flex-shrink:0;color:var(--accent2)}
+.secure strong{color:#F1EEFB;font-weight:600}
+
+.summary{border:1px solid rgba(116,67,245,.7);background:#0C0A1A;border-radius:24px;padding:40px 36px 36px;box-shadow:0 0 70px rgba(116,67,245,.38),0 30px 130px rgba(116,67,245,.34),inset 0 0 30px rgba(116,67,245,.1)}
+.price{font-size:clamp(50px,4.5vw,64px);font-weight:700;line-height:1;letter-spacing:-.045em}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.mini-soft{border:1px solid rgba(124,84,245,.35);background:rgba(20,12,46,.3);box-shadow:inset 0 0 12px rgba(116,67,245,.14);border-radius:12px;padding:14px 12px}
+.mini-soft b{display:block;font-size:16px}
+.mini-soft span{display:block;margin-top:4px;font-size:12px;color:#AEA9C5;line-height:1.35}
+.chk{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.55;color:#D2CEE6}
+.chk svg{flex-shrink:0;margin-top:2px;color:var(--accent2)}
+
+.done{margin-top:40px;border:1px solid rgba(124,84,245,.55);background:rgba(20,12,46,.6);box-shadow:inset 0 0 24px rgba(116,67,245,.3),0 0 24px rgba(116,67,245,.14);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:18px;padding:44px 40px}
+.done-ic{width:56px;height:56px;border-radius:50%;border:1px solid rgba(168,139,255,.6);background:rgba(116,67,245,.18);display:flex;align-items:center;justify-content:center;color:var(--accent2)}
+
+/* tablet */
+@media (max-width:1100px){
+  .wrap{padding-left:40px;padding-right:40px}
+  .layout{gap:36px}
+  .gform,.done{padding:32px}
+  .summary{padding:32px 26px 28px}
+}
+
+/* stack */
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:28px;padding:28px 0 72px;align-items:start}
+  .bg-photo{width:100%;height:560px;bottom:auto}
+  .bp-r{background:linear-gradient(to right,rgba(5,4,12,0) 0%,rgba(5,4,12,.3) 55%,rgba(5,4,12,.8) 100%)}
+  .bp-b{height:60%;background:linear-gradient(to top,#05040C 0%,#05040C 10%,rgba(5,4,12,0) 100%)}
+  .bg-photo img{object-position:50% 8%}
+  .nav{height:76px}
+  .nav img{height:30px}
+  .glow-a{width:520px;height:440px;left:-160px;top:-120px}
+  .glow-b{display:none}
+}
+
+/* mobile */
+@media (max-width:560px){
+  .wrap{padding-left:20px;padding-right:20px}
+  .pill{font-size:12px;padding:8px 14px}
+  .lead{font-size:15px}
+  .gform{margin-top:28px;padding:24px 20px}
+  .done{margin-top:28px;padding:28px 20px}
+  .fields{grid-template-columns:1fr;gap:18px}
+  .field{font-size:16px;padding:0 16px}
+  .btn-line{font-size:13px;padding:0 16px;min-height:44px}
+  .btn-fill{font-size:14px;min-height:58px}
+  .summary{padding:26px 22px 22px;border-radius:20px}
+  .three{gap:8px}
+  .mini-soft{padding:12px 10px}
+  .mini-soft b{font-size:14px}
+  .mini-soft span{font-size:12px}
+}
+
+.tlink{color:#fff;text-decoration:underline;text-decoration-color:rgba(168,139,255,.7);text-underline-offset:3px;cursor:pointer;background:none;border:0;padding:0;font:inherit}
+.tlink:hover{color:#A88BFF}
+.ov{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(5,4,12,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.modal{position:relative;width:100%;max-width:680px;max-height:calc(100vh - 48px);display:flex;flex-direction:column;border:1px solid rgba(124,84,245,.6);background:#0C0A1A;border-radius:22px;box-shadow:0 0 70px rgba(116,67,245,.35),0 30px 130px rgba(116,67,245,.3),inset 0 0 30px rgba(116,67,245,.1)}
+.m-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:28px 32px 18px}
+.m-x{flex-shrink:0;width:44px;height:44px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:transparent;color:#D2CEE6;font-size:22px;line-height:1;cursor:pointer;font-family:inherit}
+.m-x:hover{background:rgba(116,67,245,.25)}
+.m-body{overflow-y:auto;padding:0 32px 8px;font-size:14px;line-height:1.75;color:#C9C5DC}
+.m-body h3{margin:22px 0 6px;font-size:15px;font-weight:600;color:#F1EEFB}
+.m-body p{margin:0}
+.m-body ul{margin:6px 0 0;padding-left:20px}
+.m-body li{margin:2px 0}
+.m-body a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.m-foot{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;padding:20px 32px 28px;border-top:1px solid rgba(255,255,255,.08);margin-top:16px}
+.m-foot .btn-fill,.m-foot .btn-ghost{width:auto;margin:0;min-height:48px;padding:0 24px;font-size:14px;text-transform:none;letter-spacing:.01em}
+@media (max-width:560px){.ov{padding:12px}.modal{max-height:calc(100vh - 24px);border-radius:18px}.m-head{padding:22px 20px 14px}.m-body{padding:0 20px 6px}.m-foot{padding:16px 20px 20px}.m-foot .btn-fill,.m-foot .btn-ghost{flex:1 1 100%}}
+
+.wa-link{display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#F1EEFB;font-size:14px;font-weight:600}
+.wa-link svg{color:var(--accent2)}
+.wa-link:hover{color:#A88BFF}
+.wa-box{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:22px;border:1px solid rgba(124,84,245,.4);background:rgba(20,12,46,.5);box-shadow:inset 0 0 18px rgba(116,67,245,.16);border-radius:14px;padding:18px 22px}
+.wa-box b{display:block;font-size:15px;font-weight:600}
+.wa-box span{display:block;margin-top:2px;font-size:13px;color:#AEA9C5}
+.wa-box .wa-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+.chat-fab{position:fixed;right:24px;bottom:24px;z-index:41;width:82px;height:82px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:1px solid rgba(168,139,255,.6);box-shadow:0 4px 24px rgba(116,67,245,.5),0 0 60px rgba(116,67,245,.3);transition:transform .2s ease,box-shadow .2s ease;cursor:pointer}
+.chat-fab-avatar{box-sizing:border-box;width:100%;height:100%;border-radius:50%;object-fit:contain;padding:5px;display:block}
+.chat-fab:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 12px 44px rgba(116,67,245,.65)}
+@media (max-width:900px){.chat-fab{display:none}}
+.chat-ov{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:flex-end;padding:24px;background:rgba(5,4,12,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.chat-modal{position:relative;width:100%;max-width:380px;height:min(600px,calc(100vh - 48px));display:flex;flex-direction:column;border:1px solid rgba(124,84,245,.6);background:#0C0A1A;border-radius:22px;box-shadow:0 0 70px rgba(116,67,245,.35),0 30px 130px rgba(116,67,245,.3),inset 0 0 30px rgba(116,67,245,.1);overflow:hidden}
+.chat-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(116,67,245,.1)}
+.chat-head-id{display:flex;align-items:center;gap:12px;min-width:0}
+.drigo-avatar{flex-shrink:0;box-sizing:border-box;border-radius:50%;object-fit:contain;padding:4px;display:block;border:1px solid rgba(168,139,255,.5);background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.chat-head b{display:block;font-size:15px;font-weight:700}
+.chat-head span{display:block;margin-top:2px;font-size:12px;color:#AEA9C5}
+.chat-x{width:32px;height:32px;flex-shrink:0;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:transparent;color:#D2CEE6;font-size:18px;line-height:1;cursor:pointer}
+.chat-x:hover{border-color:#FFB86B;color:#FFB86B}
+.chat-body{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{max-width:88%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-msg.bot{align-self:flex-start;background:rgba(255,255,255,.06);color:#EDEAF7;border:1px solid rgba(255,255,255,.08)}
+.chat-msg.user{align-self:flex-end;background:var(--accent);color:#fff}
+.chat-msg.err{align-self:flex-start;background:rgba(255,110,110,.12);color:#FFC2C2;border:1px solid rgba(255,110,110,.3)}
+.chat-dots{display:inline-flex;gap:4px;align-items:center}
+.chat-dots span{width:6px;height:6px;border-radius:50%;background:#AEA9C5;opacity:.5;animation:chatDot 1s infinite}
+.chat-dots span:nth-child(2){animation-delay:.15s}
+.chat-dots span:nth-child(3){animation-delay:.3s}
+@keyframes chatDot{0%,100%{opacity:.3}50%{opacity:1}}
+.chat-form{display:flex;gap:8px;padding:14px 16px;border-top:1px solid rgba(255,255,255,.08)}
+.chat-form input{flex:1;min-width:0;height:44px;padding:0 14px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-family:inherit;font-size:14px}
+.chat-form input::placeholder{color:#8F8AA8}
+.chat-send{width:44px;height:44px;flex-shrink:0;border-radius:10px;border:0;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.chat-send:disabled{opacity:.45;cursor:default}
+.chat-hint{padding:0 18px 12px;font-size:11px;color:#8F8AA8}
+.chat-ov{display:none}
+.chat-ov.open{display:flex}
+.chat-ov .chat-companion{display:none}
+@media (max-width:560px){.chat-ov{padding:0;align-items:stretch}.chat-modal{max-width:none;height:100%;border-radius:0}}
+@media (min-width:901px){.chat-ov{gap:20px}.chat-ov .chat-companion{display:block;height:520px;width:auto;align-self:flex-end;object-fit:contain;filter:drop-shadow(0 0 4px rgba(168,139,255,.5)) drop-shadow(0 0 22px rgba(116,67,245,.65)) drop-shadow(0 26px 50px rgba(116,67,245,.45));cursor:default}.chat-modal{max-width:440px;height:min(680px,calc(100vh - 48px))}}
+</style>
+</head>
+<body>
+
+<div class="page" style="--accent:#7443F5;--accent2:#A88BFF">
+  <div class="bg-photo">
+    <img src="/img/inscricao-page-bg.jpg" alt="" aria-hidden="true">
+    <div class="bp-r"></div><div class="bp-t"></div><div class="bp-b"></div>
+  </div>
+  <div class="glow-a"></div>
+  <div class="glow-b"></div>
+
+  <div class="wrap">
+
+    <div class="nav">
+      <a href="/" style="display:block"><img src="/img/logo-finderlab.png" alt="Finder Lab"></a>
+      <a class="btn btn-line" href="/">← Voltar ao site</a>
+    </div>
+
+    <div class="layout">
+
+      <!-- COLUNA ESQUERDA -->
+      <div class="lcol">
+        <div class="pill" id="step-label">Inscrição · etapa 1 de 2</div>
+        <h1 class="t t-68" style="margin-top:28px">Garanta sua <span class="hl">vaga.</span></h1>
+        <p class="lead" style="margin-top:24px;max-width:560px">Preencha os seus dados. Na etapa seguinte você segue para o pagamento e confirma a sua vaga na turma de 20 participantes.</p>
+
+        <form class="gform" id="lead-form" novalidate>
+          <div class="fields">
+            <div style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true"><label for="f-web">Não preencha este campo</label><input id="f-web" type="text" name="website" tabindex="-1" autocomplete="off"></div>
+            <div class="fw field-w">
+              <label for="f-nome">Nome completo</label>
+              <input id="f-nome" class="field" type="text" autocomplete="name" placeholder="Como devemos te chamar" aria-describedby="e-nome">
+              <div class="err" id="e-nome" role="alert" style="display:none">Informe o seu nome completo.</div>
+            </div>
+            <div class="fw">
+              <label for="f-email">Email</label>
+              <input id="f-email" class="field" type="email" autocomplete="email" placeholder="voce@empresa.com.br" aria-describedby="e-email">
+              <div class="err" id="e-email" role="alert" style="display:none">Informe um email válido.</div>
+            </div>
+            <div class="fw">
+              <label for="f-whats">WhatsApp</label>
+              <input id="f-whats" class="field" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000" aria-describedby="e-whats">
+              <div class="err" id="e-whats" role="alert" style="display:none">Informe o número com DDD.</div>
+            </div>
+            <div class="fw">
+              <label for="f-empresa">Empresa</label>
+              <input id="f-empresa" class="field" type="text" autocomplete="organization" placeholder="Nome da sua empresa">
+            </div>
+            <div class="fw">
+              <label for="f-cargo">Cargo</label>
+              <input id="f-cargo" class="field" type="text" autocomplete="organization-title" placeholder="Ex.: Sócio, Diretor, CEO">
+            </div>
+          </div>
+          <label class="consent"><input id="f-consent" type="checkbox" aria-describedby="e-consent"><span>Li e concordo com os <button type="button" class="tlink" id="open-terms">termos de uso e privacidade dos dados</button> e autorizo a Finder Lab a entrar em contato sobre esta inscrição e sobre o curso, conforme a LGPD.</span></label>
+          <div class="err" id="e-consent" role="alert" style="margin-top:8px;display:none">Para continuar, marque a autorização acima.</div>
+          <button type="submit" class="btn btn-fill" id="submit-btn" style="margin-top:28px">Continuar para o pagamento →</button>
+          <div class="secure">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
+            <span>Pagamento seguro, processado pelo <strong>Asaas</strong></span>
+          </div>
+        </form>
+
+        <div class="done" id="done-block" style="display:none">
+          <div class="done-ic"><svg width="26" height="26" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg></div>
+          <h2 style="margin:28px 0 0;font-size:clamp(26px,2.6vw,36px);font-weight:700;line-height:1.1;letter-spacing:-.03em">Dados recebidos<span id="done-greet"></span>.</h2>
+          <p class="lead" style="margin-top:16px;line-height:1.75">Falta só o pagamento para garantir a sua vaga. Ao concluir, você recebe as informações de logística por email.</p>
+          <a class="btn btn-fill" href="#" id="payment-link" style="margin-top:32px">Ir para o pagamento →</a>
+          <div class="secure">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
+            <span>Pagamento seguro, processado pelo <strong>Asaas</strong></span>
+          </div>
+          <button type="button" class="btn btn-ghost" id="edit-btn">Corrigir meus dados</button>
+        </div>
+      </div>
+
+      <!-- COLUNA DIREITA: RESUMO -->
+      <div class="summary">
+        <div class="cap">Resumo da inscrição</div>
+        <div style="margin-top:18px;font-size:26px;font-weight:700;letter-spacing:-.03em;line-height:1.15">Máquina de Decisões</div>
+        <div class="muted" style="margin-top:6px;font-size:14px">Curso presencial intensivo com Rodrigo Moraes</div>
+        <div class="price" style="margin-top:26px">R$ 2.000</div>
+        <div class="muted" style="margin-top:10px;font-size:14px">por pessoa<br>ou <strong style="color:#F1EEFB;font-weight:600">10x de R$ 200 sem juros</strong> no cartão</div>
+
+        <div class="three" style="margin-top:26px">
+          <div class="mini-soft"><b>1 dia</b><span>Das 9h às 16h</span></div>
+          <div class="mini-soft"><b>20 vagas</b><span>Turma limitada</span></div>
+          <div class="mini-soft"><b>Presencial</b><span>Intensivo</span></div>
+        </div>
+
+        <div style="margin-top:26px;border-top:1px solid rgba(255,255,255,.1)">
+          <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>1 dia de imersão presencial com Rodrigo Moraes</span></div>
+          <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Framework completo: Máquina de Decisões aplicado ao seu negócio</span></div>
+          <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Diagnóstico individual feito durante o treinamento</span></div>
+          <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Material de referência e templates de mapeamento</span></div>
+          <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Acesso ao grupo de acompanhamento pós-treinamento</span></div>
+        </div>
+        <div class="muted" style="margin-top:20px;font-size:12px;line-height:1.6">O local exato será confirmado após o fechamento da turma e enviado por email.</div>
+      </div>
+
+    <div class="wa-box" style="grid-column:1 / -1;margin-top:0">
+      <div><b>Ficou com dúvida?</b><span>Fale com a gente no WhatsApp ou pergunta pro assistente antes de se inscrever.</span></div>
+      <div class="wa-actions">
+        <button type="button" class="btn btn-ghost" id="open-chat-btn" style="width:auto;margin-top:0;min-height:46px">Falar com o assistente</button>
+        <a class="btn btn-line" href="https://wa.me/551131643783?text=Ol%C3%A1%21%20Estou%20na%20inscri%C3%A7%C3%A3o%20da%20M%C3%A1quina%20de%20Decis%C3%B5es%20e%20tenho%20uma%20d%C3%BAvida." target="_blank" rel="noopener" style="min-height:46px">Chamar no WhatsApp</a>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div class="ov" id="terms-ov" style="display:none">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title" id="terms-modal">
+      <div class="m-head">
+        <div>
+          <div class="pill" style="padding:7px 12px">LGPD</div>
+          <h2 id="m-title" style="margin:14px 0 0;font-size:24px;font-weight:700;letter-spacing:-.03em;line-height:1.15">Termos de uso e privacidade dos dados</h2>
+        </div>
+        <button type="button" class="m-x" id="terms-close-x" aria-label="Fechar">×</button>
+      </div>
+      <div class="m-body">
+        <p>Ao se inscrever na Máquina de Decisões, você nos informa alguns dados pessoais. Aqui explicamos, de forma direta, o que fazemos com eles, com base na Lei Geral de Proteção de Dados (Lei nº 13.709/2018).</p>
+
+        <h3>1. Quem é o responsável</h3>
+        <p>FINDER CONSULTORIA EM TI LTDA, CNPJ 53.291.349/0001-96, que atua sob a marca Finder Lab. Contato para qualquer assunto sobre os seus dados: <a href="mailto:rodrigo.moraes@finderlab.com.br">rodrigo.moraes@finderlab.com.br</a>.</p>
+
+        <h3>2. Quais dados coletamos</h3>
+        <p>Nome completo, email, número de WhatsApp, empresa e cargo, exatamente como você preenche no formulário.</p>
+
+        <h3>3. Para que usamos</h3>
+        <ul>
+          <li>Registrar a sua inscrição e reservar a sua vaga na turma.</li>
+          <li>Entrar em contato por email ou WhatsApp sobre a inscrição, o pagamento, a data, o local e a logística do curso.</li>
+          <li>Enviar informações sobre o curso e sobre próximas turmas da Máquina de Decisões.</li>
+        </ul>
+
+        <h3>4. Pagamento</h3>
+        <p>O pagamento é feito na plataforma do Asaas. Os dados de cartão ou de conta são digitados no ambiente do Asaas e não passam pelo nosso formulário nem ficam guardados por nós.</p>
+
+        <h3>5. Com quem compartilhamos</h3>
+        <p>Compartilhamos apenas o necessário com o Asaas, para processar o pagamento, e com as ferramentas que usamos para operar a inscrição e o contato. Não vendemos os seus dados.</p>
+
+        <h3>6. Por quanto tempo guardamos</h3>
+        <p>Pelo tempo necessário para cumprir as finalidades acima e as obrigações legais e fiscais. Depois disso, os dados são eliminados ou anonimizados.</p>
+
+        <h3>7. Os seus direitos</h3>
+        <p>Você pode, a qualquer momento e sem custo, pedir: confirmação de que tratamos os seus dados, acesso a eles, correção, exclusão, portabilidade, informação sobre com quem os compartilhamos e a revogação do seu consentimento. Basta escrever para o email do item 1.</p>
+
+        <h3>8. Base legal</h3>
+        <p>Tratamos os seus dados com base no seu consentimento, dado ao marcar a caixa de autorização, e na execução do contrato de inscrição no curso.</p>
+
+        <p style="margin-top:22px;font-size:12px;color:#AEA9C5">Última atualização: setembro de 2026.</p>
+      </div>
+      <div class="m-foot">
+        <button type="button" class="btn btn-ghost" id="terms-close">Fechar</button>
+        <button type="button" class="btn btn-fill" id="terms-accept">Li e concordo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-ov" id="chat-ov">
+    <img class="chat-companion" src="/img/drigo-avatar.png" alt="" id="chat-companion">
+    <div class="chat-modal" role="dialog" aria-modal="true" aria-labelledby="chat-title" id="chat-modal">
+      <div class="chat-head">
+        <div class="chat-head-id">
+          <img class="drigo-avatar" src="/img/drigo-avatar.png" width="40" height="40" alt="">
+          <div>
+            <b id="chat-title">Drigo</b>
+            <span>Assistente da Máquina de Decisões</span>
+          </div>
+        </div>
+        <button type="button" class="chat-x" id="chat-close" aria-label="Fechar">×</button>
+      </div>
+      <div class="chat-body" id="chat-body" aria-live="polite">
+        <div class="chat-msg bot">Oi, tudo bem? Eu sou o Drigo. Posso ajudar com dúvidas sobre o curso ou bater um papo sobre alguma decisão que você tá encarando no negócio. Por onde a gente começa?</div>
+      </div>
+      <form class="chat-form" id="chat-form">
+        <input type="text" id="chat-input" placeholder="Escreve sua pergunta..." aria-label="Sua mensagem" maxlength="600">
+        <button type="submit" class="chat-send" id="chat-send" disabled aria-label="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
+      </form>
+    </div>
+  </div>
+  <button type="button" class="chat-fab" id="chat-fab" aria-expanded="false" aria-label="Conversar com o Drigo, assistente da Máquina de Decisões"><img class="chat-fab-avatar" src="/img/drigo-avatar.png" width="82" height="82" alt=""></button>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- máscara de telefone ---------- */
+  function mask(v) {
+    var d = String(v).replace(/\D/g, '').slice(0, 11);
+    if (d.length <= 2) return d;
+    if (d.length <= 6) return '(' + d.slice(0, 2) + ') ' + d.slice(2);
+    if (d.length <= 10) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 6) + '-' + d.slice(6);
+    return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
+  }
+
+  var els = {
+    form: document.getElementById('lead-form'),
+    done: document.getElementById('done-block'),
+    stepLabel: document.getElementById('step-label'),
+    nome: document.getElementById('f-nome'),
+    email: document.getElementById('f-email'),
+    whats: document.getElementById('f-whats'),
+    empresa: document.getElementById('f-empresa'),
+    cargo: document.getElementById('f-cargo'),
+    consent: document.getElementById('f-consent'),
+    website: document.getElementById('f-web'),
+    eNome: document.getElementById('e-nome'),
+    eEmail: document.getElementById('e-email'),
+    eWhats: document.getElementById('e-whats'),
+    eConsent: document.getElementById('e-consent'),
+    submitBtn: document.getElementById('submit-btn'),
+    doneGreet: document.getElementById('done-greet'),
+    paymentLink: document.getElementById('payment-link'),
+    editBtn: document.getElementById('edit-btn')
+  };
+
+  var PAYMENT_URL = '#'; // TODO: colocar o link de pagamento do Asaas quando estiver pronto
+  var tried = false;
+
+  els.whats.addEventListener('input', function () {
+    els.whats.value = mask(els.whats.value);
+  });
+
+  function validate() {
+    var nomeOk = els.nome.value.trim().length >= 2;
+    var emailOk = /^\S+@\S+\.\S+$/.test(els.email.value.trim());
+    var whatsOk = els.whats.value.replace(/\D/g, '').length >= 10;
+    var consentOk = els.consent.checked;
+    return { nomeOk: nomeOk, emailOk: emailOk, whatsOk: whatsOk, consentOk: consentOk };
+  }
+  function showErrors(v) {
+    els.eNome.style.display = tried && !v.nomeOk ? '' : 'none';
+    els.eEmail.style.display = tried && !v.emailOk ? '' : 'none';
+    els.eWhats.style.display = tried && !v.whatsOk ? '' : 'none';
+    els.eConsent.style.display = tried && !v.consentOk ? '' : 'none';
+    els.nome.setAttribute('aria-invalid', tried && !v.nomeOk ? 'true' : 'false');
+    els.email.setAttribute('aria-invalid', tried && !v.emailOk ? 'true' : 'false');
+    els.whats.setAttribute('aria-invalid', tried && !v.whatsOk ? 'true' : 'false');
+  }
+
+  function saveLead() {
+    var hp = els.website.value || '';
+    return fetch('/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: els.nome.value.trim(),
+        email: els.email.value.trim(),
+        whats: els.whats.value.trim(),
+        empresa: els.empresa.value.trim(),
+        cargo: els.cargo.value.trim(),
+        consent: true,
+        website: hp
+      })
+    }).catch(function () { /* o fluxo de pagamento nao depende do registro */ });
+  }
+
+  els.form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    tried = true;
+    var v = validate();
+    showErrors(v);
+    var ok = v.nomeOk && v.emailOk && v.whatsOk && v.consentOk;
+    if (!ok) {
+      var firstId = !v.nomeOk ? 'f-nome' : !v.emailOk ? 'f-email' : !v.whatsOk ? 'f-whats' : 'f-consent';
+      setTimeout(function () {
+        var el = document.getElementById(firstId);
+        if (el && el.focus) el.focus();
+      }, 30);
+      return;
+    }
+    saveLead();
+    var first = els.nome.value.trim().split(' ')[0] || '';
+    els.doneGreet.textContent = first ? ', ' + first : '';
+    els.paymentLink.setAttribute('href', PAYMENT_URL);
+    els.stepLabel.textContent = 'Inscrição · etapa 2 de 2';
+    els.form.style.display = 'none';
+    els.done.style.display = '';
+  });
+
+  els.editBtn.addEventListener('click', function () {
+    els.stepLabel.textContent = 'Inscrição · etapa 1 de 2';
+    els.done.style.display = 'none';
+    els.form.style.display = '';
+  });
+
+  /* ---------- termos (LGPD) ---------- */
+  var termsOv = document.getElementById('terms-ov');
+  function openTerms(e) {
+    if (e) { e.preventDefault && e.preventDefault(); e.stopPropagation && e.stopPropagation(); }
+    termsOv.style.display = 'flex';
+  }
+  function closeTerms() { termsOv.style.display = 'none'; }
+  document.getElementById('open-terms').addEventListener('click', openTerms);
+  document.getElementById('terms-close').addEventListener('click', closeTerms);
+  document.getElementById('terms-close-x').addEventListener('click', closeTerms);
+  document.getElementById('terms-accept').addEventListener('click', function () {
+    els.consent.checked = true;
+    closeTerms();
+  });
+  termsOv.addEventListener('click', closeTerms);
+  document.getElementById('terms-modal').addEventListener('click', function (e) { e.stopPropagation(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && termsOv.style.display !== 'none') closeTerms();
+  });
+
+  /* ---------- chat ---------- */
+  var chatSession = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  var chatLoading = false;
+  var chatOv = document.getElementById('chat-ov');
+  var chatModal = document.getElementById('chat-modal');
+  var chatCompanion = document.getElementById('chat-companion');
+  var chatBody = document.getElementById('chat-body');
+  var chatForm = document.getElementById('chat-form');
+  var chatInput = document.getElementById('chat-input');
+  var chatSend = document.getElementById('chat-send');
+  var chatFab = document.getElementById('chat-fab');
+  var chatClose = document.getElementById('chat-close');
+  var openChatBtn = document.getElementById('open-chat-btn');
+
+  function scrollChat() { chatBody.scrollTop = chatBody.scrollHeight; }
+  function openChat() {
+    chatOv.classList.add('open');
+    chatFab.setAttribute('aria-expanded', 'true');
+    setTimeout(scrollChat, 50);
+  }
+  function closeChat() {
+    chatOv.classList.remove('open');
+    chatFab.setAttribute('aria-expanded', 'false');
+  }
+  chatFab.addEventListener('click', function () {
+    if (chatOv.classList.contains('open')) closeChat(); else openChat();
+  });
+  openChatBtn.addEventListener('click', openChat);
+  chatClose.addEventListener('click', closeChat);
+  chatOv.addEventListener('click', closeChat);
+  chatModal.addEventListener('click', function (e) { e.stopPropagation(); });
+  chatCompanion.addEventListener('click', function (e) { e.stopPropagation(); });
+
+  function addMsg(who, text) {
+    var div = document.createElement('div');
+    div.className = 'chat-msg ' + who;
+    div.textContent = text;
+    chatBody.appendChild(div);
+  }
+  function setLoading(v) {
+    chatLoading = v;
+    var dots = document.getElementById('chat-loading-dots');
+    if (v) {
+      if (!dots) {
+        dots = document.createElement('div');
+        dots.id = 'chat-loading-dots';
+        dots.className = 'chat-msg bot';
+        dots.innerHTML = '<span class="chat-dots"><span></span><span></span><span></span></span>';
+        chatBody.appendChild(dots);
+      }
+    } else if (dots) {
+      dots.remove();
+    }
+    updateSendState();
+  }
+  function updateSendState() {
+    chatSend.disabled = !chatInput.value.trim() || chatLoading;
+  }
+  chatInput.addEventListener('input', updateSendState);
+
+  chatForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var text = chatInput.value.trim();
+    if (!text || chatLoading) return;
+    var history = Array.prototype.slice.call(chatBody.querySelectorAll('.chat-msg.user, .chat-msg.bot'))
+      .slice(-16)
+      .map(function (el) {
+        return { role: el.classList.contains('user') ? 'user' : 'assistant', content: el.textContent };
+      });
+    addMsg('user', text);
+    chatInput.value = '';
+    updateSendState();
+    setLoading(true);
+    setTimeout(scrollChat, 30);
+
+    var ctrl = new AbortController();
+    var timeoutId = setTimeout(function () { ctrl.abort(); }, 15000);
+    fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, history: history, sessionId: chatSession }),
+      signal: ctrl.signal
+    })
+      .then(function (r) {
+        clearTimeout(timeoutId);
+        return r.json().catch(function () { return {}; }).then(function (data) {
+          if (!r.ok || !data.reply) throw new Error((data && data.error) || 'falha');
+          return data;
+        });
+      })
+      .then(function (data) {
+        setLoading(false);
+        addMsg('bot', data.reply);
+      })
+      .catch(function () {
+        clearTimeout(timeoutId);
+        setLoading(false);
+        addMsg('err', 'Não consegui responder agora. Fala com a gente pelo WhatsApp (11) 3164-3783 ou tenta de novo em instantes.');
+      })
+      .finally(function () { setTimeout(scrollChat, 30); });
+  });
+})();
+</script>
+</body>
+</html>

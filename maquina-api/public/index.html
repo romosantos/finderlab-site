@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Máquina de Decisões</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap">
+<style>
+body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+html{scroll-behavior:smooth}
+
+/* ---------- base ---------- */
+.page{position:relative;width:100%;overflow:hidden;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif}
+.page *,.page *::before,.page *::after{box-sizing:border-box}
+.page img{display:block}
+.wrap{position:relative;max-width:1240px;margin:0 auto;padding:0 56px}
+.sec{position:relative;overflow:hidden;border-top:1px solid rgba(255,255,255,.07);--bg:#05040C;--bg0:rgba(5,4,12,0);--ft:16%;--fb:20%}
+.sec.alt{background:#080714;--bg:#080714;--bg0:rgba(8,7,20,0)}
+.sec-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
+.fade-t{position:absolute;left:0;right:0;top:0;height:var(--ft);background:linear-gradient(to bottom,var(--bg) 0%,var(--bg0) 100%)}
+.fade-b{position:absolute;left:0;right:0;bottom:0;height:var(--fb);background:linear-gradient(to top,var(--bg) 0%,var(--bg0) 100%)}
+.sec-in{position:relative;max-width:1240px;margin:0 auto;padding:112px 56px}
+
+/* ---------- tipografia ---------- */
+.pill{display:inline-flex;align-items:center;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:9px 16px;border-radius:8px}
+.t{margin:0;font-weight:700;letter-spacing:-.04em;line-height:1;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
+.hl{color:var(--accent)}
+.t-hero{font-size:clamp(52px,6.7vw,96px)}
+.t-64{font-size:clamp(34px,4.4vw,64px);line-height:1.05;letter-spacing:-.035em}
+.t-84{font-size:clamp(54px,5.8vw,84px);line-height:.98}
+.t-72{font-size:clamp(38px,5vw,72px)}
+.t-88{font-size:clamp(46px,6.1vw,88px);line-height:.98}
+.t-final{font-size:clamp(34px,5.3vw,76px);line-height:1.02}
+.lead{margin:0;font-size:17px;line-height:1.75;color:#B9B4CE}
+.lead strong{color:#F1EEFB;font-weight:600}
+.cap{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent2)}
+.muted{color:#AEA9C5}
+
+/* ---------- botões ---------- */
+.btn{transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.btn-fill{display:inline-flex;align-items:center;justify-content:center;text-align:center;background:var(--accent);color:#fff;font-size:15px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;min-height:58px;padding:0 40px;border-radius:10px;box-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
+.btn-fill:hover{transform:translateY(-2px);box-shadow:0 12px 44px rgba(116,67,245,.55)}
+.btn-line{display:flex;align-items:center;border:1.5px solid var(--accent);background:rgba(20,14,48,.3);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#F1EEFB;font-size:14px;font-weight:600;padding:0 26px;min-height:46px;border-radius:10px}
+.btn-line:hover{transform:translateY(-2px);background:rgba(116,67,245,.35)}
+
+/* ---------- cartões ---------- */
+.gcard{border:1px solid rgba(124,84,245,.55);background:rgba(20,12,46,.6);box-shadow:inset 0 0 24px rgba(116,67,245,.3),0 0 24px rgba(116,67,245,.14);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:18px;padding:36px}
+.gsoft{border:1px solid rgba(124,84,245,.28);background:rgba(20,12,46,.4);box-shadow:inset 0 0 20px rgba(116,67,245,.12);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:18px;padding:36px}
+.plain{border:1px solid rgba(255,255,255,.12);background:#0C0A1A;border-radius:18px;padding:36px}
+.mini{border:1px solid rgba(124,84,245,.55);background:rgba(20,12,46,.55);box-shadow:inset 0 0 16px rgba(116,67,245,.32),0 0 18px rgba(116,67,245,.14);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:12px;padding:18px 16px}
+.mini-soft{border:1px solid rgba(124,84,245,.35);background:rgba(20,12,46,.3);box-shadow:inset 0 0 12px rgba(116,67,245,.14);border-radius:12px;padding:18px 16px}
+.hov{transition:border-color .2s ease}
+.hov:hover{border-color:rgba(140,100,255,.9)}
+.cn{font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:20px}
+.ct{font-size:24px;font-weight:600;line-height:1.2;letter-spacing:-.02em;margin:0 0 12px}
+.cd{font-size:15px;line-height:1.75;color:#B9B4CE}
+.cd-l{color:#C9C4DE}
+.tag{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin-bottom:18px}
+.nb{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:rgba(116,67,245,.18);border:1px solid rgba(116,67,245,.5);color:var(--accent2);font-size:14px;font-weight:700;margin-bottom:24px}
+.mv{font-size:26px;font-weight:700;letter-spacing:-.02em}
+.ml{margin-top:6px;font-size:12px;color:#AEA9C5;line-height:1.4}
+.chk{display:flex;gap:14px;align-items:flex-start;padding:15px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.55;color:#D2CEE6}
+.chk svg{flex-shrink:0;margin-top:2px;color:var(--accent2)}
+
+/* ---------- grids ---------- */
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.stack{display:flex;flex-direction:column;gap:20px}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:900px;overflow:hidden}
+.hero-glow{position:absolute;right:10px;top:0;width:820px;height:900px;background:radial-gradient(ellipse at 58% 30%,rgba(116,67,245,.35) 0%,rgba(116,67,245,0) 62%)}
+.hero-photo{position:absolute;right:0;top:-224px;width:820px;height:1275px;overflow:hidden}
+.hero-photo img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
+.hp-l{position:absolute;left:0;top:0;bottom:0;width:62%;background:linear-gradient(to right,#05040C 0%,rgba(5,4,12,.94) 12%,rgba(5,4,12,.78) 26%,rgba(5,4,12,.52) 42%,rgba(5,4,12,.26) 60%,rgba(5,4,12,.08) 80%,rgba(5,4,12,0) 100%)}
+.hp-r{position:absolute;right:0;top:0;bottom:0;width:6%;background:linear-gradient(to left,rgba(5,4,12,.5) 0%,rgba(5,4,12,0) 100%)}
+.hp-t{position:absolute;left:0;right:0;top:0;height:16%;background:linear-gradient(to bottom,#05040C 0%,rgba(5,4,12,0) 100%)}
+.hp-b{position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(to top,#05040C 0%,#05040C 30%,rgba(5,4,12,.7) 55%,rgba(5,4,12,0) 100%)}
+.nav{height:96px;display:flex;align-items:center;justify-content:space-between}
+.nav img{height:40px;width:auto}
+.hero-text{padding-top:8px;max-width:680px}
+.hero-stats{margin-top:56px;padding-bottom:64px;display:grid;grid-template-columns:repeat(4,168px);gap:16px}
+.stat{text-align:center;padding:22px 12px}
+.stat b{display:block;margin-top:12px;font-size:15px}
+.stat span{display:block;margin-top:4px;font-size:12px;color:#AEA9C5}
+
+/* ---------- framework ---------- */
+.fw-head{display:flex;justify-content:space-between;align-items:baseline;gap:24px;margin-bottom:36px}
+.fw-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.fw-card{padding:22px 18px}
+.fw-n{font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:28px}
+.fw-t{font-size:19px;font-weight:600;letter-spacing:-.01em}
+.fw-last{background:var(--accent);border-radius:12px;padding:22px 18px;box-shadow:0 12px 40px rgba(116,67,245,.4)}
+
+
+/* ---------- framework interativo ---------- */
+.fw2-track{position:relative;margin-top:8px}
+.fw2-line{position:absolute;left:12px;right:12px;top:11px;height:2px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+.fw2-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(to right,var(--accent),var(--accent2));transition:width .7s ease}
+.fw2-pulse{position:absolute;top:0;bottom:0;width:140px;background:linear-gradient(to right,rgba(255,255,255,0),rgba(255,255,255,.6),rgba(255,255,255,0));animation:fw2pulse 4.2s linear infinite}
+@keyframes fw2pulse{from{left:-140px}to{left:100%}}
+.fw2-steps{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.fw2-step{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:0;min-height:44px}
+.fw2-dot{display:block;width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.28);background:#05040C;box-shadow:0 0 0 6px #05040C;transition:all .35s ease}
+.fw2-step:hover .fw2-dot{border-color:var(--accent2)}
+.fw2-step.done .fw2-dot{border-color:var(--accent);background:var(--accent)}
+.fw2-step.on .fw2-dot{border-color:var(--accent2);background:var(--accent);transform:scale(1.18);box-shadow:0 0 0 6px #05040C,0 0 0 8px rgba(168,139,255,.45),0 0 30px rgba(116,67,245,.95)}
+.fw2-n{display:block;margin-top:18px;font-size:12px;font-weight:600;color:#AEA9C5;transition:color .3s ease}
+.fw2-t{display:block;margin-top:6px;font-size:19px;font-weight:600;letter-spacing:-.01em;color:#B9B4CE;transition:color .3s ease}
+.fw2-step.on .fw2-n{color:var(--accent2)}
+.fw2-step.on .fw2-t,.fw2-step:hover .fw2-t{color:#F1EEFB}
+.fw2-panel{margin-top:44px;border:1px solid rgba(124,84,245,.55);background:rgba(20,12,46,.6);box-shadow:inset 0 0 24px rgba(116,67,245,.3),0 0 24px rgba(116,67,245,.14);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:18px;padding:34px 40px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px 40px;align-items:center;min-height:170px}
+.fw2-big{font-size:clamp(48px,5vw,72px);font-weight:700;letter-spacing:-.04em;line-height:1;color:var(--accent);text-shadow:0 4px 24px rgba(116,67,245,.35)}
+.fw2-pt{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.fw2-pd{margin:12px 0 0;font-size:17px;line-height:1.7;color:#B9B4CE;max-width:760px}
+
+/* ---------- instrutor ---------- */
+.ins-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:80px;align-items:center}
+.ins-photo{position:relative;border:1px solid rgba(116,67,245,.5);border-radius:24px;overflow:hidden;aspect-ratio:1 / 1;background:radial-gradient(circle at 50% 45%,rgba(116,67,245,.55) 0%,rgba(116,67,245,.12) 55%,#080714 80%)}
+.ins-photo img{position:absolute;left:0;bottom:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.ins-stats{margin-top:40px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+
+/* ---------- inscrição (bloco de preço) ---------- */
+.ins2-grid{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:72px;align-items:start}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.price-card{border:1px solid rgba(116,67,245,.7);background:#0C0A1A;border-radius:24px;padding:44px 40px 40px;box-shadow:0 0 70px rgba(116,67,245,.38),0 30px 130px rgba(116,67,245,.34),inset 0 0 30px rgba(116,67,245,.1)}
+.price{font-size:clamp(56px,5.6vw,80px);font-weight:700;line-height:1;letter-spacing:-.045em}
+
+/* ---------- faq ---------- */
+.faq{display:flex;flex-direction:column;gap:12px}
+.faq-item{border:1px solid rgba(255,255,255,.09);background:#0C0A1A;border-radius:16px;padding:0 28px}
+.faq-btn{width:100%;background:none;border:0;padding:24px 0;display:flex;justify-content:space-between;align-items:center;gap:24px;text-align:left;cursor:pointer;color:#F1EEFB;font:inherit;min-height:44px}
+.faq-q{font-size:18px;font-weight:600;line-height:1.35;letter-spacing:-.01em;transition:color .2s ease}
+.faq-btn:hover .faq-q{color:#A88BFF}
+.faq-ic{font-size:24px;line-height:1;color:var(--accent2);flex-shrink:0;width:28px;text-align:center}
+.faq-a{padding:0 48px 26px 0;font-size:15px;line-height:1.75;color:#B9B4CE}
+
+/* ---------- cta final ---------- */
+.cta-glow{position:absolute;left:50%;top:50%;width:900px;height:900px;margin:-450px 0 0 -450px;border-radius:50%;background:radial-gradient(circle,rgba(116,67,245,.4) 0%,rgba(116,67,245,0) 65%)}
+.cta-ring{position:absolute;left:50%;top:50%;width:640px;height:640px;margin:-320px 0 0 -320px;border-radius:50%;border:1px solid rgba(168,139,255,.25)}
+
+/* ---------- rodapé ---------- */
+.foot{position:relative;overflow:hidden;border-top:1px solid rgba(255,255,255,.07);background:#080714}
+.foot-glow{position:absolute;left:50%;top:0;width:900px;height:260px;margin-left:-450px;background:radial-gradient(ellipse at 50% 0%,rgba(116,67,245,.28) 0%,rgba(116,67,245,0) 70%)}
+.foot-word{position:absolute;left:50%;bottom:-70px;transform:translateX(-50%);font-size:clamp(96px,17vw,250px);font-weight:700;letter-spacing:-.05em;line-height:1;white-space:nowrap;color:rgba(116,67,245,.09);user-select:none;pointer-events:none}
+.foot-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,2fr) minmax(0,2fr) minmax(0,3fr);gap:56px;align-items:start}
+.foot-links{display:flex;flex-direction:column;gap:14px;font-size:15px}
+.foot-links a{color:#D2CEE6}
+.foot-bar{margin-top:88px;padding:26px 0 30px;border-top:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between;align-items:center;gap:24px;font-size:13px;color:#AEA9C5}
+
+/* ============ TABLET ============ */
+@media (max-width:1100px){
+  .wrap,.sec-in{padding-left:40px;padding-right:40px}
+  .sec-in{padding-top:96px;padding-bottom:96px}
+  .hero-photo{width:700px;height:1090px;top:-190px}
+  .hero-glow{width:700px}
+  .hero-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .fw-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .fw2-t{font-size:16px}
+  .fw2-panel{padding:28px 30px;gap:16px 28px}
+  .ins-grid{gap:48px}
+  .ins2-grid{gap:40px}
+  .gcard,.gsoft,.plain{padding:30px}
+  .price-card{padding:36px 30px 32px}
+  .foot-grid{gap:36px}
+}
+
+/* ============ STACK (tablet vertical / mobile) ============ */
+@media (max-width:900px){
+  .g2{grid-template-columns:1fr}
+  .ins-grid{grid-template-columns:1fr;gap:28px}
+  .ins-right{display:contents}
+  .ins-head{order:1}
+  .ins-photo{order:2;max-width:560px}
+  .ins-body{order:3}
+  .ins-body .lead:first-child{margin-top:4px !important}
+  .ins2-grid{grid-template-columns:1fr;gap:28px}
+  .hero{min-height:0}
+  .hero-glow{display:none}
+  .hero-photo{left:0;right:0;top:0;bottom:0;width:100%;height:100%}
+  .hero-photo img{display:none}
+  .hero-photo::before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:url(/img/hero-mobile-bg.jpg) 62% 20%/cover no-repeat;opacity:.26}
+  .hp-l,.hp-r{display:none}
+  .hp-t{height:10%}
+  .hp-b{height:16%;background:linear-gradient(to top,#05040C 0%,rgba(5,4,12,0) 100%)}
+  .nav{height:76px}
+  .nav img{height:30px}
+  .hero-text{padding-top:12px;max-width:none}
+  .hero-stats{grid-template-columns:repeat(2,minmax(0,1fr));padding-bottom:56px;margin-top:34px;gap:12px}
+  .fw-head{flex-direction:column;gap:8px;margin-bottom:26px}
+  .fw2-line{display:none}
+  .fw2-steps{grid-template-columns:repeat(3,minmax(0,1fr));gap:26px 12px}
+  .fw2-t{font-size:17px}
+  .fw2-panel{margin-top:32px}
+  .foot-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 24px}
+  .foot-brand,.foot-contact{grid-column:1 / -1}
+  .foot-bar{margin-top:56px;flex-direction:column;align-items:flex-start;gap:12px}
+  .cta-glow{width:600px;height:600px;margin:-300px 0 0 -300px}
+  .cta-ring{display:none}
+  .foot-word{bottom:-30px}
+}
+
+/* ============ MOBILE ============ */
+@media (max-width:560px){
+  .wrap,.sec-in{padding-left:20px;padding-right:20px}
+  .sec-in{padding-top:72px;padding-bottom:72px}
+  .sec{--ft:8%;--fb:12%}
+  .pill{font-size:12px;padding:8px 14px}
+  .ins-grid{gap:28px}
+  .ins-right{display:contents}
+  .ins-head{order:1}
+  .ins-photo{order:2;max-width:none}
+  .ins-body{order:3}
+  .ins-body .lead:first-child{margin-top:4px !important}
+  .hero-photo{top:0;bottom:0;height:100%}
+  .hero-photo img{display:none}
+  .hero-photo::before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:url(/img/hero-mobile-bg.jpg) 62% 20%/cover no-repeat;opacity:.26}
+  .hero-text{padding-top:12px}
+  .hp-l,.hp-r{display:none}
+  .hp-t{height:10%}
+  .hp-b{height:16%;background:linear-gradient(to top,#05040C 0%,rgba(5,4,12,0) 100%)}
+  .lead{font-size:16px;line-height:1.7}
+  .btn-fill{display:flex;width:100%;min-height:56px;padding:0 20px;font-size:14px}
+  .nav .btn-line{font-size:13px;padding:0 16px;min-height:44px}
+  .gcard,.gsoft,.plain{padding:24px;border-radius:16px}
+  .ct{font-size:20px}
+  .cd{font-size:14px}
+  .cn{margin-bottom:14px}
+  .nb{width:40px;height:40px;margin-bottom:18px;font-size:13px}
+  .fw-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .fw2-t{font-size:15px}
+  .fw2-panel{grid-template-columns:1fr;padding:24px 20px;min-height:0}
+  .fw2-pt{font-size:22px}
+  .fw2-pd{font-size:15px}
+  .fw-card,.fw-last{padding:16px 14px}
+  .fw-n{margin-bottom:22px;font-size:12px}
+  .fw-t{font-size:17px}
+  .ins-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mv{font-size:24px}
+  .mini{padding:16px 14px}
+  .three{gap:8px}
+  .mini-soft{padding:12px 8px}
+  .three .mini-soft>div:first-child{font-size:14px!important;letter-spacing:-.01em!important}
+  .price-card{padding:28px 22px 24px;border-radius:20px}
+  .faq-item{padding:0 18px;border-radius:14px}
+  .faq-btn{padding:18px 0;gap:14px}
+  .faq-q{font-size:15px}
+  .faq-ic{font-size:22px;width:24px}
+  .faq-a{padding:0 0 20px;font-size:14px}
+  .foot-grid .foot-links{font-size:14px}
+  .stat b{font-size:14px}
+}
+
+a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3px;border-radius:8px}
+.faq-btn:focus-visible,.fw2-step:focus-visible{outline-offset:4px}
+@media (prefers-reduced-motion:reduce){
+  .fw2-pulse{animation:none;display:none}
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+}
+.soc{display:flex;gap:12px;margin-top:22px}
+.soc a{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;border:1px solid rgba(124,84,245,.45);background:rgba(20,12,46,.5);color:#D2CEE6;transition:background .2s ease,transform .2s ease}
+.soc a:hover{background:rgba(116,67,245,.35);transform:translateY(-2px)}
+.legal{display:flex;flex-direction:column;gap:4px}
+
+.wa-link{display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#F1EEFB;font-size:14px;font-weight:600}
+.wa-link svg{color:var(--accent2)}
+.wa-link:hover{color:#A88BFF}
+.wa-box{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:22px;border:1px solid rgba(124,84,245,.4);background:rgba(20,12,46,.5);box-shadow:inset 0 0 18px rgba(116,67,245,.16);border-radius:14px;padding:18px 22px}
+.wa-box b{display:block;font-size:15px;font-weight:600}
+.wa-box span{display:block;margin-top:2px;font-size:13px;color:#AEA9C5}
+
+.chat-fab{position:fixed;right:24px;bottom:24px;z-index:41;width:82px;height:82px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:1px solid rgba(168,139,255,.6);box-shadow:0 4px 24px rgba(116,67,245,.5),0 0 60px rgba(116,67,245,.3);transition:transform .2s ease,box-shadow .2s ease;cursor:pointer}
+.chat-fab-avatar{box-sizing:border-box;width:100%;height:100%;border-radius:50%;object-fit:contain;padding:5px;display:block}
+.chat-fab:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 12px 44px rgba(116,67,245,.65)}
+.chat-ov{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:flex-end;padding:24px;background:rgba(5,4,12,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.chat-modal{position:relative;width:100%;max-width:380px;height:min(600px,calc(100vh - 48px));display:flex;flex-direction:column;border:1px solid rgba(124,84,245,.6);background:#0C0A1A;border-radius:22px;box-shadow:0 0 70px rgba(116,67,245,.35),0 30px 130px rgba(116,67,245,.3),inset 0 0 30px rgba(116,67,245,.1);overflow:hidden}
+.chat-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(116,67,245,.1)}
+.chat-head-id{display:flex;align-items:center;gap:12px;min-width:0}
+.drigo-avatar{flex-shrink:0;box-sizing:border-box;border-radius:50%;object-fit:contain;padding:4px;display:block;border:1px solid rgba(168,139,255,.5);background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.chat-head b{display:block;font-size:15px;font-weight:700}
+.chat-head span{display:block;margin-top:2px;font-size:12px;color:#AEA9C5}
+.chat-x{width:32px;height:32px;flex-shrink:0;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:transparent;color:#D2CEE6;font-size:18px;line-height:1;cursor:pointer}
+.chat-x:hover{border-color:#FFB86B;color:#FFB86B}
+.chat-body{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{max-width:88%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-msg.bot{align-self:flex-start;background:rgba(255,255,255,.06);color:#EDEAF7;border:1px solid rgba(255,255,255,.08)}
+.chat-msg.user{align-self:flex-end;background:var(--accent);color:#fff}
+.chat-msg.err{align-self:flex-start;background:rgba(255,110,110,.12);color:#FFC2C2;border:1px solid rgba(255,110,110,.3)}
+.chat-dots{display:inline-flex;gap:4px;align-items:center}
+.chat-dots span{width:6px;height:6px;border-radius:50%;background:#AEA9C5;opacity:.5;animation:chatDot 1s infinite}
+.chat-dots span:nth-child(2){animation-delay:.15s}
+.chat-dots span:nth-child(3){animation-delay:.3s}
+@keyframes chatDot{0%,100%{opacity:.3}50%{opacity:1}}
+.chat-form{display:flex;gap:8px;padding:14px 16px;border-top:1px solid rgba(255,255,255,.08)}
+.chat-form input{flex:1;min-width:0;height:44px;padding:0 14px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-family:inherit;font-size:14px}
+.chat-form input::placeholder{color:#8F8AA8}
+.chat-send{width:44px;height:44px;flex-shrink:0;border-radius:10px;border:0;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.chat-send:disabled{opacity:.45;cursor:default}
+.chat-hint{padding:0 18px 12px;font-size:11px;color:#8F8AA8}
+.chat-ov{display:none}
+.chat-ov.open{display:flex}
+.chat-ov .chat-companion{display:none}
+@media (max-width:560px){.chat-fab{right:16px;bottom:16px;width:68px;height:68px}.chat-ov{padding:0;align-items:stretch}.chat-modal{max-width:none;height:100%;border-radius:0}}
+@media (min-width:901px){.chat-ov{gap:20px}.chat-ov .chat-companion{display:block;height:520px;width:auto;align-self:flex-end;object-fit:contain;filter:drop-shadow(0 0 4px rgba(168,139,255,.5)) drop-shadow(0 0 22px rgba(116,67,245,.65)) drop-shadow(0 26px 50px rgba(116,67,245,.45));cursor:default}.chat-modal{max-width:440px;height:min(680px,calc(100vh - 48px))}}
+</style>
+</head>
+<body>
+
+<div class="page" style="--accent:#7443F5;--accent2:#A88BFF">
+
+  <!-- HERO -->
+  <div id="topo" class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-photo">
+      <img src="/img/hero-photo.jpg" alt="Rodrigo Moraes palestrando">
+      <div class="hp-l"></div>
+      <div class="hp-r"></div>
+      <div class="hp-t"></div>
+      <div class="hp-b"></div>
+    </div>
+
+    <div class="wrap">
+      <div class="nav">
+        <img src="/img/logo-finderlab.png" alt="Finder Lab · Agentic Architecture Product House">
+        <a class="btn btn-line" href="/inscricao">Entrar na turma →</a>
+      </div>
+
+      <div class="hero-text">
+        <div class="pill">Curso presencial intensivo · IA para líderes</div>
+        <h1 class="t t-hero" style="margin-top:28px">Máquina de <span class="hl">Decisões</span></h1>
+        <p class="lead" style="margin-top:32px;max-width:520px"><strong>Não é um curso sobre ferramentas de IA.</strong> É para líderes e empresários que querem repensar seus processos, mudar seus resultados e construir uma empresa mais inteligente a partir do que a IA torna possível.</p>
+        <a class="btn btn-fill" href="/inscricao" style="margin-top:36px">Quero participar →</a>
+        <div class="muted" style="margin-top:18px;display:flex;align-items:center;gap:10px;font-size:13px">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#AEA9C5" stroke-width="1.4" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
+          <span>Turma limitada · 20 participantes</span>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="mini stat hov">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color:var(--accent2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 005 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+          <b>Presencial</b><span>Intensivo</span>
+        </div>
+        <div class="mini stat hov">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color:var(--accent2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <b>1 dia · 6h</b><span>Das 9h às 16h</span>
+        </div>
+        <div class="mini stat hov">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color:var(--accent2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.7a3.5 3.5 0 010 6.6M18 14.3c2 .7 3.5 2.6 3.5 5.7"/></svg>
+          <b>20 vagas</b><span>Turma limitada</span>
+        </div>
+        <div class="mini stat hov">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color:var(--accent2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg>
+          <b>Diagnóstico</b><span>Individual</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRAMEWORK -->
+  <div id="framework" class="wrap" style="padding-top:40px;padding-bottom:112px">
+    <div class="fw-head">
+      <div class="cap">O framework do dia</div>
+      <div style="font-size:20px;font-weight:300;color:#B9B4CE">A empresa como máquina de decisões</div>
+    </div>
+
+    <div class="fw2-track">
+      <div class="fw2-line"><div class="fw2-fill" id="fw2-fill" style="width:0%"></div><div class="fw2-pulse"></div></div>
+      <div class="fw2-steps" id="fw2-steps">
+        <button class="fw2-step on done" data-step="0" aria-pressed="true"><span class="fw2-dot"></span><span class="fw2-n">01</span><span class="fw2-t">Dado</span></button>
+        <button class="fw2-step" data-step="1" aria-pressed="false"><span class="fw2-dot"></span><span class="fw2-n">02</span><span class="fw2-t">Contexto</span></button>
+        <button class="fw2-step" data-step="2" aria-pressed="false"><span class="fw2-dot"></span><span class="fw2-n">03</span><span class="fw2-t">Diagnóstico</span></button>
+        <button class="fw2-step" data-step="3" aria-pressed="false"><span class="fw2-dot"></span><span class="fw2-n">04</span><span class="fw2-t">Previsão</span></button>
+        <button class="fw2-step" data-step="4" aria-pressed="false"><span class="fw2-dot"></span><span class="fw2-n">05</span><span class="fw2-t">Recomen&shy;dação</span></button>
+        <button class="fw2-step" data-step="5" aria-pressed="false"><span class="fw2-dot"></span><span class="fw2-n">06</span><span class="fw2-t">Ação</span></button>
+      </div>
+    </div>
+
+    <div class="fw2-panel" aria-live="polite">
+      <div class="fw2-big" id="fw2-big">01</div>
+      <div>
+        <div class="fw2-pt" id="fw2-pt">Dado</div>
+        <p class="fw2-pd" id="fw2-pd">Tudo começa no que a empresa já registra: vendas, atendimentos, contratos, planilhas. Dado solto não decide nada, mas sem ele não existe decisão.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLEMA -->
+  <div id="problema" class="sec" style="--ft:22%;--fb:30%">
+    <img class="sec-img" src="/img/problema-bg.jpg" alt="" aria-hidden="true" style="object-position:50% 35%;opacity:.2">
+    <div class="fade-t"></div><div class="fade-b"></div>
+    <div class="sec-in">
+      <div class="pill" style="margin-bottom:32px">O problema</div>
+      <h2 class="t t-64" style="max-width:1040px">As pessoas estão aprendendo IA para automatizar processos que já <span class="hl">não deveriam mais existir.</span></h2>
+      <div class="muted" style="margin-top:24px;font-size:13px">Rodrigo Moraes · em palco</div>
+      <p class="lead" style="margin-top:36px;max-width:680px">Essa frase resume o maior erro que vejo líderes cometendo agora. <strong>A questão não é como automatizar. É o que repensar.</strong> A IA não veio para acelerar o mundo antigo. Veio para propor um novo.</p>
+      <div class="g2" style="margin-top:64px">
+        <div class="gcard hov"><div class="cn">01</div><div class="ct">O que a maioria faz</div><div class="cd">Pega um processo que já existe e coloca uma ferramenta de IA em cima. O resultado: ganho marginal de velocidade, sem questionar se aquele processo ainda faz sentido.</div></div>
+        <div class="gcard hov"><div class="cn">02</div><div class="ct">O que muda de verdade</div><div class="cd">Quando o líder muda a forma de <em>pensar</em>: processos, decisões, pessoas e resultados. A IA vira alavanca real. Não é a empresa que muda. É quem a lidera.</div></div>
+        <div class="gcard hov"><div class="cn">03</div><div class="ct">O líder como ponto de virada</div><div class="cd">Nenhuma transformação acontece de baixo para cima. O empresário que entende o que a IA propõe como nova realidade é o que define o ritmo da sua empresa nos próximos anos.</div></div>
+        <div class="gcard hov"><div class="cn">04</div><div class="ct">Repensar, não só automatizar</div><div class="cd">A pergunta certa não é “como faço isso mais rápido com IA?”. É “esse processo ainda faz sentido no mundo em que a IA existe?” A resposta muda tudo.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTRUTOR -->
+  <div id="instrutor" class="sec alt" style="--ft:12%;--fb:16%">
+    <img class="sec-img" src="/img/instrutor-bg.jpg" alt="" aria-hidden="true" style="object-position:50% 40%;opacity:.2;transform:scale(1.18);transform-origin:62% 42%">
+    <div class="fade-t"></div><div class="fade-b"></div>
+    <div class="sec-in">
+      <div class="ins-grid">
+        <div class="ins-photo">
+          <img src="/img/instrutor-photo.png" alt="Rodrigo Moraes com microfone">
+        </div>
+        <div class="ins-right">
+          <div class="ins-head">
+          <div class="pill" style="margin-bottom:28px">Quem facilita</div>
+          <h2 class="t t-84">Rodrigo <span class="hl">Moraes</span></h2>
+          <div class="muted" style="margin-top:20px;font-size:14px;line-height:1.7">Empresário · Palestrante · Autor de 22 livros · Founder do Finder Lab</div>
+          </div>
+          <div class="ins-body">
+          <p class="lead" style="margin-top:32px;font-size:16px;line-height:1.8">São 15 anos construindo empresas, liderando times e criando do zero. Sou empresário, gestor de pessoas, escritor e engenheiro de software. Não cheguei à inteligência artificial pela tecnologia. Cheguei pela gestão, pelos processos, pelas decisões que precisam ser tomadas quando ninguém te dá o manual.</p>
+          <p class="lead" style="margin-top:20px;font-size:16px;line-height:1.8">Nos últimos anos mergulhei de cabeça em IA: construindo produtos, desenvolvendo soluções para o mercado e mentorando grupos de líderes e empresários sobre como usar inteligência artificial de verdade nos negócios. <strong>Minha proposta não é ensinar ferramenta. É ajudar líderes a repensar o que está em jogo</strong> no negócio deles a partir do que a IA torna possível.</p>
+          <div class="ins-stats">
+            <div class="mini"><div class="mv">+10</div><div class="ml">Anos em palco</div></div>
+            <div class="mini"><div class="mv">22</div><div class="ml">Livros publicados</div></div>
+            <div class="mini"><div class="mv">IA</div><div class="ml">Especialização: IA para negócios</div></div>
+            <div class="mini"><div class="mv">Lab</div><div class="ml">Empresa: Finder Lab</div></div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO -->
+  <div id="conteudo" class="sec" style="--ft:16%;--fb:20%">
+    <img class="sec-img" src="/img/conteudo-bg.jpg" alt="" aria-hidden="true" style="object-position:58% 35%;opacity:.3">
+    <div class="fade-t"></div><div class="fade-b"></div>
+    <div class="sec-in">
+      <div class="pill" style="margin-bottom:28px">O que você vai aprender</div>
+      <h2 class="t t-72">Da lógica à <span class="hl">implementação.</span></h2>
+      <p class="lead" style="margin-top:28px;max-width:640px">Um dia estruturado em blocos progressivos: você começa entendendo a lógica, e termina com um diagnóstico real do seu negócio e um próximo passo concreto.</p>
+      <div class="g2" style="margin-top:56px">
+        <div class="gcard hov"><div class="nb">01</div><div class="ct">A empresa como máquina de decisões</div><div class="cd">O framework que muda como você olha para o negócio. Onde a IA encaixa, e por que a maioria das implementações falha antes de começar. Dado → Contexto → Diagnóstico → Previsão → Recomendação → Ação.</div></div>
+        <div class="gcard hov"><div class="nb">02</div><div class="ct">Contexto é tudo: o que a IA precisa saber sobre a sua empresa</div><div class="cd">Por que a mesma IA dá resultados tão diferentes dependendo do contexto. Como estruturar o conhecimento da sua empresa para que a IA responda com fundamento, e não com generalidade.</div></div>
+        <div class="gcard hov"><div class="nb">03</div><div class="ct">Do ChatGPT ao agente inteligente</div><div class="cd">A diferença prática entre uma IA que responde e uma IA que age. O que é um agente, como ele percebe, decide e executa, e como isso se traduz em processos reais do seu negócio.</div></div>
+        <div class="gcard hov"><div class="nb">04</div><div class="ct">Casos reais de implementação</div><div class="cd">Exemplos concretos: agente comercial que monitora risco de churn, assistente que responde com base na política interna da empresa, sistema que gera briefing antes da reunião com o cliente. Sem teoria vaga, com lógica de construção.</div></div>
+        <div class="gcard hov"><div class="nb">05</div><div class="ct">Diagnóstico do seu negócio: aplicação prática</div><div class="cd">Qual decisão do seu negócio pode melhorar com IA? Você sai com o mapeamento feito, as fontes de contexto identificadas e o próximo passo claro. Não é exercício genérico. É sobre a sua empresa.</div></div>
+        <div class="gcard hov"><div class="nb">06</div><div class="ct">Como construir sem depender de tecnologia</div><div class="cd">Você não precisa ser desenvolvedor para implementar soluções com IA. O que você precisa entender sobre as ferramentas disponíveis, o que terceirizar e o que você mesmo pode montar, e como avaliar se um fornecedor está te ajudando ou te enrolando.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARA QUEM -->
+  <div id="paraquem" class="sec alt" style="--ft:16%;--fb:20%">
+    <img class="sec-img" src="/img/paraquem-bg.jpg" alt="" aria-hidden="true" style="object-position:20% 30%;opacity:.22">
+    <div class="fade-t"></div><div class="fade-b"></div>
+    <div class="sec-in">
+      <div class="pill" style="margin-bottom:28px">Para quem é</div>
+      <h2 class="t t-72" style="max-width:1000px">Para líderes que querem <span class="hl">liderar o novo momento.</span></h2>
+      <p class="lead" style="margin-top:28px;max-width:680px">Não é para quem quer aprender a usar ChatGPT no dia a dia. É para empresários, diretores e líderes que entendem que a IA mudou as regras, e querem estar na frente, não correndo atrás.</p>
+      <div class="g2" style="margin-top:56px;align-items:start">
+        <div class="stack">
+          <div class="gcard"><div class="tag">Ideal para você se</div><div class="ct">Você lidera e quer entender a lógica</div><div class="cd cd-l">Você é empresário, diretor ou líder de área. Sabe que a IA importa, mas não quer aprender ferramenta por ferramenta. Quer entender a lógica e saber o que perguntar, o que delegar e o que mudar no seu negócio.</div></div>
+          <div class="gcard"><div class="tag">Ideal para você se</div><div class="ct">Você quer clareza para não depender de terceiros</div><div class="cd cd-l">Você está cansado de depender de terceiros para entender o que a IA pode ou não fazer pelo seu negócio. Quer ter clareza própria para liderar essa mudança, não seguir quem diz que entende.</div></div>
+        </div>
+        <div class="stack">
+          <div class="plain"><div class="tag muted">Não é para você se</div><div class="ct" style="color:#C9C4DE">Você busca curso técnico</div><div class="cd muted">Você busca um curso técnico de programação, machine learning ou ciência de dados. Aqui o foco é estratégia e visão de liderança, não desenvolvimento de modelos ou código.</div></div>
+          <div class="plain"><div class="tag muted">Não é para você se</div><div class="ct" style="color:#C9C4DE">Você quer dicas de produtividade pessoal</div><div class="cd muted">Você quer dicas de produtividade pessoal com IA. O que está em jogo aqui é maior: como você lidera, decide e constrói resultados num mundo onde a inteligência artificial já mudou as regras.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSCRIÇÃO -->
+  <div id="inscricao" class="sec" style="--ft:16%;--fb:20%">
+    <img class="sec-img" src="/img/inscricao-bg.jpg" alt="" aria-hidden="true" style="object-position:35% 50%;opacity:.3;transform:scale(1.2);transform-origin:30% 45%">
+    <div class="fade-t"></div><div class="fade-b"></div>
+    <div class="sec-in">
+      <div class="ins2-grid">
+        <div>
+          <div class="pill" style="margin-bottom:28px">Inscrição</div>
+          <h2 class="t t-88">Garanta sua <span class="hl">vaga.</span></h2>
+          <p class="lead" style="margin-top:28px;max-width:520px">A turma está limitada a 20 participantes para manter a qualidade da troca e do diagnóstico individual. Quando fechar, fecha.</p>
+          <div class="gsoft" style="margin-top:48px">
+            <div style="font-size:28px;font-weight:700;letter-spacing:-.03em;margin-bottom:16px;line-height:1.15">Um dia. <span style="color:var(--accent2)">Mudança de visão.</span></div>
+            <p class="cd" style="margin:0 0 28px">Intensivo presencial: sem gravação para assistir depois, sem módulo por semana. Um dia de imersão com grupo pequeno, onde o que você leva para casa é uma forma diferente de pensar que muda como você age na segunda-feira.</p>
+            <div class="three">
+              <div class="mini-soft"><div style="font-size:18px;font-weight:700;letter-spacing:-.02em">Presencial</div><div class="ml">Intensivo · 1 dia completo</div></div>
+              <div class="mini-soft"><div style="font-size:18px;font-weight:700;letter-spacing:-.02em">20 vagas</div><div class="ml">Turma limitada</div></div>
+              <div class="mini-soft"><div style="font-size:18px;font-weight:700;letter-spacing:-.02em">6h</div><div class="ml">Das 9h às 16h</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="price-card">
+          <div class="cap" style="letter-spacing:.12em">Investimento</div>
+          <div class="price" style="margin-top:16px">R$ 2.000</div>
+          <div class="muted" style="margin-top:12px;font-size:14px">por pessoa<br>ou <strong style="color:#F1EEFB;font-weight:600">10x de R$ 200 sem juros</strong> no cartão</div>
+          <div style="margin-top:32px;border-top:1px solid rgba(255,255,255,.1)">
+            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>1 dia de imersão presencial com Rodrigo Moraes</span></div>
+            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Framework completo: Máquina de Decisões aplicado ao seu negócio</span></div>
+            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Diagnóstico individual feito durante o treinamento</span></div>
+            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Material de referência e templates de mapeamento</span></div>
+            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Acesso ao grupo de acompanhamento pós-treinamento</span></div>
+          </div>
+          <a class="btn btn-fill" href="/inscricao" style="margin-top:32px;display:flex;width:100%;box-shadow:none">Quero me inscrever →</a>
+          <div class="muted" style="margin-top:18px;font-size:12px;line-height:1.6;text-align:center">Turma limitada. Quando fechar, não abre nova turma imediatamente.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div id="faq" class="sec alt">
+    <div class="sec-in" style="max-width:960px">
+      <div class="pill" style="margin-bottom:28px">Perguntas frequentes</div>
+      <h2 class="t t-64" style="margin-bottom:48px;letter-spacing:-.04em;line-height:1">Ficou alguma <span style="color:#7E7996">dúvida?</span></h2>
+      <div class="faq" id="faq-list">
+        <div class="faq-item" data-faq="1">
+          <button class="faq-btn" aria-expanded="true"><span class="faq-q">Preciso ter conhecimento técnico em IA?</span><span class="faq-ic">−</span></button>
+          <div class="faq-a">Não. O curso é desenhado para empresários e gestores, não para desenvolvedores. O foco é na lógica de negócio e nas decisões, não em código ou algoritmos.</div>
+        </div>
+        <div class="faq-item" data-faq="2">
+          <button class="faq-btn" aria-expanded="false"><span class="faq-q">Minha empresa é pequena. Faz sentido para mim?</span><span class="faq-ic">+</span></button>
+          <div class="faq-a" style="display:none">Sim. Na maioria das vezes, empresas menores têm mais agilidade para implementar o que aprendem. O curso é útil para qualquer negócio onde decisões importam, independente do tamanho.</div>
+        </div>
+        <div class="faq-item" data-faq="3">
+          <button class="faq-btn" aria-expanded="false"><span class="faq-q">Vou sair sabendo usar alguma ferramenta específica?</span><span class="faq-ic">+</span></button>
+          <div class="faq-a" style="display:none">Você vai entender como ferramentas de IA funcionam, e mais importante, como avaliar qual ferramenta faz sentido para cada decisão do seu negócio. O objetivo não é você dominar uma plataforma, mas saber o que pedir e como avaliar o resultado.</div>
+        </div>
+        <div class="faq-item" data-faq="4">
+          <button class="faq-btn" aria-expanded="false"><span class="faq-q">Onde será realizado o treinamento?</span><span class="faq-ic">+</span></button>
+          <div class="faq-a" style="display:none">O local exato será confirmado após o fechamento da turma e comunicado para os inscritos com antecedência. Ao se inscrever, você receberá todas as informações de logística.</div>
+        </div>
+        <div class="faq-item" data-faq="5">
+          <button class="faq-btn" aria-expanded="false"><span class="faq-q">Posso parcelar a inscrição?</span><span class="faq-ic">+</span></button>
+          <div class="faq-a" style="display:none">Sim. Você pode parcelar a inscrição em até 10x sem juros no cartão de crédito.</div>
+        </div>
+        <div class="faq-item" data-faq="6">
+          <button class="faq-btn" aria-expanded="false"><span class="faq-q">E se eu não puder comparecer na data?</span><span class="faq-ic">+</span></button>
+          <div class="faq-a" style="display:none">Compreendemos imprevistos. Em caso de cancelamento com antecedência mínima de 7 dias, faremos a transferência do valor para a próxima turma disponível. Entre em contato para tratar o seu caso: <a href="mailto:rodrigo.moraes@finderlab.com.br" style="color:#F1EEFB">rodrigo.moraes@finderlab.com.br</a>.</div>
+        </div>
+        <div class="wa-box">
+          <div><b>Ainda com dúvida?</b><span>Fale com a gente direto no WhatsApp.</span></div>
+          <a class="btn btn-line" href="https://wa.me/551131643783?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20M%C3%A1quina%20de%20Decis%C3%B5es%20e%20tenho%20uma%20d%C3%BAvida." target="_blank" rel="noopener" style="min-height:46px">Chamar no WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA FINAL -->
+  <div class="sec" style="background:#05040C">
+    <div class="cta-glow"></div>
+    <div class="cta-ring"></div>
+    <div class="sec-in" style="max-width:1000px;padding-top:136px;padding-bottom:136px;text-align:center">
+      <div class="pill" style="margin-bottom:32px">Próxima turma</div>
+      <h2 class="t t-final">A próxima vantagem não será ter IA. Será o líder que <span style="color:var(--accent2)">sabe o que repensar.</span></h2>
+      <a class="btn btn-fill" href="/inscricao" style="margin-top:52px;min-height:64px;padding:0 48px;font-size:16px">Garantir minha vaga agora →</a>
+      <div class="muted" style="margin-top:22px;font-size:13px;line-height:1.6">20 vagas · uma turma · um dia que muda como você lidera</div>
+    </div>
+  </div>
+
+  <!-- RODAPÉ -->
+  <div class="foot">
+    <div class="foot-glow"></div>
+    <div class="foot-word" aria-hidden="true">Finder Lab</div>
+    <div class="wrap" style="padding-top:96px;padding-bottom:150px">
+      <div class="foot-grid">
+        <div class="foot-brand">
+          <img src="/img/logo-finderlab.png" alt="Finder Lab · Agentic Architecture Product House" style="height:56px;width:auto">
+          <p class="muted" style="margin:28px 0 0;max-width:380px;font-size:15px;line-height:1.75">Máquina de Decisões: o curso presencial para líderes e empresários que querem repensar processos e decidir melhor com IA.</p>
+          <a class="btn btn-fill" href="/inscricao" style="margin-top:32px;font-size:14px;min-height:52px;padding:0 30px">Garantir minha vaga →</a>
+        </div>
+        <div>
+          <div class="cap" style="margin-bottom:22px">Navegação</div>
+          <div class="foot-links">
+            <a href="#framework">O framework</a>
+            <a href="#problema">O problema</a>
+            <a href="#instrutor">Quem facilita</a>
+            <a href="#conteudo">Conteúdo</a>
+          </div>
+        </div>
+        <div>
+          <div class="cap" style="margin-bottom:22px">Curso</div>
+          <div class="foot-links">
+            <a href="#paraquem">Para quem é</a>
+            <a href="#inscricao">Inscrição</a>
+            <a href="#faq">Perguntas frequentes</a>
+          </div>
+        </div>
+        <div class="foot-contact">
+          <div class="cap" style="margin-bottom:22px">Contato</div>
+          <div class="muted" style="font-size:15px;line-height:1.7">Dúvidas sobre o curso ou sobre a sua inscrição?</div>
+          <a href="mailto:rodrigo.moraes@finderlab.com.br" style="display:inline-block;margin-top:12px;font-size:13px;color:#F1EEFB;text-decoration:none;white-space:nowrap">rodrigo.moraes@finderlab.com.br</a>
+          <div><a class="wa-link" href="https://wa.me/551131643783?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20M%C3%A1quina%20de%20Decis%C3%B5es%20e%20tenho%20uma%20d%C3%BAvida." target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 004.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91A9.85 9.85 0 0012.04 2zm0 18.15h-.01a8.2 8.2 0 01-4.18-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 012.41 5.83c0 4.54-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.42h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.17-.48-.29z"/></svg><span>WhatsApp (11) 3164-3783</span></a></div>
+          <div class="soc">
+            <a href="https://www.instagram.com/finderlab.ai" target="_blank" rel="noopener" aria-label="Instagram @finderlab.ai"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/></svg></a>
+            <a href="https://wa.me/551131643783?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20M%C3%A1quina%20de%20Decis%C3%B5es%20e%20tenho%20uma%20d%C3%BAvida." target="_blank" rel="noopener" aria-label="WhatsApp Finder Lab"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 004.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91A9.85 9.85 0 0012.04 2zm0 18.15h-.01a8.2 8.2 0 01-4.18-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 012.41 5.83c0 4.54-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.42h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.17-.48-.29z"/></svg></a>
+            <a href="https://www.linkedin.com/company/finderlab/" target="_blank" rel="noopener" aria-label="LinkedIn Finder Lab"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 11-.02 5 2.5 2.5 0 01.02-5zM3 9.75h4V21H3zM9.75 9.75h3.8v1.6h.06c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.77 2.65 4.77 6.1V21h-4v-4.9c0-1.17-.02-2.68-1.63-2.68-1.63 0-1.88 1.28-1.88 2.6V21h-4z"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <div class="foot-bar">
+        <div class="legal"><span>© 2026 Finder Lab · Rodrigo Moraes. Todos os direitos reservados.</span><span>FINDER CONSULTORIA EM TI LTDA · CNPJ 53.291.349/0001-96</span></div>
+        <a href="#topo" style="color:#D2CEE6">Voltar ao topo ↑</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-ov" id="chat-ov">
+    <img class="chat-companion" src="/img/drigo-avatar.png" alt="" id="chat-companion">
+    <div class="chat-modal" role="dialog" aria-modal="true" aria-labelledby="chat-title" id="chat-modal">
+      <div class="chat-head">
+        <div class="chat-head-id">
+          <img class="drigo-avatar" src="/img/drigo-avatar.png" width="40" height="40" alt="">
+          <div>
+            <b id="chat-title">Drigo</b>
+            <span>Assistente da Máquina de Decisões</span>
+          </div>
+        </div>
+        <button type="button" class="chat-x" id="chat-close" aria-label="Fechar">×</button>
+      </div>
+      <div class="chat-body" id="chat-body" aria-live="polite">
+        <div class="chat-msg bot">Oi, tudo bem? Eu sou o Drigo. Posso ajudar com dúvidas sobre o curso ou bater um papo sobre alguma decisão que você tá encarando no negócio. Por onde a gente começa?</div>
+      </div>
+      <form class="chat-form" id="chat-form">
+        <input type="text" id="chat-input" placeholder="Escreve sua pergunta..." aria-label="Sua mensagem" maxlength="600">
+        <button type="submit" class="chat-send" id="chat-send" disabled aria-label="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
+      </form>
+    </div>
+  </div>
+  <button type="button" class="chat-fab" id="chat-fab" aria-expanded="false" aria-label="Conversar com o Drigo, assistente da Máquina de Decisões"><img class="chat-fab-avatar" src="/img/drigo-avatar.png" width="82" height="82" alt=""></button>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- framework interativo ---------- */
+  var STEPS = [
+    { t: 'Dado', x: 'Tudo começa no que a empresa já registra: vendas, atendimentos, contratos, planilhas. Dado solto não decide nada, mas sem ele não existe decisão.' },
+    { t: 'Contexto', x: 'É o que dá sentido ao dado: as regras do negócio, a política interna, o histórico do cliente. A mesma IA responde com fundamento quando conhece o contexto da sua empresa.' },
+    { t: 'Diagnóstico', x: 'Com dado e contexto, a IA aponta o que está acontecendo e por quê: onde o processo trava, qual cliente esfria, o que saiu do padrão.' },
+    { t: 'Previsão', x: 'Do diagnóstico ao que vem a seguir: risco de churn, gargalos antes de acontecerem, cenários prováveis para a decisão que está em jogo.' },
+    { t: 'Recomendação', x: 'A IA propõe o próximo passo com base no que viu e previu. Você decide com clareza: o que perguntar, o que delegar e o que mudar.' },
+    { t: 'Ação', x: 'A decisão vira execução. Um agente não só responde: ele age, e coloca o trabalho para andar dentro dos processos reais do seu negócio.' }
+  ];
+  var step = 0, auto = true, resumeTimer = null;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var fillEl = document.getElementById('fw2-fill');
+  var bigEl = document.getElementById('fw2-big');
+  var ptEl = document.getElementById('fw2-pt');
+  var pdEl = document.getElementById('fw2-pd');
+  var stepBtns = Array.prototype.slice.call(document.querySelectorAll('.fw2-step'));
+
+  function renderStep() {
+    fillEl.style.width = (step / 5 * 100) + '%';
+    bigEl.textContent = '0' + (step + 1);
+    ptEl.textContent = STEPS[step].t;
+    pdEl.textContent = STEPS[step].x;
+    stepBtns.forEach(function (btn, i) {
+      var on = i === step;
+      var done = i <= step;
+      btn.classList.toggle('on', on);
+      btn.classList.toggle('done', done);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  stepBtns.forEach(function (btn, i) {
+    btn.addEventListener('click', function () {
+      step = i;
+      auto = false;
+      if (resumeTimer) clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(function () { auto = true; }, 20000);
+      renderStep();
+    });
+  });
+  if (!reduce) {
+    setInterval(function () {
+      if (auto) { step = (step + 1) % 6; renderStep(); }
+    }, 4200);
+  }
+
+  /* ---------- FAQ ---------- */
+  var faqOpen = 1;
+  var faqItems = Array.prototype.slice.call(document.querySelectorAll('.faq-item'));
+  function renderFaq() {
+    faqItems.forEach(function (item) {
+      var i = Number(item.getAttribute('data-faq'));
+      var btn = item.querySelector('.faq-btn');
+      var ic = item.querySelector('.faq-ic');
+      var ans = item.querySelector('.faq-a');
+      var isOpen = faqOpen === i;
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      ic.textContent = isOpen ? '−' : '+';
+      ans.style.display = isOpen ? '' : 'none';
+    });
+  }
+  faqItems.forEach(function (item) {
+    var i = Number(item.getAttribute('data-faq'));
+    item.querySelector('.faq-btn').addEventListener('click', function () {
+      faqOpen = faqOpen === i ? 0 : i;
+      renderFaq();
+    });
+  });
+
+  /* ---------- chat ---------- */
+  var chatSession = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  var chatLoading = false;
+  var chatOv = document.getElementById('chat-ov');
+  var chatModal = document.getElementById('chat-modal');
+  var chatCompanion = document.getElementById('chat-companion');
+  var chatBody = document.getElementById('chat-body');
+  var chatForm = document.getElementById('chat-form');
+  var chatInput = document.getElementById('chat-input');
+  var chatSend = document.getElementById('chat-send');
+  var chatFab = document.getElementById('chat-fab');
+  var chatClose = document.getElementById('chat-close');
+
+  function scrollChat() { chatBody.scrollTop = chatBody.scrollHeight; }
+
+  function openChat() {
+    chatOv.classList.add('open');
+    chatFab.setAttribute('aria-expanded', 'true');
+    setTimeout(scrollChat, 50);
+  }
+  function closeChat() {
+    chatOv.classList.remove('open');
+    chatFab.setAttribute('aria-expanded', 'false');
+  }
+  chatFab.addEventListener('click', function () {
+    if (chatOv.classList.contains('open')) closeChat(); else openChat();
+  });
+  chatClose.addEventListener('click', closeChat);
+  chatOv.addEventListener('click', closeChat);
+  chatModal.addEventListener('click', function (e) { e.stopPropagation(); });
+  chatCompanion.addEventListener('click', function (e) { e.stopPropagation(); });
+
+  function addMsg(who, text) {
+    var div = document.createElement('div');
+    div.className = 'chat-msg ' + who;
+    div.textContent = text;
+    chatBody.appendChild(div);
+  }
+  function setLoading(v) {
+    chatLoading = v;
+    var dots = document.getElementById('chat-loading-dots');
+    if (v) {
+      if (!dots) {
+        dots = document.createElement('div');
+        dots.id = 'chat-loading-dots';
+        dots.className = 'chat-msg bot';
+        dots.innerHTML = '<span class="chat-dots"><span></span><span></span><span></span></span>';
+        chatBody.appendChild(dots);
+      }
+    } else if (dots) {
+      dots.remove();
+    }
+    updateSendState();
+  }
+  function updateSendState() {
+    chatSend.disabled = !chatInput.value.trim() || chatLoading;
+  }
+  chatInput.addEventListener('input', updateSendState);
+
+  chatForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var text = chatInput.value.trim();
+    if (!text || chatLoading) return;
+    var history = Array.prototype.slice.call(chatBody.querySelectorAll('.chat-msg.user, .chat-msg.bot'))
+      .slice(-16)
+      .map(function (el) {
+        return { role: el.classList.contains('user') ? 'user' : 'assistant', content: el.textContent };
+      });
+    addMsg('user', text);
+    chatInput.value = '';
+    updateSendState();
+    setLoading(true);
+    setTimeout(scrollChat, 30);
+
+    var ctrl = new AbortController();
+    var timeoutId = setTimeout(function () { ctrl.abort(); }, 15000);
+    fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, history: history, sessionId: chatSession }),
+      signal: ctrl.signal
+    })
+      .then(function (r) {
+        clearTimeout(timeoutId);
+        return r.json().catch(function () { return {}; }).then(function (data) {
+          if (!r.ok || !data.reply) throw new Error((data && data.error) || 'falha');
+          return data;
+        });
+      })
+      .then(function (data) {
+        setLoading(false);
+        addMsg('bot', data.reply);
+      })
+      .catch(function () {
+        clearTimeout(timeoutId);
+        setLoading(false);
+        addMsg('err', 'Não consegui responder agora. Fala com a gente pelo WhatsApp (11) 3164-3783 ou tenta de novo em instantes.');
+      })
+      .finally(function () { setTimeout(scrollChat, 30); });
+  });
+})();
+</script>
+</body>
+</html>
