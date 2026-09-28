@@ -8,6 +8,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
 const Anthropic = require('@anthropic-ai/sdk');
+const twilio = require('twilio');
 
 const PORT = process.env.PORT || 3000;
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
@@ -55,6 +56,57 @@ try {
 const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
 if (!anthropic) {
   console.error('ANTHROPIC_API_KEY não definida. O agente de chat ficará desligado até você configurá-la.');
+}
+
+// ---------- WhatsApp (Twilio): confirmação pra quem se inscreve + aviso pro Rodrigo ----------
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || '';
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || '';
+// Número que envia, com prefixo whatsapp:. No Sandbox de teste é whatsapp:+14155238886;
+// depois que o WhatsApp Business for aprovado, troca pelo número definitivo.
+const TWILIO_WHATSAPP_FROM = process.env.TWILIO_WHATSAPP_FROM || '';
+// Opcional: WhatsApp do Rodrigo (com DDI, só dígitos ou já em E.164), pra receber um
+// aviso a cada nova inscrição. Se ficar vazio, só a confirmação pra pessoa é enviada.
+const TWILIO_OWNER_WHATSAPP = process.env.TWILIO_OWNER_WHATSAPP || '';
+
+const twilioClient = TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN ? twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) : null;
+if (!twilioClient || !TWILIO_WHATSAPP_FROM) {
+  console.error('TWILIO_ACCOUNT_SID/TWILIO_AUTH_TOKEN/TWILIO_WHATSAPP_FROM não definidas. Notificação por WhatsApp ficará desligada.');
+}
+
+// Assume número brasileiro: aceita como a pessoa digitou (com ou sem DDI, com ou sem
+// pontuação) e devolve no formato que a API de WhatsApp da Twilio exige.
+function toWhatsAppAddress(raw) {
+  let digits = String(raw || '').replace(/\D/g, '');
+  if (digits.startsWith('0')) digits = digits.slice(1);
+  if (!digits.startsWith('55')) digits = '55' + digits;
+  return 'whatsapp:+' + digits;
+}
+
+// A inscrição já foi salva no banco antes disso ser chamado, então uma falha aqui
+// nunca derruba o cadastro: só loga o erro e segue.
+async function sendWhatsApp(toRaw, body) {
+  if (!twilioClient || !TWILIO_WHATSAPP_FROM) return;
+  try {
+    await twilioClient.messages.create({ from: TWILIO_WHATSAPP_FROM, to: toWhatsAppAddress(toRaw), body });
+  } catch (err) {
+    console.error('Falha ao enviar WhatsApp via Twilio', err && err.message ? err.message : err);
+  }
+}
+
+// Dispara as duas mensagens de uma inscrição nova/atualizada: confirmação pra pessoa e
+// aviso pro Rodrigo. Fire-and-forget, não bloqueia a resposta pro cliente.
+function notifyLeadWhatsApp(lead) {
+  sendWhatsApp(
+    lead.whats,
+    `Oi ${lead.nome}, aqui é da Máquina de Decisões. Recebemos sua inscrição, valeu! Em breve alguém da equipe fala com você por aqui. Qualquer dúvida, é só responder essa mensagem.`
+  );
+  if (TWILIO_OWNER_WHATSAPP) {
+    const contexto = [lead.empresa, lead.cargo].filter(Boolean).join(' - ');
+    sendWhatsApp(
+      TWILIO_OWNER_WHATSAPP,
+      `Nova inscrição na Máquina de Decisões: ${lead.nome} (${lead.email}), WhatsApp ${lead.whats}${contexto ? ', ' + contexto : ''}.`
+    );
+  }
 }
 
 async function migrate() {
@@ -143,7 +195,8 @@ const leadLimiter = rateLimit({
 
 // Validação + gravação de uma inscrição. Usado tanto pelo POST /leads (formulário
 // do site) quanto pela ferramenta registrar_inscricao que o agente de chat pode
-// chamar no meio da conversa, pra não duplicar a mesma lógica em dois lugares.
+// chamar no meio da conversa, pra não duplicar a mesma lógica (nem o disparo do
+// WhatsApp) em dois lugares.
 async function saveLead(input) {
   const b = input || {};
   const nome = clean(b.nome, 160);
@@ -170,6 +223,7 @@ async function saveLead(input) {
      RETURNING id`,
     [nome, email, whats, empresa, cargo, consent]
   );
+  notifyLeadWhatsApp({ id: rows[0].id, nome, email, whats, empresa, cargo });
   return { ok: true, id: rows[0].id };
 }
 
@@ -233,8 +287,9 @@ function stripMarkdown(text) {
 }
 
 // Ferramenta que o agente pode chamar no meio da conversa pra registrar a inscrição
-// direto no banco (mesmo destino do formulário), sem a pessoa precisar preencher nada
-// no site. O prompt (knowledge/system-instructions.md) instrui quando e como usar isso.
+// direto no banco (mesmo destino do formulário, incluindo o disparo do WhatsApp), sem
+// a pessoa precisar preencher nada no site. O prompt (knowledge/system-instructions.md)
+// instrui quando e como usar isso.
 const CHAT_TOOLS = [
   {
     name: 'registrar_inscricao',
