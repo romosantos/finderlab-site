@@ -563,7 +563,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     setTimeout(scrollChat, 30);
 
     var ctrl = new AbortController();
-    var timeoutId = setTimeout(function () { ctrl.abort(); }, 15000);
+    var timeoutId = setTimeout(function () { ctrl.abort(); }, 45000); // 45s: o agente pode fazer mais de uma chamada (ex.: ao registrar inscrição), 15s cortava respostas legítimas no meio
     fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

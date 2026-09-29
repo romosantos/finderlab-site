@@ -341,6 +341,15 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
     return res.status(503).json({ error: 'O assistente está indisponível no momento. Fala com a gente pelo WhatsApp (11) 3164-3783.' });
   }
 
+  const chatStartedAt = Date.now();
+  let clientGone = false;
+  res.on('close', () => {
+    if (!res.writableEnded) {
+      clientGone = true;
+      console.error('POST /chat: cliente desconectou antes da resposta (%dms decorridos)', Date.now() - chatStartedAt);
+    }
+  });
+
   try {
     const b = req.body || {};
 
@@ -398,6 +407,11 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
 
     const reply = stripMarkdown(stripInternalReasoning(rawReply));
 
+    const elapsedMs = Date.now() - chatStartedAt;
+    if (elapsedMs > 12000) {
+      console.error('POST /chat: resposta demorou %dms (rounds=%d) — perto ou acima do timeout do cliente', elapsedMs, toolRounds);
+    }
+
     if (!reply) return res.status(502).json({ error: 'Não veio resposta do assistente. Tenta de novo.' });
 
     const sessionId = clean(b.sessionId, 80);
@@ -408,10 +422,10 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       )
       .catch((err) => console.error('Falha ao gravar chat_logs', err));
 
-    res.json({ reply });
+    if (!clientGone) res.json({ reply });
   } catch (err) {
-    console.error('POST /chat', err && err.message ? err.message : err);
-    res.status(500).json({ error: 'Não consegui responder agora. Tenta de novo em instantes.' });
+    console.error('POST /chat', err && err.message ? err.message : err, `(${Date.now() - chatStartedAt}ms decorridos)`);
+    if (!res.headersSent) res.status(500).json({ error: 'Não consegui responder agora. Tenta de novo em instantes.' });
   }
 });
 
