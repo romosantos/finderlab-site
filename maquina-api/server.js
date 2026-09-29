@@ -145,6 +145,17 @@ async function migrate() {
       created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     CREATE INDEX IF NOT EXISTS chat_logs_created_idx ON chat_logs (created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS whatsapp_messages (
+      id            SERIAL PRIMARY KEY,
+      phone         TEXT NOT NULL,
+      direction     TEXT NOT NULL,
+      body          TEXT NOT NULL,
+      profile_name  TEXT NOT NULL DEFAULT '',
+      message_sid   TEXT NOT NULL DEFAULT '',
+      created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS whatsapp_messages_phone_idx ON whatsapp_messages (phone, created_at);
   `);
 }
 
@@ -335,6 +346,47 @@ async function runChatTool(name, toolInput) {
   return { sucesso: false, erro: 'Ferramenta desconhecida.' };
 }
 
+// Chama o modelo com o loop de tool use (registrar_inscricao) até ele responder só com
+// texto ou até um limite de segurança. Compartilhado entre o chat do site e o WhatsApp,
+// pra não duplicar essa lógica em dois lugares.
+async function getAgentReply(messages) {
+  let response = await anthropic.messages.create({
+    model: ANTHROPIC_MODEL,
+    max_tokens: CHAT_MAX_TOKENS,
+    system: SYSTEM_PROMPT,
+    messages,
+    tools: CHAT_TOOLS,
+  });
+
+  let toolRounds = 0;
+  while (response.stop_reason === 'tool_use' && toolRounds < 3) {
+    toolRounds += 1;
+    const toolUseBlocks = (response.content || []).filter((block) => block.type === 'tool_use');
+    const toolResults = [];
+    for (const block of toolUseBlocks) {
+      const result = await runChatTool(block.name, block.input);
+      toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) });
+    }
+    messages.push({ role: 'assistant', content: response.content });
+    messages.push({ role: 'user', content: toolResults });
+    response = await anthropic.messages.create({
+      model: ANTHROPIC_MODEL,
+      max_tokens: CHAT_MAX_TOKENS,
+      system: SYSTEM_PROMPT,
+      messages,
+      tools: CHAT_TOOLS,
+    });
+  }
+
+  const rawReply = (response.content || [])
+    .filter((block) => block.type === 'text')
+    .map((block) => block.text)
+    .join('\n')
+    .trim();
+
+  return { reply: stripMarkdown(stripInternalReasoning(rawReply)), toolRounds };
+}
+
 app.options('/chat', publicCors);
 app.post('/chat', publicCors, chatLimiter, async (req, res) => {
   if (!chatReady || !anthropic) {
@@ -368,44 +420,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
 
     const messages = history.concat([{ role: 'user', content: message }]);
 
-    let response = await anthropic.messages.create({
-      model: ANTHROPIC_MODEL,
-      max_tokens: CHAT_MAX_TOKENS,
-      system: SYSTEM_PROMPT,
-      messages,
-      tools: CHAT_TOOLS,
-    });
-
-    // Loop de tool use: o modelo pode pedir pra chamar registrar_inscricao no meio da
-    // conversa. Executamos a ferramenta, devolvemos o resultado pra ele continuar, e
-    // repetimos até ele responder só com texto (ou até um limite de segurança).
-    let toolRounds = 0;
-    while (response.stop_reason === 'tool_use' && toolRounds < 3) {
-      toolRounds += 1;
-      const toolUseBlocks = (response.content || []).filter((block) => block.type === 'tool_use');
-      const toolResults = [];
-      for (const block of toolUseBlocks) {
-        const result = await runChatTool(block.name, block.input);
-        toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) });
-      }
-      messages.push({ role: 'assistant', content: response.content });
-      messages.push({ role: 'user', content: toolResults });
-      response = await anthropic.messages.create({
-        model: ANTHROPIC_MODEL,
-        max_tokens: CHAT_MAX_TOKENS,
-        system: SYSTEM_PROMPT,
-        messages,
-        tools: CHAT_TOOLS,
-      });
-    }
-
-    const rawReply = (response.content || [])
-      .filter((block) => block.type === 'text')
-      .map((block) => block.text)
-      .join('\n')
-      .trim();
-
-    const reply = stripMarkdown(stripInternalReasoning(rawReply));
+    const { reply, toolRounds } = await getAgentReply(messages);
 
     const elapsedMs = Date.now() - chatStartedAt;
     if (elapsedMs > 12000) {
@@ -429,9 +444,103 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
   }
 });
 
+// ---------- WhatsApp inbound: Drigo responde quem manda mensagem pro número ----------
+// Janela de histórico igual à do chat do site, pra manter a mesma qualidade de contexto.
+const WHATSAPP_HISTORY_LIMIT = CHAT_MAX_HISTORY;
+
+// "whatsapp:+5511999998888" -> "+5511999998888"
+function fromWhatsAppAddress(raw) {
+  return String(raw || '').replace(/^whatsapp:/, '').trim();
+}
+
+async function saveWhatsAppMessage({ phone, direction, body, profileName, messageSid }) {
+  await pool.query(
+    `INSERT INTO whatsapp_messages (phone, direction, body, profile_name, message_sid)
+     VALUES ($1,$2,$3,$4,$5)`,
+    [phone, direction, body, profileName || '', messageSid || '']
+  );
+}
+
+async function loadWhatsAppHistory(phone) {
+  const { rows } = await pool.query(
+    `SELECT direction, body FROM whatsapp_messages
+     WHERE phone = $1 ORDER BY created_at DESC LIMIT $2`,
+    [phone, WHATSAPP_HISTORY_LIMIT]
+  );
+  return rows.reverse().map((r) => ({ role: r.direction === 'in' ? 'user' : 'assistant', content: r.body }));
+}
+
+// Resposta dentro da janela de atendimento (a pessoa escreveu primeiro): pode mandar
+// texto livre, sem Content Template — diferente do envio business-initiated em notifyLeadWhatsApp.
+async function sendWhatsAppFreeform(phoneRaw, body) {
+  if (!twilioClient || !TWILIO_WHATSAPP_FROM) return;
+  await twilioClient.messages.create({ from: TWILIO_WHATSAPP_FROM, to: toWhatsAppAddress(phoneRaw), body });
+}
+
+// Roda depois de já termos respondido 200 pra Twilio (veja a rota abaixo), então uma
+// demora aqui (o modelo pode levar vários segundos, mais ainda se chamar
+// registrar_inscricao) não atrasa nem derruba o webhook.
+async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
+  try {
+    await saveWhatsAppMessage({ phone, direction: 'in', body, profileName, messageSid });
+
+    if (!chatReady || !anthropic) {
+      console.error('WhatsApp inbound: agente indisponível (chatReady=%s) para %s', chatReady, phone);
+      return;
+    }
+
+    const history = await loadWhatsAppHistory(phone);
+    const { reply } = await getAgentReply(history);
+    if (!reply) {
+      console.error('WhatsApp inbound: sem resposta do modelo pra %s', phone);
+      return;
+    }
+
+    await sendWhatsAppFreeform(phone, reply);
+    await saveWhatsAppMessage({ phone, direction: 'out', body: reply });
+  } catch (err) {
+    console.error('WhatsApp inbound: falha ao processar mensagem de %s', phone, err && err.message ? err.message : err);
+  }
+}
+
+const whatsappWebhookParser = express.urlencoded({ extended: false });
+
+app.post('/whatsapp/inbound', whatsappWebhookParser, (req, res) => {
+  // Responde já: a Twilio espera 200 em poucos segundos, e o modelo pode demorar bem
+  // mais que isso. O processamento de verdade acontece depois, sem bloquear a resposta.
+  res.status(200).type('text/xml').send('<Response></Response>');
+
+  try {
+    if (TWILIO_AUTH_TOKEN) {
+      const signature = req.header('X-Twilio-Signature') || '';
+      const url = req.protocol + '://' + req.get('host') + req.originalUrl;
+      const valid = twilio.validateRequest(TWILIO_AUTH_TOKEN, signature, url, req.body || {});
+      if (!valid) {
+        console.error('POST /whatsapp/inbound: assinatura da Twilio inválida, ignorando');
+        return;
+      }
+    }
+
+    const from = fromWhatsAppAddress(req.body && req.body.From);
+    if (!from) return;
+    const profileName = clean(req.body && req.body.ProfileName, 160);
+    const messageSid = clean(req.body && req.body.MessageSid, 60);
+    const bodyText = clean(req.body && req.body.Body, CHAT_MAX_MESSAGE_LEN);
+    const numMedia = Number(req.body && req.body.NumMedia) || 0;
+
+    const body = bodyText || (numMedia > 0 ? '[mensagem sem texto: áudio, imagem ou anexo]' : '');
+    if (!body) return;
+
+    handleWhatsAppInbound({ phone: from, body, profileName, messageSid });
+  } catch (err) {
+    console.error('POST /whatsapp/inbound', err && err.message ? err.message : err);
+  }
+});
+
 // ---------- Admin (protegido por senha) ----------
 app.use('/admin', adminLimiter, failLimiter, basicAuth);
 app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/admin/whatsapp', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-whatsapp.html')));
 
 app.get('/admin/api/leads', async (_req, res) => {
   const { rows } = await pool.query('SELECT * FROM leads ORDER BY created_at DESC');
@@ -469,6 +578,43 @@ app.get('/admin/api/leads.csv', async (_req, res) => {
   res.set('Content-Type', 'text/csv; charset=utf-8');
   res.set('Content-Disposition', 'attachment; filename="inscricoes-maquina-de-decisoes.csv"');
   res.send('﻿' + lines.join('\r\n'));
+});
+
+app.get('/admin/api/whatsapp/conversations', async (_req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT c.phone, c.last_at, c.count, m.body AS last_body, m.direction AS last_direction, m.profile_name
+      FROM (
+        SELECT phone, MAX(created_at) AS last_at, COUNT(*) AS count
+        FROM whatsapp_messages GROUP BY phone
+      ) c
+      JOIN LATERAL (
+        SELECT body, direction, profile_name FROM whatsapp_messages wm
+        WHERE wm.phone = c.phone ORDER BY created_at DESC LIMIT 1
+      ) m ON true
+      ORDER BY c.last_at DESC
+      LIMIT 200
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error('GET /admin/api/whatsapp/conversations', err);
+    res.status(500).json({ error: 'Não foi possível carregar as conversas.' });
+  }
+});
+
+app.get('/admin/api/whatsapp/conversations/:phone', async (req, res) => {
+  try {
+    const phone = clean(req.params.phone, 30);
+    const { rows } = await pool.query(
+      `SELECT direction, body, profile_name, created_at FROM whatsapp_messages
+       WHERE phone = $1 ORDER BY created_at ASC LIMIT 500`,
+      [phone]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('GET /admin/api/whatsapp/conversations/:phone', err);
+    res.status(500).json({ error: 'Não foi possível carregar a conversa.' });
+  }
 });
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
