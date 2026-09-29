@@ -397,7 +397,6 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     editBtn: document.getElementById('edit-btn')
   };
 
-  var PAYMENT_URL = '#'; // TODO: colocar o link de pagamento do Asaas quando estiver pronto
   var tried = false;
 
   els.whats.addEventListener('input', function () {
@@ -435,7 +434,39 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
         consent: true,
         website: hp
       })
-    }).catch(function () { /* o fluxo de pagamento nao depende do registro */ });
+    })
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (data) { return data && data.id ? data.id : null; })
+      .catch(function () { return null; });
+  }
+
+  // Pede ao backend um checkout do Asaas pra essa inscrição e devolve a URL da página
+  // de pagamento hospedada pelo Asaas (onde a pessoa digita CPF e cartão/PIX).
+  function createPaymentCheckout(leadId) {
+    return fetch('/payments/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadId: leadId })
+    })
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (data) { return data && data.url ? data.url : null; })
+      .catch(function () { return null; });
+  }
+
+  function setPaymentLinkState(state, url) {
+    if (state === 'loading') {
+      els.paymentLink.textContent = 'Gerando o pagamento…';
+      els.paymentLink.setAttribute('href', '#');
+      els.paymentLink.setAttribute('aria-disabled', 'true');
+    } else if (state === 'ready') {
+      els.paymentLink.textContent = 'Ir para o pagamento →';
+      els.paymentLink.setAttribute('href', url);
+      els.paymentLink.removeAttribute('aria-disabled');
+    } else {
+      els.paymentLink.textContent = 'Não deu pra gerar o pagamento agora — chama a gente no WhatsApp (11) 3164-3783';
+      els.paymentLink.setAttribute('href', '#');
+      els.paymentLink.setAttribute('aria-disabled', 'true');
+    }
   }
 
   els.form.addEventListener('submit', function (e) {
@@ -452,13 +483,20 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
       }, 30);
       return;
     }
-    saveLead();
     var first = els.nome.value.trim().split(' ')[0] || '';
     els.doneGreet.textContent = first ? ', ' + first : '';
-    els.paymentLink.setAttribute('href', PAYMENT_URL);
+    setPaymentLinkState('loading');
     els.stepLabel.textContent = 'Inscrição · etapa 2 de 2';
     els.form.style.display = 'none';
     els.done.style.display = '';
+
+    saveLead().then(function (leadId) {
+      if (!leadId) { setPaymentLinkState('error'); return null; }
+      return createPaymentCheckout(leadId);
+    }).then(function (url) {
+      if (url) setPaymentLinkState('ready', url);
+      else setPaymentLinkState('error');
+    });
   });
 
   els.editBtn.addEventListener('click', function () {

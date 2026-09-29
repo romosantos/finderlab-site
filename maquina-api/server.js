@@ -78,6 +78,90 @@ if (!twilioClient || !TWILIO_WHATSAPP_FROM) {
   console.error('TWILIO_ACCOUNT_SID/TWILIO_AUTH_TOKEN/TWILIO_WHATSAPP_FROM não definidas. Notificação por WhatsApp ficará desligada.');
 }
 
+// ---------- Pagamentos (Asaas) ----------
+const ASAAS_API_KEY = process.env.ASAAS_API_KEY || '';
+// 'sandbox' pra testar sem dinheiro de verdade, 'production' pra cobrar de verdade.
+const ASAAS_ENV = (process.env.ASAAS_ENV || 'sandbox').trim().toLowerCase();
+const ASAAS_BASE_URL = ASAAS_ENV === 'production' ? 'https://api.asaas.com/v3' : 'https://api-sandbox.asaas.com/v3';
+// Token escolhido por você ao criar o Webhook no painel do Asaas (Integrações > Webhooks).
+// O Asaas devolve esse mesmo valor no header "asaas-access-token" em toda notificação,
+// e comparamos aqui pra confirmar que a chamada realmente veio do Asaas.
+const ASAAS_WEBHOOK_TOKEN = process.env.ASAAS_WEBHOOK_TOKEN || '';
+// Valor da inscrição pra 1 pessoa, em reais (ex.: 2000 = R$ 2.000,00). Parcelamento em
+// até COURSE_MAX_INSTALLMENTS vezes sem juros no cartão.
+const COURSE_PRICE = Number(process.env.COURSE_PRICE) || 2000;
+const COURSE_MAX_INSTALLMENTS = Number(process.env.COURSE_MAX_INSTALLMENTS) || 10;
+
+if (!ASAAS_API_KEY) {
+  console.error('ASAAS_API_KEY não definida. O pagamento via Asaas ficará desligado.');
+}
+
+// Chamada genérica à API do Asaas. Autenticação é pelo header access_token (não é
+// "Authorization: Bearer"), conforme a documentação oficial.
+async function asaasRequest(method, endpoint, body) {
+  const res = await fetch(ASAAS_BASE_URL + endpoint, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      access_token: ASAAS_API_KEY,
+      'User-Agent': 'FinderLab-MaquinaDeDecisoes',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (err) {
+    data = { raw: text };
+  }
+  if (!res.ok) {
+    const msg = (data && data.errors && data.errors[0] && data.errors[0].description) || ('Asaas respondeu ' + res.status);
+    const asaasErr = new Error(msg);
+    asaasErr.asaasStatus = res.status;
+    asaasErr.asaasBody = data;
+    throw asaasErr;
+  }
+  return data;
+}
+
+// Cria um Asaas Checkout (página hospedada pelo próprio Asaas) pra uma inscrição.
+// A pessoa digita CPF e dados de cartão/PIX lá dentro, nunca no nosso formulário — por
+// isso Checkout em vez de criar Customer/Payment diretamente por aqui.
+async function createAsaasCheckout(lead, originUrl) {
+  const payload = {
+    billingTypes: ['PIX', 'CREDIT_CARD'],
+    chargeTypes: ['DETACHED', 'INSTALLMENT'],
+    minutesToExpire: 1440, // checkout válido por 24h
+    externalReference: 'lead-' + lead.id,
+    items: [
+      {
+        name: 'Máquina de Decisões',
+        description: 'Inscrição no curso Máquina de Decisões',
+        quantity: 1,
+        value: COURSE_PRICE,
+      },
+    ],
+    installment: { maxInstallmentCount: COURSE_MAX_INSTALLMENTS },
+    customerData: {
+      name: lead.nome,
+      email: lead.email,
+      phone: String(lead.whats || '').replace(/\D/g, ''),
+    },
+    callback: {
+      successUrl: originUrl + '/inscricao.html?pagamento=ok',
+      cancelUrl: originUrl + '/inscricao.html?pagamento=cancelado',
+      expiredUrl: originUrl + '/inscricao.html?pagamento=expirado',
+      autoRedirect: true,
+    },
+  };
+  return asaasRequest('POST', '/checkouts', payload);
+}
+
+async function getAsaasPayment(paymentId) {
+  return asaasRequest('GET', '/payments/' + encodeURIComponent(paymentId));
+}
+
 // Assume número brasileiro: aceita como a pessoa digitou (com ou sem DDI, com ou sem
 // pontuação) e devolve no formato que a API de WhatsApp da Twilio exige.
 function toWhatsAppAddress(raw) {
@@ -156,6 +240,21 @@ async function migrate() {
       created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     CREATE INDEX IF NOT EXISTS whatsapp_messages_phone_idx ON whatsapp_messages (phone, created_at);
+
+    CREATE TABLE IF NOT EXISTS payments (
+      id                SERIAL PRIMARY KEY,
+      lead_id           INTEGER NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+      asaas_checkout_id TEXT NOT NULL,
+      asaas_payment_id  TEXT NOT NULL DEFAULT '',
+      status            TEXT NOT NULL DEFAULT 'PENDING',
+      value             NUMERIC(10,2) NOT NULL,
+      checkout_url      TEXT NOT NULL DEFAULT '',
+      raw_event         JSONB,
+      created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS payments_checkout_uq ON payments (asaas_checkout_id);
+    CREATE INDEX IF NOT EXISTS payments_lead_idx ON payments (lead_id, created_at DESC);
   `);
 }
 
@@ -267,6 +366,106 @@ app.post('/leads', publicCors, leadLimiter, async (req, res) => {
   } catch (err) {
     console.error('POST /leads', err);
     res.status(500).json({ error: 'Não foi possível registrar agora.' });
+  }
+});
+
+// ---------- Pagamento: cria o checkout no Asaas pra uma inscrição já salva ----------
+const paymentLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Muitas tentativas. Tente novamente mais tarde.' },
+});
+
+app.options('/payments/checkout', publicCors);
+app.post('/payments/checkout', publicCors, paymentLimiter, async (req, res) => {
+  try {
+    if (!ASAAS_API_KEY) return res.status(503).json({ error: 'Pagamento indisponível no momento.' });
+
+    if (ALLOWED_ORIGINS.length && req.headers.origin && !ALLOWED_ORIGINS.includes(req.headers.origin)) {
+      return res.status(403).json({ error: 'Origem não permitida.' });
+    }
+
+    const leadId = Number(req.body && req.body.leadId);
+    if (!Number.isInteger(leadId) || leadId <= 0) return res.status(400).json({ error: 'Pedido inválido.' });
+
+    const { rows } = await pool.query('SELECT * FROM leads WHERE id=$1', [leadId]);
+    const lead = rows[0];
+    if (!lead) return res.status(404).json({ error: 'Inscrição não encontrada.' });
+
+    // já existe um checkout aberto pra essa inscrição? reaproveita em vez de criar outro
+    const existing = await pool.query(
+      `SELECT checkout_url FROM payments
+       WHERE lead_id=$1 AND status NOT IN ('EXPIRED', 'CANCELLED', 'REFUNDED')
+       ORDER BY created_at DESC LIMIT 1`,
+      [leadId]
+    );
+    if (existing.rows[0] && existing.rows[0].checkout_url) {
+      return res.json({ ok: true, url: existing.rows[0].checkout_url });
+    }
+
+    const originUrl = req.protocol + '://' + req.get('host');
+    const checkout = await createAsaasCheckout(lead, originUrl);
+    const url = checkout.link || ('https://asaas.com/checkoutSession/show?id=' + checkout.id);
+
+    await pool.query(
+      `INSERT INTO payments (lead_id, asaas_checkout_id, status, value, checkout_url)
+       VALUES ($1,$2,$3,$4,$5)`,
+      [leadId, checkout.id, checkout.status || 'PENDING', COURSE_PRICE, url]
+    );
+
+    res.json({ ok: true, url });
+  } catch (err) {
+    console.error('POST /payments/checkout', err && err.message ? err.message : err, err && err.asaasBody);
+    res.status(502).json({ error: 'Não foi possível gerar o pagamento agora.' });
+  }
+});
+
+// ---------- Webhook: Asaas avisa aqui quando o pagamento muda de status ----------
+app.post('/payments/webhook', async (req, res) => {
+  const token = req.header('asaas-access-token') || '';
+  if (ASAAS_WEBHOOK_TOKEN && !safeEqual(token, ASAAS_WEBHOOK_TOKEN)) {
+    console.error('POST /payments/webhook: token inválido, ignorando');
+    return res.status(401).json({ error: 'Token inválido.' });
+  }
+  // responde rápido: o Asaas espera 200 sem demora, processamos de verdade depois
+  res.status(200).json({ ok: true });
+
+  try {
+    const event = clean(req.body && req.body.event, 60);
+    const paymentId = clean(req.body && req.body.payment && req.body.payment.id, 60);
+    if (!event || !paymentId) return;
+
+    let externalReference = '';
+    let status = event;
+    try {
+      const payment = await getAsaasPayment(paymentId);
+      externalReference = clean(payment.externalReference, 200);
+      status = clean(payment.status, 40) || event;
+    } catch (err) {
+      console.error('POST /payments/webhook: falha ao buscar payment', paymentId, err.message);
+    }
+
+    const match = /^lead-(\d+)$/.exec(externalReference);
+    if (!match) {
+      console.error('POST /payments/webhook: sem externalReference reconhecível pro payment', paymentId, externalReference);
+      return;
+    }
+    const leadId = Number(match[1]);
+
+    await pool.query(
+      `UPDATE payments SET status=$1, asaas_payment_id=$2, raw_event=$3, updated_at=now()
+       WHERE id = (SELECT id FROM payments WHERE lead_id=$4 ORDER BY created_at DESC LIMIT 1)`,
+      [status, paymentId, JSON.stringify(req.body), leadId]
+    );
+
+    const PAID_EVENTS = ['PAYMENT_CONFIRMED', 'PAYMENT_RECEIVED'];
+    if (PAID_EVENTS.includes(event)) {
+      await pool.query(`UPDATE leads SET status='pago', updated_at=now() WHERE id=$1`, [leadId]);
+    }
+  } catch (err) {
+    console.error('POST /payments/webhook', err && err.message ? err.message : err);
   }
 });
 
