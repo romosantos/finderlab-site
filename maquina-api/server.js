@@ -68,6 +68,11 @@ const TWILIO_WHATSAPP_FROM = process.env.TWILIO_WHATSAPP_FROM || '';
 // aviso a cada nova inscrição. Se ficar vazio, só a confirmação pra pessoa é enviada.
 const TWILIO_OWNER_WHATSAPP = process.env.TWILIO_OWNER_WHATSAPP || '';
 
+// SIDs dos Content Templates aprovados no console da Twilio (obrigatórios pra mensagem
+// business-initiated no WhatsApp — não dá pra mandar texto livre nesse caso).
+const TWILIO_CONFIRM_TEMPLATE_SID = process.env.TWILIO_CONFIRM_TEMPLATE_SID || '';
+const TWILIO_OWNER_TEMPLATE_SID = process.env.TWILIO_OWNER_TEMPLATE_SID || '';
+
 const twilioClient = TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN ? twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) : null;
 if (!twilioClient || !TWILIO_WHATSAPP_FROM) {
   console.error('TWILIO_ACCOUNT_SID/TWILIO_AUTH_TOKEN/TWILIO_WHATSAPP_FROM não definidas. Notificação por WhatsApp ficará desligada.');
@@ -84,10 +89,17 @@ function toWhatsAppAddress(raw) {
 
 // A inscrição já foi salva no banco antes disso ser chamado, então uma falha aqui
 // nunca derruba o cadastro: só loga o erro e segue.
-async function sendWhatsApp(toRaw, body) {
-  if (!twilioClient || !TWILIO_WHATSAPP_FROM) return;
+// Mensagem business-initiated no WhatsApp exige um Content Template aprovado — não dá
+// pra mandar texto livre (`body`) nesse caso, por isso usamos contentSid + contentVariables.
+async function sendWhatsApp(toRaw, contentSid, contentVariables) {
+  if (!twilioClient || !TWILIO_WHATSAPP_FROM || !contentSid) return;
   try {
-    await twilioClient.messages.create({ from: TWILIO_WHATSAPP_FROM, to: toWhatsAppAddress(toRaw), body });
+    await twilioClient.messages.create({
+      from: TWILIO_WHATSAPP_FROM,
+      to: toWhatsAppAddress(toRaw),
+      contentSid,
+      contentVariables: JSON.stringify(contentVariables || {}),
+    });
   } catch (err) {
     console.error('Falha ao enviar WhatsApp via Twilio', err && err.message ? err.message : err);
   }
@@ -96,16 +108,15 @@ async function sendWhatsApp(toRaw, body) {
 // Dispara as duas mensagens de uma inscrição nova/atualizada: confirmação pra pessoa e
 // aviso pro Rodrigo. Fire-and-forget, não bloqueia a resposta pro cliente.
 function notifyLeadWhatsApp(lead) {
-  sendWhatsApp(
-    lead.whats,
-    `Oi ${lead.nome}, aqui é da Máquina de Decisões. Recebemos sua inscrição, valeu! Em breve alguém da equipe fala com você por aqui. Qualquer dúvida, é só responder essa mensagem.`
-  );
+  // Template maquina_confirmacao_inscricao: "Oi {{1}}, aqui é da Máquina de Decisões. ..."
+  sendWhatsApp(lead.whats, TWILIO_CONFIRM_TEMPLATE_SID, { '1': lead.nome });
   if (TWILIO_OWNER_WHATSAPP) {
-    const contexto = [lead.empresa, lead.cargo].filter(Boolean).join(' - ');
-    sendWhatsApp(
-      TWILIO_OWNER_WHATSAPP,
-      `Nova inscrição na Máquina de Decisões: ${lead.nome} (${lead.email}), WhatsApp ${lead.whats}${contexto ? ', ' + contexto : ''}.`
-    );
+    // Template maquina_aviso_inscricao: "Nova inscrição na Máquina de Decisões: {{1}} ({{2}}), WhatsApp {{3}}."
+    sendWhatsApp(TWILIO_OWNER_WHATSAPP, TWILIO_OWNER_TEMPLATE_SID, {
+      '1': lead.nome,
+      '2': lead.email,
+      '3': lead.whats,
+    });
   }
 }
 
