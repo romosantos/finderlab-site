@@ -11,6 +11,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const twilio = require('twilio');
 const { extractRegistrationTerms, registrationTermsReply } = require('./lib/registration-terms');
 const { splitWhatsAppText } = require('./lib/whatsapp-text');
+const { lookupCep } = require('./lib/cep-address');
 
 const PORT = process.env.PORT || 3000;
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
@@ -719,6 +720,15 @@ function stripMarkdown(text) {
 // instrui quando e como usar isso.
 const CHAT_TOOLS = [
   {
+    name: 'consultar_endereco_cep',
+    description: 'Consulta o endereço oficial pelo CEP informado pela pessoa. Use assim que receber o CEP no fluxo de inscrição e pagamento, antes de perguntar rua ou bairro. Retorna rua, bairro, cidade e estado; peça somente número, complemento opcional e campos que a consulta não preencher. Não registra inscrição nem gera pagamento.',
+    input_schema: {
+      type: 'object',
+      properties: { cep: { type: 'string', description: 'CEP informado pela pessoa, com 8 dígitos, podendo conter hífen.' } },
+      required: ['cep'],
+    },
+  },
+  {
     name: 'consultar_termos_privacidade',
     description:
       'Mostra na própria conversa o texto completo e fiel dos termos de uso e privacidade publicados na página de inscrição. Use sempre que a pessoa pedir para ler, receber ou disponibilizar os termos, inclusive para não precisar abrir o site. Esta ferramenta só exibe os termos: não registra inscrição nem consentimento. A resposta completa será enviada diretamente à pessoa.',
@@ -813,6 +823,7 @@ const CHAT_TOOLS = [
 ];
 
 async function runChatTool(name, toolInput, originUrl) {
+  if (name === 'consultar_endereco_cep') return lookupCep(toolInput?.cep);
   if (name === 'registrar_inscricao') {
     const result = await saveLead(toolInput);
     return result.ok
