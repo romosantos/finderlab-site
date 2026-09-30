@@ -18,14 +18,14 @@ a{color:inherit}
 .page{--accent:#7443F5;--accent2:#A88BFF;--muted:#AEA9C5;min-height:100vh;display:flex;flex-direction:column}
 .top{display:flex;justify-content:center;padding:32px 24px 0}
 .top img{height:28px;width:auto}
-.main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 0 48px 24px;gap:28px}
+.main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px 48px;gap:28px}
 .pill{display:inline-flex;align-items:center;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:9px 16px;border-radius:8px}
-.hero{max-width:560px;text-align:center}
-.hero h1{margin:18px 0 0;font-size:clamp(30px,4.2vw,44px);font-weight:700;letter-spacing:-.03em;line-height:1.12;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
-.hero p{margin:18px 0 0;color:var(--muted);font-size:16px;line-height:1.7}
+.hero{max-width:340px;text-align:left;flex-shrink:0}
+.hero h1{margin:16px 0 0;font-size:clamp(24px,2.6vw,32px);font-weight:700;letter-spacing:-.03em;line-height:1.15;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
+.hero p{margin:14px 0 0;color:var(--muted);font-size:15px;line-height:1.65}
 
 /* ---------- chat, embutido e aberto por padrão ---------- */
-.chat-row{display:flex;align-items:flex-end;justify-content:flex-end;gap:24px;width:100%;padding-right:0}
+.chat-row{display:flex;align-items:center;justify-content:flex-end;gap:32px;width:100%;padding-right:0}
 .chat-companion{display:none}
 .chat-modal{position:relative;width:100%;max-width:760px;flex:1 1 640px;height:min(680px,80vh);display:flex;flex-direction:column;border:1px solid rgba(124,84,245,.6);background:#0C0A1A;border-radius:22px 0 0 22px;box-shadow:0 0 70px rgba(116,67,245,.35),0 30px 130px rgba(116,67,245,.3),inset 0 0 30px rgba(116,67,245,.1);overflow:hidden}
 @media(min-width:901px){
@@ -55,7 +55,7 @@ a{color:inherit}
 .foot{padding:20px 24px 32px;text-align:center}
 .foot a{font-size:13px;color:var(--muted);text-decoration:none}
 .foot a:hover{color:var(--accent2)}
-@media(max-width:900px){.chat-row{justify-content:center}.chat-modal{border-radius:22px}}
+@media(max-width:900px){.chat-row{flex-direction:column;justify-content:center}.hero{max-width:480px;text-align:center}.chat-modal{border-radius:22px}}
 @media(max-width:560px){.main{padding:20px 16px 32px;gap:22px}.chat-modal{height:min(560px,70vh)}}
 </style>
 </head>
@@ -64,14 +64,13 @@ a{color:inherit}
   <div class="top"><a href="https://maquina.finderlab.com.br"><img src="/img/logo-finderlab.png" alt="Finder Lab · Agentic Architecture Product House"></a></div>
 
   <div class="main">
+    <div class="chat-row">
+    <img class="chat-companion" src="/img/drigo-avatar.png" alt="">
     <div class="hero">
       <span class="pill">Diagnóstico gratuito</span>
       <h1>Qual decisão do seu negócio está pesando mais agora?</h1>
       <p>Poucas perguntas, sem compromisso. O Drigo usa o mesmo raciocínio que o Rodrigo aplica na Máquina de Decisões pra te devolver uma leitura de verdade sobre essa decisão, aqui mesmo.</p>
     </div>
-
-    <div class="chat-row">
-    <img class="chat-companion" src="/img/drigo-avatar.png" alt="">
     <div class="chat-modal" role="dialog" aria-labelledby="chat-title" id="chat-modal">
       <div class="chat-head">
         <img class="drigo-avatar" src="/img/drigo-avatar.png" width="40" height="40" alt="">
