@@ -1178,6 +1178,16 @@ app.get(['/', '/index.html', '/inscricao', '/inscricao.html'], (req, res, next) 
 // Registrado DEPOIS das rotas /admin (protegidas por basicAuth) de propósito:
 // com { extensions: ['html'] } o Express resolveria /admin -> public/admin.html
 // diretamente por aqui, pulando a autenticação, se este middleware viesse antes.
+// Quem chega por diagnostico.finderlab.com.br cai numa página própria, focada só
+// no diagnóstico (sem hero de venda, preço ou FAQ do curso) — não na landing page
+// principal. Só a raiz muda; assets (logo, avatar, fontes) continuam compartilhados.
+app.get('/', (req, res, next) => {
+  if (/diagnostico/i.test(req.hostname || '')) {
+    return res.sendFile(path.join(__dirname, 'public', 'diagnostico.html'));
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
 app.use((_req, res) => res.status(404).send('Not found'));

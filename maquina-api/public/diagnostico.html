@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnóstico gratuito · Finder Lab</title>
+<meta name="description" content="Em poucas perguntas, o Drigo te devolve uma leitura real sobre a decisão que mais pesa no seu negócio agora. Gratuito, sem compromisso.">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap">
+<style>
+body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 900px 700px at 50% -10%,rgba(116,67,245,.28),transparent 65%)}
+a{color:inherit}
+*{box-sizing:border-box}
+.page{--accent:#7443F5;--accent2:#A88BFF;--muted:#AEA9C5;min-height:100vh;display:flex;flex-direction:column}
+.top{display:flex;justify-content:center;padding:32px 24px 0}
+.top img{height:28px;width:auto}
+.main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px 48px;gap:28px}
+.pill{display:inline-flex;align-items:center;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:9px 16px;border-radius:8px}
+.hero{max-width:560px;text-align:center}
+.hero h1{margin:18px 0 0;font-size:clamp(30px,4.2vw,44px);font-weight:700;letter-spacing:-.03em;line-height:1.12;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
+.hero p{margin:18px 0 0;color:var(--muted);font-size:16px;line-height:1.7}
+
+/* ---------- chat, embutido e aberto por padrão ---------- */
+.chat-modal{position:relative;width:100%;max-width:460px;height:min(620px,72vh);display:flex;flex-direction:column;border:1px solid rgba(124,84,245,.6);background:#0C0A1A;border-radius:22px;box-shadow:0 0 70px rgba(116,67,245,.35),0 30px 130px rgba(116,67,245,.3),inset 0 0 30px rgba(116,67,245,.1);overflow:hidden}
+.chat-head{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(116,67,245,.1)}
+.drigo-avatar{flex-shrink:0;box-sizing:border-box;border-radius:50%;object-fit:contain;padding:4px;display:block;border:1px solid rgba(168,139,255,.5);background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.chat-head b{display:block;font-size:15px;font-weight:700}
+.chat-head span{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
+.chat-body{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{max-width:88%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-msg.bot{align-self:flex-start;background:rgba(255,255,255,.06);color:#EDEAF7;border:1px solid rgba(255,255,255,.08)}
+.chat-msg.user{align-self:flex-end;background:var(--accent);color:#fff}
+.chat-msg.err{align-self:flex-start;background:rgba(255,110,110,.12);color:#FFC2C2;border:1px solid rgba(255,110,110,.3)}
+.chat-dots{display:inline-flex;gap:4px;align-items:center}
+.chat-dots span{width:6px;height:6px;border-radius:50%;background:var(--muted);opacity:.5;animation:chatDot 1s infinite}
+.chat-dots span:nth-child(2){animation-delay:.15s}
+.chat-dots span:nth-child(3){animation-delay:.3s}
+@keyframes chatDot{0%,100%{opacity:.3}50%{opacity:1}}
+.chat-form{display:flex;gap:8px;padding:14px 16px;border-top:1px solid rgba(255,255,255,.08)}
+.chat-form input{flex:1;min-width:0;height:44px;padding:0 14px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-family:inherit;font-size:14px}
+.chat-form input::placeholder{color:#8F8AA8}
+.chat-send{width:44px;height:44px;flex-shrink:0;border-radius:10px;border:0;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.chat-send:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:2px solid #A88BFF;outline-offset:3px}
+
+.foot{padding:20px 24px 32px;text-align:center}
+.foot a{font-size:13px;color:var(--muted);text-decoration:none}
+.foot a:hover{color:var(--accent2)}
+@media(max-width:560px){.main{padding:20px 16px 32px;gap:22px}.chat-modal{height:min(560px,70vh)}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="top"><a href="https://maquina.finderlab.com.br"><img src="/img/logo-finderlab.png" alt="Finder Lab · Agentic Architecture Product House"></a></div>
+
+  <div class="main">
+    <div class="hero">
+      <span class="pill">Diagnóstico gratuito</span>
+      <h1>Qual decisão do seu negócio está pesando mais agora?</h1>
+      <p>Poucas perguntas, sem compromisso. O Drigo usa o mesmo raciocínio que o Rodrigo aplica na Máquina de Decisões pra te devolver uma leitura de verdade sobre essa decisão, aqui mesmo.</p>
+    </div>
+
+    <div class="chat-modal" role="dialog" aria-labelledby="chat-title" id="chat-modal">
+      <div class="chat-head">
+        <img class="drigo-avatar" src="/img/drigo-avatar.png" width="40" height="40" alt="">
+        <div>
+          <b id="chat-title">Drigo</b>
+          <span>Diagnóstico · Finder Lab</span>
+        </div>
+      </div>
+      <div class="chat-body" id="chat-body" aria-live="polite">
+        <div class="chat-msg bot">Oi, tudo bem? Eu sou o Drigo. Bora fazer um diagnóstico rápido da decisão que mais pesa pra você no negócio agora? Em poucas perguntas eu já te devolvo uma leitura de verdade, sem compromisso nenhum. Qual é essa decisão?</div>
+      </div>
+      <form class="chat-form" id="chat-form">
+        <input type="text" id="chat-input" placeholder="Escreve aqui..." aria-label="Sua mensagem" maxlength="600">
+        <button type="submit" class="chat-send" id="chat-send" disabled aria-label="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
+      </form>
+    </div>
+  </div>
+
+  <div class="foot"><a href="https://maquina.finderlab.com.br">um projeto da Finder Lab · conhecer a Máquina de Decisões ↗</a></div>
+</div>
+
+<script>
+(function () {
+  var chatSession = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  var chatLoading = false;
+  var chatBody = document.getElementById('chat-body');
+  var chatForm = document.getElementById('chat-form');
+  var chatInput = document.getElementById('chat-input');
+  var chatSend = document.getElementById('chat-send');
+
+  function scrollChat() { chatBody.scrollTop = chatBody.scrollHeight; }
+
+  function addMsg(who, text) {
+    var div = document.createElement('div');
+    div.className = 'chat-msg ' + who;
+    div.textContent = text;
+    chatBody.appendChild(div);
+  }
+  function setLoading(v) {
+    chatLoading = v;
+    var dots = document.getElementById('chat-loading-dots');
+    if (v) {
+      if (!dots) {
+        dots = document.createElement('div');
+        dots.id = 'chat-loading-dots';
+        dots.className = 'chat-msg bot';
+        dots.innerHTML = '<span class="chat-dots"><span></span><span></span><span></span></span>';
+        chatBody.appendChild(dots);
+      }
+    } else if (dots) {
+      dots.remove();
+    }
+    updateSendState();
+  }
+  function updateSendState() {
+    chatSend.disabled = !chatInput.value.trim() || chatLoading;
+  }
+  chatInput.addEventListener('input', updateSendState);
+
+  chatForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var text = chatInput.value.trim();
+    if (!text || chatLoading) return;
+    var history = Array.prototype.slice.call(chatBody.querySelectorAll('.chat-msg.user, .chat-msg.bot'))
+      .slice(-16)
+      .map(function (el) {
+        return { role: el.classList.contains('user') ? 'user' : 'assistant', content: el.textContent };
+      });
+    addMsg('user', text);
+    chatInput.value = '';
+    updateSendState();
+    setLoading(true);
+    setTimeout(scrollChat, 30);
+
+    var ctrl = new AbortController();
+    var timeoutId = setTimeout(function () { ctrl.abort(); }, 45000);
+    fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, history: history, sessionId: chatSession }),
+      signal: ctrl.signal
+    })
+      .then(function (r) {
+        clearTimeout(timeoutId);
+        return r.json().catch(function () { return {}; }).then(function (data) {
+          if (!r.ok || !data.reply) throw new Error((data && data.error) || 'falha');
+          return data;
+        });
+      })
+      .then(function (data) {
+        setLoading(false);
+        addMsg('bot', data.reply);
+      })
+      .catch(function () {
+        clearTimeout(timeoutId);
+        setLoading(false);
+        addMsg('err', 'Não consegui responder agora. Fala com a gente pelo WhatsApp (11) 3164-3783 ou tenta de novo em instantes.');
+      })
+      .finally(function () { setTimeout(scrollChat, 30); });
+  });
+
+  chatInput.focus();
+})();
+</script>
+
+<!-- LinkedIn Insight Tag (conta de anúncios Finder Lab) -->
+<script type="text/javascript">
+_linkedin_partner_id = "10962449";
+window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+</script><script type="text/javascript">
+(function(l) {
+if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
+window.lintrk.q=[]}
+var s = document.getElementsByTagName("script")[0];
+var b = document.createElement("script");
+b.type = "text/javascript";b.async = true;
+b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+s.parentNode.insertBefore(b, s);})(window.lintrk);
+</script>
+<noscript>
+<img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=10962449&fmt=gif" />
+</noscript>
+</body>
+</html>
