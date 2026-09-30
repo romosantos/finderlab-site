@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/chat-links.css?v=20260930">
 <style>
 body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -401,6 +402,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   <button type="button" class="chat-fab" id="chat-fab" aria-expanded="false" aria-label="Conversar com o Drigo, assistente da Máquina de Decisões"><img class="chat-fab-avatar" src="/img/drigo-avatar.png" width="82" height="82" alt=""></button>
 </div>
 
+<script src="/chat-links.js?v=20260930"></script>
 <script>
 (function () {
   'use strict';
@@ -679,7 +681,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   function addMsg(who, text) {
     var div = document.createElement('div');
     div.className = 'chat-msg ' + who;
-    div.textContent = text;
+    window.DrigoChatLinks.render(div, text);
     chatBody.appendChild(div);
   }
   function setLoading(v) {
@@ -710,7 +712,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     var history = Array.prototype.slice.call(chatBody.querySelectorAll('.chat-msg.user, .chat-msg.bot'))
       .slice(-16)
       .map(function (el) {
-        return { role: el.classList.contains('user') ? 'user' : 'assistant', content: el.textContent };
+        return { role: el.classList.contains('user') ? 'user' : 'assistant', content: el.dataset.message || el.textContent };
       });
     addMsg('user', text);
     chatInput.value = '';

@@ -1,0 +1,4 @@
+.chat-msg a{color:#D4C7FF;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;overflow-wrap:anywhere}
+.chat-msg.user a{color:#fff}
+.chat-msg a:hover{color:#fff;text-decoration-thickness:2px}
+.chat-msg a:focus-visible{outline:2px solid #D4C7FF;outline-offset:3px;border-radius:2px}

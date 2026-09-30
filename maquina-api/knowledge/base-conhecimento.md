@@ -327,3 +327,13 @@ Dois pontos que também precisam de uma decisão do Rodrigo, fora da base de con
 
 - **Os novos valores para 2 e 3 pessoas e a nova política de cancelamento (10 dias) ainda não estão no site.** O site hoje só mostra o preço de 1 pessoa e a política antiga (7 dias, só transferência). Quer que eu atualize o site com essas informações agora, ou por enquanto elas ficam só com o agente de IA?
 - **Parcelamento para os pacotes de 2 e 3 pessoas.** O site fala em até 10x de R$ 200 sem juros para 1 pessoa. Esse parcelamento vale por pessoa nos pacotes maiores também, ou é outra condição?
+
+## Endereços oficiais da imersão
+
+- Página da Máquina de Decisões: https://www.maquina.finderlab.com.br/
+- Formulário de inscrição: https://www.maquina.finderlab.com.br/inscricao
+- WhatsApp do Rodrigo: https://wa.me/551131643783
+- Email: mailto:rodrigo.moraes@finderlab.com.br
+- Site institucional da Finder Lab: https://finderlab.com.br/
+
+Estes são os endereços para compartilhar no chat. Não inventar outro domínio para a imersão ou inscrição.
