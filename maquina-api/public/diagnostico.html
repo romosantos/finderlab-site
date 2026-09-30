@@ -25,7 +25,12 @@ a{color:inherit}
 .hero p{margin:18px 0 0;color:var(--muted);font-size:16px;line-height:1.7}
 
 /* ---------- chat, embutido e aberto por padrão ---------- */
+.chat-row{display:flex;align-items:flex-end;justify-content:center;gap:24px;width:100%}
+.chat-companion{display:none}
 .chat-modal{position:relative;width:100%;max-width:460px;height:min(620px,72vh);display:flex;flex-direction:column;border:1px solid rgba(124,84,245,.6);background:#0C0A1A;border-radius:22px;box-shadow:0 0 70px rgba(116,67,245,.35),0 30px 130px rgba(116,67,245,.3),inset 0 0 30px rgba(116,67,245,.1);overflow:hidden}
+@media(min-width:901px){
+  .chat-companion{display:block;height:min(620px,72vh);width:auto;object-fit:contain;filter:drop-shadow(0 0 4px rgba(168,139,255,.5)) drop-shadow(0 0 22px rgba(116,67,245,.65)) drop-shadow(0 26px 50px rgba(116,67,245,.45))}
+}
 .chat-head{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(116,67,245,.1)}
 .drigo-avatar{flex-shrink:0;box-sizing:border-box;border-radius:50%;object-fit:contain;padding:4px;display:block;border:1px solid rgba(168,139,255,.5);background:linear-gradient(135deg,var(--accent),var(--accent2))}
 .chat-head b{display:block;font-size:15px;font-weight:700}
@@ -64,6 +69,8 @@ a{color:inherit}
       <p>Poucas perguntas, sem compromisso. O Drigo usa o mesmo raciocínio que o Rodrigo aplica na Máquina de Decisões pra te devolver uma leitura de verdade sobre essa decisão, aqui mesmo.</p>
     </div>
 
+    <div class="chat-row">
+    <img class="chat-companion" src="/img/drigo-avatar.png" alt="">
     <div class="chat-modal" role="dialog" aria-labelledby="chat-title" id="chat-modal">
       <div class="chat-head">
         <img class="drigo-avatar" src="/img/drigo-avatar.png" width="40" height="40" alt="">
@@ -79,6 +86,7 @@ a{color:inherit}
         <input type="text" id="chat-input" placeholder="Escreve aqui..." aria-label="Sua mensagem" maxlength="600">
         <button type="submit" class="chat-send" id="chat-send" disabled aria-label="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
       </form>
+    </div>
     </div>
   </div>
 
