@@ -2,7 +2,7 @@
   'use strict';
 
   // Message content is untrusted: create text nodes and validated anchors only.
-  var pattern = /\[([^\]\n]+)\]\((https?:\/\/[^\s<>]+|mailto:[^\s<>]+|tel:[+\d().-]+)\)|(?:https?:\/\/|mailto:|tel:)[^\s<>"']+|(?:[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+)|(?:\b(?:www\.)?[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*\.(?:com|org|net|io|ai|app|dev|br|co|edu|gov)(?:\.[a-z]{2})?(?:[/?#][^\s<>"']*)?)/gi;
+  var pattern = /\[([^\]\n]+)\]\((https?:\/\/[^\s<>]+|mailto:[^\s<>]+|tel:[+\d().-]+)\)|(?:https?:\/\/|mailto:|tel:)[^\s<>"']+|(?:[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+)|(?:\b(?:www\.)?[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*\.[a-z]{2,63}(?:\.[a-z]{2})?(?:[/?#][^\s<>"']*)?)/gi;
 
   function hrefFor(value) {
     var href = value;
