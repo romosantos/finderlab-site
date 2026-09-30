@@ -167,10 +167,16 @@ function buildAsaasCustomerData(lead) {
   return data;
 }
 
-async function createAsaasCheckout(lead, originUrl) {
+async function createAsaasCheckout(lead, originUrl, billingType) {
+  // Se a pessoa já disse a forma de pagamento (pix ou cartão), gera o checkout já
+  // restrito a ela, pra página do Asaas abrir direto na forma escolhida em vez de
+  // mostrar a escolha. Pix não parcela, então junto com billingType='PIX' o checkout
+  // também fica só à vista.
+  const billingTypes = billingType === 'PIX' || billingType === 'CREDIT_CARD' ? [billingType] : ['PIX', 'CREDIT_CARD'];
+  const chargeTypes = billingType === 'PIX' ? ['DETACHED'] : ['DETACHED', 'INSTALLMENT'];
   const payload = {
-    billingTypes: ['PIX', 'CREDIT_CARD'],
-    chargeTypes: ['DETACHED', 'INSTALLMENT'],
+    billingTypes,
+    chargeTypes,
     minutesToExpire: 1440, // checkout válido por 24h
     externalReference: 'lead-' + lead.id,
     items: [
@@ -563,7 +569,7 @@ const paymentLimiter = rateLimit({
 // Valida os dados da inscrição e gera (ou reaproveita) o link de pagamento no Asaas.
 // Extraído do POST /payments/checkout pra ser chamado também pela ferramenta de chat
 // gerar_pagamento_inscricao, sem duplicar a lógica de validação/checkout em dois lugares.
-async function createCheckoutForLead(leadId, originUrl) {
+async function createCheckoutForLead(leadId, originUrl, billingType) {
   if (!ASAAS_API_KEY) return { ok: false, status: 503, error: 'Pagamento indisponível no momento.' };
 
   const { rows } = await pool.query('SELECT * FROM leads WHERE id=$1', [leadId]);
@@ -589,7 +595,7 @@ async function createCheckoutForLead(leadId, originUrl) {
     return { ok: true, url: existing.rows[0].checkout_url };
   }
 
-  const checkout = await createAsaasCheckout(lead, originUrl);
+  const checkout = await createAsaasCheckout(lead, originUrl, billingType);
   const url = checkout.link || ('https://asaas.com/checkoutSession/show?id=' + checkout.id);
 
   await pool.query(
@@ -789,6 +795,12 @@ const CHAT_TOOLS = [
         bairro: { type: 'string', description: 'Bairro, exatamente como a pessoa informou.' },
         cidade: { type: 'string', description: 'Cidade, se a pessoa informou. String vazia se não informou.' },
         estado: { type: 'string', description: 'Estado (UF, 2 letras), se a pessoa informou. String vazia se não informou.' },
+        formaPagamento: {
+          type: 'string',
+          enum: ['pix', 'cartao', ''],
+          description:
+            'Forma de pagamento que a pessoa disse preferir: "pix" ou "cartao". String vazia se ela não tiver preferência ou não tiver dito — nesse caso o link de pagamento mostra as duas opções pra ela escolher lá.',
+        },
         consent: {
           type: 'boolean',
           description:
@@ -818,7 +830,13 @@ async function runChatTool(name, toolInput, originUrl) {
     if (!saved.ok) {
       return { sucesso: false, erro: saved.error, campos_invalidos: saved.errors || null };
     }
-    const checkout = await createCheckoutForLead(saved.id, originUrl || SITE_ORIGIN);
+    const billingType =
+      toolInput && toolInput.formaPagamento === 'pix'
+        ? 'PIX'
+        : toolInput && toolInput.formaPagamento === 'cartao'
+          ? 'CREDIT_CARD'
+          : undefined;
+    const checkout = await createCheckoutForLead(saved.id, originUrl || SITE_ORIGIN, billingType);
     if (!checkout.ok) {
       return { sucesso: false, erro: checkout.error, inscricao_id: saved.id };
     }
