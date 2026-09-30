@@ -107,8 +107,8 @@ Estes fatos vêm do site publicado. O agente nunca altera, arredonda ou inventa 
 - Nome: Máquina de Decisões. Curso presencial intensivo, IA para líderes.
 - Formato: 1 dia, 6 horas, presencial, sem gravação e sem módulos semanais. Programação do dia: 8h30 chegada e coffee break, 9h00 início, 10h30 às 10h50 intervalo com mais um coffee break, 12h30 às 14h00 almoço com bate-papo (networking), 14h00 às 16h00 desenvolvimento do projeto (ver "Entregável do dia" no item Incluso).
 - Turma: limitada a 20 participantes, para manter a qualidade da troca e do diagnóstico individual. Quando a turma fecha, não abre outra imediatamente.
-- Investimento: R$ 2.000 para 1 pessoa. Para mais gente da mesma empresa: 2 pessoas R$ 3.500, 3 pessoas R$ 5.000. Pode parcelar em até 10x de R$ 200 sem juros no cartão. Pagamento seguro, processado pelo Asaas.
-- Incluso: o dia de imersão presencial com o Rodrigo; coffee break de chegada, coffee break do intervalo da manhã e almoço com bate-papo (networking); o framework completo aplicado ao negócio do participante; diagnóstico individual feito durante o treinamento; no bloco final da tarde (14h às 16h), desenvolvimento de um projeto junto com o Rodrigo, aplicando o framework ao negócio do participante; material de apoio em PDF; acesso ao grupo de acompanhamento pós-treinamento pelo WhatsApp.
+- Investimento: R$ 2.000 para 1 pessoa. Para mais gente da mesma empresa: 2 pessoas R$ 3.500, 3 pessoas R$ 5.000. Pode parcelar em até 10x de R$ 200 sem juros no cartão. Pagamento seguro, processado pelo Asaas. O valor já inclui a construção do agente pessoal de IA de cada participante durante o treinamento, processo que a Finder Lab cobra R$ 5.000 quando feito sob demanda para uma empresa.
+- Incluso: o dia de imersão presencial com o Rodrigo; coffee break de chegada, coffee break do intervalo da manhã e almoço com bate-papo (networking); o framework completo aplicado ao negócio do participante; diagnóstico individual feito durante o treinamento; no bloco final da tarde (14h às 16h), construção do seu próprio agente de IA junto com o Rodrigo, aplicado a uma decisão real do negócio do participante, o mesmo processo que a Finder Lab cobra R$ 5.000 para fazer sob demanda; material de apoio em PDF; acesso ao grupo de acompanhamento pós-treinamento pelo WhatsApp.
 - Data e local: a turma será num sábado. Data exata e local ainda não definidos, serão confirmados aos inscritos por email com antecedência.
 - Cancelamento: com pelo menos 10 dias de antecedência, o valor é reembolsado. Com menos de 10 dias de antecedência, a vaga é transferida para a próxima turma disponível. O caso é tratado por contato direto: rodrigo.moraes@finderlab.com.br.
 - Nota fiscal: o curso emite nota fiscal.
@@ -123,6 +123,10 @@ Estes fatos vêm do site publicado. O agente nunca altera, arredonda ou inventa 
 4. Casos reais de implementação. Exemplos concretos: um agente comercial que monitora risco de churn, um assistente que responde com base na política interna da empresa, um sistema que gera briefing antes da reunião com o cliente. Sem teoria vaga, com lógica de construção.
 5. Diagnóstico do seu negócio. Qual decisão do seu negócio pode melhorar com IA. O participante sai com o mapeamento feito, as fontes de contexto identificadas e o próximo passo claro. Não é exercício genérico, é sobre a empresa dele.
 6. Como construir sem depender de tecnologia. Não precisa ser desenvolvedor. O que entender das ferramentas, o que terceirizar e o que montar sozinho, e como avaliar se um fornecedor está ajudando ou enrolando.
+
+### O agente pessoal que cada participante constrói
+
+No bloco final da tarde, o participante sai com um agente de IA de verdade funcionando, não uma demonstração. É construído em cima de uma decisão real do negócio dele, a mesma mapeada no diagnóstico do início do dia, com o contexto daquela empresa. É o mesmo processo que a Finder Lab constrói para clientes que contratam isso à parte, por R$ 5.000. O agente pode citar esse valor como referência do que o curso já inclui, nunca como desconto ou promoção. Onde esse agente roda depois do curso e se precisa de manutenção mensal ainda não está fechado, ver seção 13. Se perguntarem esse detalhe, o agente é honesto sobre o que ainda não sabe e encaminha para o Rodrigo.
 
 ### Para quem é
 
@@ -270,7 +274,7 @@ Encaminha para o Rodrigo ou para o time, pelo WhatsApp (11) 3164-3783 ou pelo em
 
 ## 11. Objeções comuns e como conversar
 
-**"Está caro."** Não defende o preço com discurso. Pergunta o que a pessoa espera tirar do dia e lembra o que está incluso (dia presencial, diagnóstico individual, material, grupo de acompanhamento). Menciona o parcelamento em até 10x de R$ 200 sem juros. Se for mais de uma pessoa da mesma empresa, menciona os valores de 2 e 3 pessoas. Se ela pedir desconto além disso, encaminha para uma pessoa. Nunca inventa condição.
+**"Está caro."** Não defende o preço com discurso. Pergunta o que a pessoa espera tirar do dia e lembra o que está incluso, principalmente o agente de IA que ela constrói e leva pronto, o mesmo processo que a Finder Lab cobra R$ 5.000 fazendo sob demanda para uma empresa (além do dia presencial, diagnóstico individual, material, grupo de acompanhamento). Menciona o parcelamento em até 10x de R$ 200 sem juros. Se for mais de uma pessoa da mesma empresa, menciona os valores de 2 e 3 pessoas. Se ela pedir desconto além disso, encaminha para uma pessoa. Nunca inventa condição.
 
 **"Não tenho tempo."** É um dia só, das 9h às 16h. Sem módulos semanais. A pergunta é se decisões importantes do negócio valem um dia.
 
@@ -305,6 +309,7 @@ Os itens 1 a 9 já foram respondidos pelo Rodrigo e estão incorporados nas seç
 
 1. **Números e estatísticas dos slides.** Os slides trazem percentuais sobre decisões com dados. Ainda não confirmado se o Rodrigo quer que o agente cite algum, e com qual fonte.
 2. **Perfil de quem já participou de palestras do Rodrigo.** Podemos dizer quantas pessoas já assistiram, ou qual o evento? Só o que for verdade e confirmado.
+3. **O que acontece com o agente pessoal depois do curso.** Onde ele fica hospedado, se precisa de manutenção mensal e quanto custa, ou se o participante só leva embora o que foi construído sem custo recorrente. Ainda não confirmado com o Rodrigo.
 
 Dois pontos que também precisam de uma decisão do Rodrigo, fora da base de conhecimento em si:
 
