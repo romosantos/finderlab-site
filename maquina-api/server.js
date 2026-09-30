@@ -19,6 +19,8 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
+// Usado como originUrl quando não existe req HTTP pra derivar um (fluxo do WhatsApp).
+const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://maquina.finderlab.com.br';
 
 // Modelo padrão. Se um modelo mais novo estiver disponível, defina ANTHROPIC_MODEL
 // no Railway em vez de mudar aqui. Lista atual em: https://docs.claude.com/en/docs/about-claude/models
@@ -558,11 +560,50 @@ const paymentLimiter = rateLimit({
   message: { error: 'Muitas tentativas. Tente novamente mais tarde.' },
 });
 
+// Valida os dados da inscrição e gera (ou reaproveita) o link de pagamento no Asaas.
+// Extraído do POST /payments/checkout pra ser chamado também pela ferramenta de chat
+// gerar_pagamento_inscricao, sem duplicar a lógica de validação/checkout em dois lugares.
+async function createCheckoutForLead(leadId, originUrl) {
+  if (!ASAAS_API_KEY) return { ok: false, status: 503, error: 'Pagamento indisponível no momento.' };
+
+  const { rows } = await pool.query('SELECT * FROM leads WHERE id=$1', [leadId]);
+  const lead = rows[0];
+  if (!lead) return { ok: false, status: 404, error: 'Inscrição não encontrada.' };
+
+  if (!lead.cpf_cnpj || !lead.cep || !lead.endereco || !lead.numero || !lead.bairro) {
+    return {
+      ok: false,
+      status: 400,
+      error: 'Faltam CPF/CNPJ ou dados de endereço para gerar o pagamento.',
+    };
+  }
+
+  // já existe um checkout aberto pra essa inscrição? reaproveita em vez de criar outro
+  const existing = await pool.query(
+    `SELECT checkout_url FROM payments
+     WHERE lead_id=$1 AND status NOT IN ('EXPIRED', 'CANCELLED', 'REFUNDED')
+     ORDER BY created_at DESC LIMIT 1`,
+    [leadId]
+  );
+  if (existing.rows[0] && existing.rows[0].checkout_url) {
+    return { ok: true, url: existing.rows[0].checkout_url };
+  }
+
+  const checkout = await createAsaasCheckout(lead, originUrl);
+  const url = checkout.link || ('https://asaas.com/checkoutSession/show?id=' + checkout.id);
+
+  await pool.query(
+    `INSERT INTO payments (lead_id, asaas_checkout_id, status, value, checkout_url)
+     VALUES ($1,$2,$3,$4,$5)`,
+    [leadId, checkout.id, checkout.status || 'PENDING', COURSE_PRICE, url]
+  );
+
+  return { ok: true, url };
+}
+
 app.options('/payments/checkout', publicCors);
 app.post('/payments/checkout', publicCors, paymentLimiter, async (req, res) => {
   try {
-    if (!ASAAS_API_KEY) return res.status(503).json({ error: 'Pagamento indisponível no momento.' });
-
     if (ALLOWED_ORIGINS.length && req.headers.origin && !ALLOWED_ORIGINS.includes(req.headers.origin)) {
       return res.status(403).json({ error: 'Origem não permitida.' });
     }
@@ -570,38 +611,11 @@ app.post('/payments/checkout', publicCors, paymentLimiter, async (req, res) => {
     const leadId = Number(req.body && req.body.leadId);
     if (!Number.isInteger(leadId) || leadId <= 0) return res.status(400).json({ error: 'Pedido inválido.' });
 
-    const { rows } = await pool.query('SELECT * FROM leads WHERE id=$1', [leadId]);
-    const lead = rows[0];
-    if (!lead) return res.status(404).json({ error: 'Inscrição não encontrada.' });
-
-    if (!lead.cpf_cnpj || !lead.cep || !lead.endereco || !lead.numero || !lead.bairro) {
-      return res.status(400).json({
-        error: 'Faltam CPF/CNPJ ou dados de endereço para gerar o pagamento. Atualize seus dados na página de inscrição.',
-      });
-    }
-
-    // já existe um checkout aberto pra essa inscrição? reaproveita em vez de criar outro
-    const existing = await pool.query(
-      `SELECT checkout_url FROM payments
-       WHERE lead_id=$1 AND status NOT IN ('EXPIRED', 'CANCELLED', 'REFUNDED')
-       ORDER BY created_at DESC LIMIT 1`,
-      [leadId]
-    );
-    if (existing.rows[0] && existing.rows[0].checkout_url) {
-      return res.json({ ok: true, url: existing.rows[0].checkout_url });
-    }
-
     const originUrl = req.protocol + '://' + req.get('host');
-    const checkout = await createAsaasCheckout(lead, originUrl);
-    const url = checkout.link || ('https://asaas.com/checkoutSession/show?id=' + checkout.id);
+    const result = await createCheckoutForLead(leadId, originUrl);
+    if (!result.ok) return res.status(result.status || 502).json({ error: result.error });
 
-    await pool.query(
-      `INSERT INTO payments (lead_id, asaas_checkout_id, status, value, checkout_url)
-       VALUES ($1,$2,$3,$4,$5)`,
-      [leadId, checkout.id, checkout.status || 'PENDING', COURSE_PRICE, url]
-    );
-
-    res.json({ ok: true, url });
+    res.json({ ok: true, url: result.url });
   } catch (err) {
     console.error('POST /payments/checkout', err && err.message ? err.message : err, err && err.asaasBody);
     res.status(502).json({ error: 'Não foi possível gerar o pagamento agora.' });
@@ -755,9 +769,38 @@ const CHAT_TOOLS = [
       required: ['nome'],
     },
   },
+  {
+    name: 'gerar_pagamento_inscricao',
+    description:
+      'Registra a inscrição COM os dados de cobrança e devolve o link de pagamento do Asaas, pra pessoa terminar a inscrição inteira ali na conversa, sem precisar ir pro site. Só use esta ferramenta (em vez de registrar_inscricao) quando a própria pessoa tiver escolhido explicitamente terminar o cadastro e o pagamento ali com você, em vez de receber o link da página de inscrição. Colete cada campo separadamente, um de cada vez, nunca peça vários de uma vez. Antes de pedir o CPF/CNPJ, deixe claro que esse dado é só pra gerar o link de cobrança no Asaas, e que cartão e senha nunca são digitados no chat — isso acontece só na página segura do Asaas depois que o link é gerado. Repita todos os dados coletados num resumo e só chame a ferramenta depois de confirmação explícita ("sim", "confirmo", "pode gerar") de que os dados estão certos e de que a pessoa concorda com os termos de uso e privacidade (LGPD). Nunca invente, deduza ou preencha nenhum campo sozinho. Chame só uma vez por inscrição.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        nome: { type: 'string', description: 'Nome completo, exatamente como a pessoa informou.' },
+        email: { type: 'string', description: 'Email, exatamente como a pessoa informou.' },
+        whats: { type: 'string', description: 'WhatsApp com DDD, exatamente como a pessoa informou.' },
+        empresa: { type: 'string', description: 'Empresa da pessoa, se ela informou. String vazia se não informou.' },
+        cargo: { type: 'string', description: 'Cargo da pessoa, se ela informou. String vazia se não informou.' },
+        cpfCnpj: { type: 'string', description: 'CPF ou CNPJ, exatamente como a pessoa informou (com ou sem pontuação).' },
+        cep: { type: 'string', description: 'CEP, exatamente como a pessoa informou.' },
+        endereco: { type: 'string', description: 'Rua/logradouro, exatamente como a pessoa informou.' },
+        numero: { type: 'string', description: 'Número do endereço, exatamente como a pessoa informou.' },
+        complemento: { type: 'string', description: 'Complemento do endereço, se a pessoa informou. String vazia se não informou.' },
+        bairro: { type: 'string', description: 'Bairro, exatamente como a pessoa informou.' },
+        cidade: { type: 'string', description: 'Cidade, se a pessoa informou. String vazia se não informou.' },
+        estado: { type: 'string', description: 'Estado (UF, 2 letras), se a pessoa informou. String vazia se não informou.' },
+        consent: {
+          type: 'boolean',
+          description:
+            'true somente se a pessoa confirmou explicitamente, nesta conversa, que aceita os termos de uso e privacidade. Nunca true por suposição.',
+        },
+      },
+      required: ['nome', 'email', 'whats', 'cpfCnpj', 'cep', 'endereco', 'numero', 'bairro', 'consent'],
+    },
+  },
 ];
 
-async function runChatTool(name, toolInput) {
+async function runChatTool(name, toolInput, originUrl) {
   if (name === 'registrar_inscricao') {
     const result = await saveLead(toolInput);
     return result.ok
@@ -770,13 +813,24 @@ async function runChatTool(name, toolInput) {
       ? { sucesso: true, id: result.id }
       : { sucesso: false, erro: result.error, campos_invalidos: result.errors || null };
   }
+  if (name === 'gerar_pagamento_inscricao') {
+    const saved = await saveLead(toolInput);
+    if (!saved.ok) {
+      return { sucesso: false, erro: saved.error, campos_invalidos: saved.errors || null };
+    }
+    const checkout = await createCheckoutForLead(saved.id, originUrl || SITE_ORIGIN);
+    if (!checkout.ok) {
+      return { sucesso: false, erro: checkout.error, inscricao_id: saved.id };
+    }
+    return { sucesso: true, inscricao_id: saved.id, url_pagamento: checkout.url };
+  }
   return { sucesso: false, erro: 'Ferramenta desconhecida.' };
 }
 
 // Chama o modelo com o loop de tool use (registrar_inscricao) até ele responder só com
 // texto ou até um limite de segurança. Compartilhado entre o chat do site e o WhatsApp,
 // pra não duplicar essa lógica em dois lugares.
-async function getAgentReply(messages, systemPromptOverride) {
+async function getAgentReply(messages, systemPromptOverride, originUrl) {
   const system = systemPromptOverride || SYSTEM_PROMPT;
   let response = await anthropic.messages.create({
     model: ANTHROPIC_MODEL,
@@ -802,7 +856,7 @@ async function getAgentReply(messages, systemPromptOverride) {
     }
     const toolResults = [];
     for (const block of toolUseBlocks) {
-      const result = await runChatTool(block.name, block.input);
+      const result = await runChatTool(block.name, block.input, originUrl);
       toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) });
     }
     messages.push({ role: 'assistant', content: response.content });
@@ -865,7 +919,8 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       ? SYSTEM_PROMPT + '\n\n---\n\n# MODO DIAGNÓSTICO (ativo nesta conversa)\n\n' + DIAGNOSTIC_ADDENDUM
       : SYSTEM_PROMPT;
 
-    const { reply, toolRounds, showTermsAcceptance } = await getAgentReply(messages, systemPrompt);
+    const originUrl = req.protocol + '://' + req.get('host');
+    const { reply, toolRounds, showTermsAcceptance } = await getAgentReply(messages, systemPrompt, originUrl);
 
     const elapsedMs = Date.now() - chatStartedAt;
     if (elapsedMs > 12000) {
@@ -937,7 +992,7 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
     }
 
     const history = await loadWhatsAppHistory(phone);
-    const { reply } = await getAgentReply(history);
+    const { reply } = await getAgentReply(history, undefined, SITE_ORIGIN);
     if (!reply) {
       console.error('WhatsApp inbound: sem resposta do modelo pra %s', phone);
       return;
