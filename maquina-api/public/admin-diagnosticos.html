@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin · Diagnósticos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap">
+<style>
+:root{--accent:#7443F5;--accent2:#A88BFF;--muted:#AEA9C5;--green:#1E9E6A;--gold:#B8892B}
+*{box-sizing:border-box}
+body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;
+  background-image:radial-gradient(ellipse 900px 700px at 20% -10%,rgba(116,67,245,.28),transparent 65%)}
+.wrap{max-width:1240px;margin:0 auto;padding:40px 56px 96px}
+.pill{display:inline-flex;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:10px 18px;border-radius:8px}
+h1{margin:24px 0 0;font-size:clamp(34px,4vw,54px);font-weight:700;letter-spacing:-.04em;line-height:1;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
+.sub{margin:16px 0 0;color:var(--muted);font-size:16px;line-height:1.7;max-width:640px}
+.nav{display:flex;gap:10px;margin-top:24px}
+.nav a{display:inline-flex;align-items:center;min-height:42px;padding:0 16px;border-radius:9px;border:1px solid rgba(124,84,245,.4);color:#D2CEE6;font-size:13px;font-weight:600;text-decoration:none}
+.nav a.on{background:rgba(116,67,245,.35);border-color:#8B63FF;color:#fff}
+button{font-family:inherit;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:36px}
+.stat{border:1px solid rgba(124,84,245,.5);background:rgba(20,12,46,.6);box-shadow:inset 0 0 24px rgba(116,67,245,.25),0 0 24px rgba(116,67,245,.12);border-radius:16px;padding:22px 24px}
+.stat b{display:block;font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.stat span{display:block;margin-top:8px;font-size:13px;color:var(--muted)}
+.bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:32px}
+.search{flex:1 1 280px;min-width:0;height:48px;padding:0 18px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-family:inherit;font-size:15px}
+.search::placeholder{color:#8F8AA8}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:transparent;color:#D2CEE6;font-size:13px;font-weight:600}
+.chip.on{background:rgba(116,67,245,.35);border-color:#8B63FF;color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:0;background:var(--accent);color:#fff;font-size:14px;font-weight:700;min-height:46px;padding:0 22px;border-radius:10px;box-shadow:0 4px 24px rgba(116,67,245,.28);text-decoration:none}
+.btn:hover{box-shadow:0 12px 44px rgba(116,67,245,.55)}
+:focus-visible{outline:2px solid #A88BFF;outline-offset:3px}
+.list{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.row{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.6fr) minmax(0,1.4fr) auto auto;gap:18px;align-items:center;border:1px solid rgba(124,84,245,.4);background:rgba(20,12,46,.55);border-radius:16px;padding:18px 22px}
+.n{font-size:16px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.s{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
+.tags{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:600;color:#D2CEE6;border:1px solid rgba(124,84,245,.4);border-radius:7px;padding:3px 8px;white-space:nowrap}
+.row a.l{display:block;font-size:14px;color:#E4E0F4;line-height:1.7;text-decoration:none;overflow-wrap:anywhere}
+.row a.l:hover{color:var(--accent2)}
+.badge{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:9px;font-size:12px;font-weight:700;white-space:nowrap}
+.badge.full{background:rgba(30,158,106,.18);color:#5CD8A6;border:1px solid rgba(30,158,106,.5)}
+.badge.partial{background:rgba(184,137,43,.18);color:#E8B65E;border:1px solid rgba(184,137,43,.5)}
+.del{min-height:44px;padding:0 14px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:transparent;color:var(--muted);font-size:12px;font-weight:600}
+.del:hover{border-color:#FFB86B;color:#FFB86B}
+.del.arm{border-color:#FF7A7A;color:#FF9A9A;background:rgba(255,80,80,.12)}
+.empty{margin-top:28px;border:1px dashed rgba(124,84,245,.45);border-radius:16px;padding:48px 24px;text-align:center;color:var(--muted);line-height:1.7}
+@media(max-width:1100px){.wrap{padding-left:40px;padding-right:40px}.row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 20px}.badge,.del{justify-self:start}}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.wrap{padding:28px 20px 72px}.stat{padding:18px}.stat b{font-size:28px}.row{grid-template-columns:1fr;padding:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pill">Área administrativa</div>
+  <h1>Diagnósticos gratuitos</h1>
+  <p class="sub">Quem passou pelo modo diagnóstico do Drigo (entrada via diagnostico.finderlab.com.br) aparece aqui, com a decisão que trouxe e o que deu pra captar de contexto do negócio, sempre do jeito que a conversa permitiu — captura é discreta e nem sempre completa.</p>
+  <div class="nav">
+    <a href="/admin">Inscrições</a>
+    <a href="/admin/whatsapp">Conversas WhatsApp</a>
+    <a href="/admin/acessos">Acessos</a>
+    <a href="/admin/diagnosticos" class="on">Diagnósticos</a>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="nTotal">0</b><span>Diagnósticos</span></div>
+    <div class="stat"><b id="nFull">0</b><span>Com contexto de negócio</span></div>
+    <div class="stat"><b id="nContato">0</b><span>Com WhatsApp</span></div>
+    <div class="stat"><b id="nWeek">0</b><span>Últimos 7 dias</span></div>
+  </div>
+
+  <div class="bar">
+    <input id="q" class="search" type="search" placeholder="Buscar por nome, decisão ou tipo de negócio" aria-label="Buscar diagnósticos">
+    <div class="chips" id="chips"></div>
+    <a class="btn" href="/admin/api/diagnosticos.csv">Exportar CSV</a>
+  </div>
+
+  <div class="list" id="list" aria-live="polite"></div>
+</div>
+
+<script>
+(function () {
+  var items = [], filter = 'all', q = '', armed = null, armT = null;
+  var FILTERS = [['all', 'Todos'], ['full', 'Com contexto'], ['partial', 'Só contato']];
+  var $ = function (id) { return document.getElementById(id); };
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text; // textContent: nunca interpreta HTML
+    return e;
+  }
+
+  function api(method, url) {
+    return fetch(url, { method: method, credentials: 'same-origin' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+  }
+
+  function hasContext(d) { return !!(d.tipo_negocio || d.area || d.porte_time || d.faturamento); }
+  function hasWhats(d) { return !!(d.whats && d.whats.trim()); }
+
+  function load() {
+    return api('GET', '/admin/api/diagnosticos').then(function (rows) { items = rows; render(); })
+      .catch(function () {
+        var l = $('list'); l.textContent = '';
+        l.appendChild(el('div', 'empty', 'Não foi possível carregar os diagnósticos. Recarregue a página.'));
+      });
+  }
+
+  function remove(id) {
+    if (armed !== id) {
+      armed = id; clearTimeout(armT);
+      armT = setTimeout(function () { armed = null; render(); }, 4000);
+      render(); return;
+    }
+    armed = null;
+    api('DELETE', '/admin/api/diagnosticos/' + id).then(load);
+  }
+
+  function shown() {
+    var t = q.trim().toLowerCase();
+    return items.filter(function (d) {
+      if (filter === 'full' && !hasContext(d)) return false;
+      if (filter === 'partial' && hasContext(d)) return false;
+      if (!t) return true;
+      return [d.nome, d.decisao, d.tipo_negocio, d.area].join(' ').toLowerCase().indexOf(t) !== -1;
+    });
+  }
+
+  function renderChips() {
+    var box = $('chips'); box.textContent = '';
+    FILTERS.forEach(function (f) {
+      var b = el('button', 'chip' + (filter === f[0] ? ' on' : ''), f[1]);
+      b.type = 'button';
+      b.addEventListener('click', function () { filter = f[0]; render(); });
+      box.appendChild(b);
+    });
+  }
+
+  function contactLine(d) {
+    var parts = [];
+    if (d.whats) parts.push({ href: 'https://wa.me/' + d.whats.replace(/\D/g, ''), label: d.whats });
+    if (d.email) parts.push({ href: 'mailto:' + d.email, label: d.email });
+    if (d.instagram) parts.push({ href: 'https://instagram.com/' + d.instagram.replace(/^@/, ''), label: d.instagram });
+    if (d.linkedin) parts.push({ href: /^https?:\/\//.test(d.linkedin) ? d.linkedin : 'https://' + d.linkedin, label: d.linkedin });
+    return parts;
+  }
+
+  function render() {
+    renderChips();
+    var rows = shown();
+    var full = items.filter(hasContext).length;
+    var week = items.filter(function (d) { return Date.now() - new Date(d.created_at).getTime() < 7 * 24 * 60 * 60 * 1000; }).length;
+    $('nTotal').textContent = items.length;
+    $('nFull').textContent = full;
+    $('nContato').textContent = items.filter(hasWhats).length;
+    $('nWeek').textContent = week;
+
+    var list = $('list'); list.textContent = '';
+    if (!rows.length) {
+      list.appendChild(el('div', 'empty', items.length ? 'Nada encontrado com esse filtro.' : 'Ainda não chegou nenhum diagnóstico.'));
+      return;
+    }
+    rows.forEach(function (d) {
+      var row = el('div', 'row');
+
+      var main = el('div');
+      main.appendChild(el('div', 'n', d.nome || '(sem nome)'));
+      main.appendChild(el('div', 's', d.decisao || 'Decisão não registrada nesta conversa.'));
+      var tags = el('div', 'tags');
+      if (d.tipo_negocio) tags.appendChild(el('span', 'tag', d.tipo_negocio));
+      if (d.area) tags.appendChild(el('span', 'tag', d.area));
+      if (d.porte_time) tags.appendChild(el('span', 'tag', d.porte_time));
+      if (d.faturamento) tags.appendChild(el('span', 'tag', d.faturamento));
+      if (tags.childNodes.length) main.appendChild(tags);
+      row.appendChild(main);
+
+      var contacts = el('div');
+      var cs = contactLine(d);
+      if (cs.length) {
+        cs.forEach(function (c) {
+          var a = el('a', 'l', c.label);
+          a.href = c.href; a.target = '_blank'; a.rel = 'noopener';
+          contacts.appendChild(a);
+        });
+      } else {
+        contacts.appendChild(el('div', 's', 'Sem contato registrado.'));
+      }
+      row.appendChild(contacts);
+
+      row.appendChild(el('div', 's', new Date(d.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })));
+
+      row.appendChild(el('span', 'badge ' + (hasContext(d) ? 'full' : 'partial'), hasContext(d) ? 'Com contexto' : 'Só contato'));
+
+      var del = el('button', 'del' + (armed === d.id ? ' arm' : ''), armed === d.id ? 'Confirmar' : 'Excluir');
+      del.type = 'button';
+      del.addEventListener('click', function () { remove(d.id); });
+      row.appendChild(del);
+
+      list.appendChild(row);
+    });
+  }
+
+  $('q').addEventListener('input', function (e) { q = e.target.value; render(); });
+
+  load();
+})();
+</script>
+</body>
+</html>

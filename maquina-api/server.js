@@ -957,6 +957,7 @@ app.use('/admin', adminLimiter, failLimiter, basicAuth);
 app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/admin/whatsapp', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-whatsapp.html')));
 app.get('/admin/acessos', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-acessos.html')));
+app.get('/admin/diagnosticos', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-diagnosticos.html')));
 
 app.get('/admin/api/leads', async (_req, res) => {
   const { rows } = await pool.query('SELECT * FROM leads ORDER BY created_at DESC');
@@ -996,6 +997,39 @@ app.get('/admin/api/leads.csv', async (_req, res) => {
   );
   res.set('Content-Type', 'text/csv; charset=utf-8');
   res.set('Content-Disposition', 'attachment; filename="inscricoes-maquina-de-decisoes.csv"');
+  res.send('﻿' + lines.join('\r\n'));
+});
+
+app.get('/admin/api/diagnosticos', async (_req, res) => {
+  const { rows } = await pool.query('SELECT * FROM diagnostico_leads ORDER BY created_at DESC');
+  res.json(rows);
+});
+
+app.delete('/admin/api/diagnosticos/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Pedido inválido.' });
+  const { rowCount } = await pool.query('DELETE FROM diagnostico_leads WHERE id=$1', [id]);
+  res.status(rowCount ? 200 : 404).json({ ok: !!rowCount });
+});
+
+app.get('/admin/api/diagnosticos.csv', async (_req, res) => {
+  const { rows } = await pool.query('SELECT * FROM diagnostico_leads ORDER BY created_at DESC');
+  const esc = (v) => {
+    let s = String(v == null ? '' : v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // evita injeção de fórmula no Excel
+    return '"' + s.replace(/"/g, '""') + '"';
+  };
+  const head = ['Data', 'Nome', 'WhatsApp', 'Email', 'Instagram', 'LinkedIn', 'Decisão', 'Tipo de negócio', 'Área', 'Porte do time', 'Faturamento'];
+  const lines = [head.map(esc).join(';')].concat(
+    rows.map((d) =>
+      [
+        new Date(d.created_at).toISOString(), d.nome, d.whats, d.email, d.instagram, d.linkedin,
+        d.decisao, d.tipo_negocio, d.area, d.porte_time, d.faturamento,
+      ].map(esc).join(';')
+    )
+  );
+  res.set('Content-Type', 'text/csv; charset=utf-8');
+  res.set('Content-Disposition', 'attachment; filename="diagnosticos-maquina-de-decisoes.csv"');
   res.send('﻿' + lines.join('\r\n'));
 });
 
