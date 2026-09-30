@@ -324,15 +324,19 @@ async function migrate() {
     -- confirmada, é captação de topo de funil. Não dispara notificação de WhatsApp por
     -- registro (o volume esperado é maior que o de inscrição).
     CREATE TABLE IF NOT EXISTS diagnostico_leads (
-      id          SERIAL PRIMARY KEY,
-      nome        TEXT NOT NULL,
-      whats       TEXT NOT NULL DEFAULT '',
-      email       TEXT NOT NULL DEFAULT '',
-      instagram   TEXT NOT NULL DEFAULT '',
-      linkedin    TEXT NOT NULL DEFAULT '',
-      decisao     TEXT NOT NULL DEFAULT '',
-      created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-      updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+      id           SERIAL PRIMARY KEY,
+      nome         TEXT NOT NULL,
+      whats        TEXT NOT NULL DEFAULT '',
+      email        TEXT NOT NULL DEFAULT '',
+      instagram    TEXT NOT NULL DEFAULT '',
+      linkedin     TEXT NOT NULL DEFAULT '',
+      decisao      TEXT NOT NULL DEFAULT '',
+      tipo_negocio TEXT NOT NULL DEFAULT '',
+      area         TEXT NOT NULL DEFAULT '',
+      porte_time   TEXT NOT NULL DEFAULT '',
+      faturamento  TEXT NOT NULL DEFAULT '',
+      created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     CREATE INDEX IF NOT EXISTS diagnostico_leads_created_idx ON diagnostico_leads (created_at DESC);
   `);
@@ -501,6 +505,10 @@ async function saveDiagnostico(input) {
   const instagram = clean(b.instagram, 120);
   const linkedin = clean(b.linkedin, 200);
   const decisao = clean(b.decisao, 400);
+  const tipoNegocio = clean(b.tipo_negocio, 160);
+  const area = clean(b.area, 120);
+  const porteTime = clean(b.porte_time, 160);
+  const faturamento = clean(b.faturamento, 160);
 
   const errors = {};
   if (nome.length < 2) errors.nome = 'Informe o nome.';
@@ -508,9 +516,9 @@ async function saveDiagnostico(input) {
   if (Object.keys(errors).length) return { ok: false, status: 400, error: 'Dados inválidos.', errors };
 
   const { rows } = await pool.query(
-    `INSERT INTO diagnostico_leads (nome, whats, email, instagram, linkedin, decisao)
-     VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
-    [nome, whats, email, instagram, linkedin, decisao]
+    `INSERT INTO diagnostico_leads (nome, whats, email, instagram, linkedin, decisao, tipo_negocio, area, porte_time, faturamento)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+    [nome, whats, email, instagram, linkedin, decisao, tipoNegocio, area, porteTime, faturamento]
   );
   return { ok: true, id: rows[0].id };
 }
@@ -719,6 +727,10 @@ const CHAT_TOOLS = [
         instagram: { type: 'string', description: '@ do Instagram, se ela informou. String vazia se não informou.' },
         linkedin: { type: 'string', description: 'Perfil ou URL do LinkedIn, se ela informou. String vazia se não informou.' },
         decisao: { type: 'string', description: 'Resumo curto, em 1 frase, da decisão ou problema que ela trouxe no diagnóstico, na visão dela.' },
+        tipo_negocio: { type: 'string', description: 'Tipo de negócio ou setor, do jeito que você entendeu pela conversa (ex: "clínica odontológica", "e-commerce de moda"). String vazia se não deu pra inferir nem foi dito.' },
+        area: { type: 'string', description: 'Área ou departamento onde a decisão vive (ex: "comercial", "operações", "financeiro"). String vazia se não deu pra inferir nem foi dito.' },
+        porte_time: { type: 'string', description: 'Porte do time, em texto livre, do jeito que você entendeu (ex: "só ele, sem time ainda", "por volta de 20 pessoas", "time grande, várias áreas"). Nunca invente um número exato que a pessoa não disse. String vazia se não deu pra inferir nem foi dito.' },
+        faturamento: { type: 'string', description: 'Porte de faturamento, em texto livre e por faixa, nunca um valor exato inventado (ex: "negócio pequeno, começando", "faixa de alguns milhões por ano", "não sei, não veio à tona"). String vazia se não deu pra inferir nem foi dito.' },
       },
       required: ['nome'],
     },
