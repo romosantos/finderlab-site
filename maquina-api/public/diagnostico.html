@@ -22,7 +22,12 @@ a{color:inherit}
 .pill{display:inline-flex;align-items:center;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:9px 16px;border-radius:8px}
 .hero{max-width:460px;text-align:left;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-start}
 .hero h1{margin:20px 0 0;font-size:clamp(24px,2.6vw,32px);font-weight:700;letter-spacing:-.03em;line-height:1.2;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
-.hero p{margin:18px 0 0;color:var(--muted);font-size:15px;line-height:1.85;width:100%;text-align:justify;text-align-last:left}
+.hero-text-wrap{margin-top:18px;width:100%}
+.hero p{margin:0;color:var(--muted);font-size:15px;line-height:1.85;width:100%;text-align:justify;text-align-last:left}
+.hero-avatar-mobile{display:none}
+@media(max-width:900px){
+  .hero-avatar-mobile{display:block;float:left;width:56px;height:56px;object-fit:contain;border-radius:50%;padding:4px;margin:2px 14px 8px 0;border:1px solid rgba(168,139,255,.5);background:linear-gradient(135deg,var(--accent),var(--accent2))}
+}
 
 /* ---------- chat, embutido e aberto por padrão ---------- */
 .chat-row{display:flex;align-items:center;justify-content:flex-start;gap:32px;width:100%;padding-right:0}
@@ -68,7 +73,10 @@ a{color:inherit}
     <div class="hero">
       <span class="pill">Diagnóstico gratuito</span>
       <h1>Qual decisão do seu negócio está pesando mais agora?</h1>
-      <p>Poucas perguntas, sem compromisso. O Drigo usa o mesmo raciocínio que o Rodrigo aplica na Máquina de Decisões pra te devolver uma leitura de verdade sobre essa decisão, aqui mesmo.</p>
+      <div class="hero-text-wrap">
+        <img class="hero-avatar-mobile" src="/img/drigo-avatar.png" alt="">
+        <p>Poucas perguntas, sem compromisso. O Drigo usa o mesmo raciocínio que o Rodrigo aplica na Máquina de Decisões pra te devolver uma leitura de verdade sobre essa decisão, aqui mesmo.</p>
+      </div>
     </div>
     <img class="chat-companion" src="/img/drigo-avatar.png" alt="">
     <div class="chat-modal" role="dialog" aria-labelledby="chat-title" id="chat-modal">
