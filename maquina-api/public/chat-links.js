@@ -61,7 +61,23 @@
     });
   }
 
-  var api = { render: render, tokens: tokens };
+  function addTermsAcceptance(container, onAccept) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'chat-accept-terms';
+    button.textContent = 'sim, aceito';
+    button.addEventListener('click', function () {
+      if (button.disabled) return;
+      // The caller returns false while another response is in progress.
+      if (onAccept() !== false) {
+        button.disabled = true;
+        button.textContent = 'Aceite enviado';
+      }
+    });
+    container.appendChild(button);
+  }
+
+  var api = { render: render, tokens: tokens, addTermsAcceptance: addTermsAcceptance };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DrigoChatLinks = api;
 })(typeof window !== 'undefined' ? window : globalThis);

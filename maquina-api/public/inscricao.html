@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="/chat-links.css?v=20260930">
+<link rel="stylesheet" href="/chat-links.css?v=20260930accept">
 <style>
 body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -402,7 +402,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   <button type="button" class="chat-fab" id="chat-fab" aria-expanded="false" aria-label="Conversar com o Drigo, assistente da Máquina de Decisões"><img class="chat-fab-avatar" src="/img/drigo-avatar.png" width="82" height="82" alt=""></button>
 </div>
 
-<script src="/chat-links.js?v=20260930"></script>
+<script src="/chat-links.js?v=20260930accept"></script>
 <script>
 (function () {
   'use strict';
@@ -678,10 +678,19 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   chatModal.addEventListener('click', function (e) { e.stopPropagation(); });
   chatCompanion.addEventListener('click', function (e) { e.stopPropagation(); });
 
-  function addMsg(who, text) {
+  function addMsg(who, text, showTermsAcceptance) {
     var div = document.createElement('div');
     div.className = 'chat-msg ' + who;
     window.DrigoChatLinks.render(div, text);
+    if (who === 'bot' && showTermsAcceptance === true) {
+      window.DrigoChatLinks.addTermsAcceptance(div, function () {
+        if (chatLoading) return false;
+        chatInput.value = 'sim, aceito';
+        updateSendState();
+        chatForm.requestSubmit();
+        return true;
+      });
+    }
     chatBody.appendChild(div);
   }
   function setLoading(v) {
@@ -737,7 +746,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
       })
       .then(function (data) {
         setLoading(false);
-        addMsg('bot', data.reply);
+        addMsg('bot', data.reply, data.showTermsAcceptance);
       })
       .catch(function () {
         clearTimeout(timeoutId);

@@ -796,6 +796,7 @@ async function getAgentReply(messages, systemPromptOverride) {
       // Stop here even if the model also requested registration: reading is not consent.
       return {
         reply: registrationTermsReply(REGISTRATION_TERMS, termsRequest.input?.solicitar_aceite),
+        showTermsAcceptance: true,
         toolRounds,
       };
     }
@@ -864,7 +865,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       ? SYSTEM_PROMPT + '\n\n---\n\n# MODO DIAGNÓSTICO (ativo nesta conversa)\n\n' + DIAGNOSTIC_ADDENDUM
       : SYSTEM_PROMPT;
 
-    const { reply, toolRounds } = await getAgentReply(messages, systemPrompt);
+    const { reply, toolRounds, showTermsAcceptance } = await getAgentReply(messages, systemPrompt);
 
     const elapsedMs = Date.now() - chatStartedAt;
     if (elapsedMs > 12000) {
@@ -881,7 +882,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       )
       .catch((err) => console.error('Falha ao gravar chat_logs', err));
 
-    if (!clientGone) res.json({ reply });
+    if (!clientGone) res.json({ reply, showTermsAcceptance: showTermsAcceptance === true });
   } catch (err) {
     console.error('POST /chat', err && err.message ? err.message : err, `(${Date.now() - chatStartedAt}ms decorridos)`);
     if (!res.headersSent) res.status(500).json({ error: 'Não consegui responder agora. Tenta de novo em instantes.' });

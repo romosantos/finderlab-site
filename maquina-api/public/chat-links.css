@@ -2,3 +2,7 @@
 .chat-msg.user a{color:#fff}
 .chat-msg a:hover{color:#fff;text-decoration-thickness:2px}
 .chat-msg a:focus-visible{outline:2px solid #D4C7FF;outline-offset:3px;border-radius:2px}
+.chat-accept-terms{display:block;margin-top:18px;min-height:44px;padding:11px 22px;border:1px solid #A88BFF;border-radius:10px;background:#7443F5;color:#fff;font:inherit;font-weight:600;cursor:pointer;white-space:normal}
+.chat-accept-terms:hover{background:#6332E0}
+.chat-accept-terms:focus-visible{outline:2px solid #D4C7FF;outline-offset:3px}
+.chat-accept-terms:disabled{background:#30234D;border-color:#77678E;color:#E6DFF2;cursor:default}
