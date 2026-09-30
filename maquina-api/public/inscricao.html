@@ -745,5 +745,43 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   });
 })();
 </script>
+<!-- Meta Pixel (Facebook/Instagram Ads) — aguardando o ID do Pixel do Rodrigo.
+     Para ativar: troque SEU_PIXEL_ID_AQUI pelo ID real nas duas linhas abaixo e
+     remova as marcas de comentario HTML que abrem logo acima do script e fecham logo abaixo do noscript.
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', 'SEU_PIXEL_ID_AQUI');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=SEU_PIXEL_ID_AQUI&ev=PageView&noscript=1"
+/></noscript>
+-->
+
+<!-- LinkedIn Insight Tag (conta de anúncios Finder Lab) -->
+<script type="text/javascript">
+_linkedin_partner_id = "10962449";
+window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+</script><script type="text/javascript">
+(function(l) {
+if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
+window.lintrk.q=[]}
+var s = document.getElementsByTagName("script")[0];
+var b = document.createElement("script");
+b.type = "text/javascript";b.async = true;
+b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+s.parentNode.insertBefore(b, s);})(window.lintrk);
+</script>
+<noscript>
+<img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=10962449&fmt=gif" />
+</noscript>
 </body>
 </html>
