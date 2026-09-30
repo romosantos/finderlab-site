@@ -727,6 +727,15 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
   var chatFab = document.getElementById('chat-fab');
   var chatClose = document.getElementById('chat-close');
 
+  // Modo diagnóstico: quem chega por diagnostico.finderlab.com.br vê um convite
+  // diferente na primeira bolha, já puxando pro diagnóstico em vez de esperar a pergunta.
+  if (/diagnostico/i.test(location.hostname)) {
+    var chatGreeting = chatBody.querySelector('.chat-msg.bot');
+    if (chatGreeting) {
+      chatGreeting.textContent = 'Oi, tudo bem? Eu sou o Drigo. Bora fazer um diagnóstico rápido da decisão que mais pesa pra você no negócio agora? Em poucas perguntas eu já te devolvo uma leitura de verdade, sem compromisso nenhum. Qual é essa decisão?';
+    }
+  }
+
   function scrollChat() { chatBody.scrollTop = chatBody.scrollHeight; }
 
   function openChat() {

@@ -43,6 +43,7 @@ const STATUSES = ['novo', 'contatado', 'pago'];
 
 // ---------- agente de chat: persona + base de conhecimento ----------
 let SYSTEM_PROMPT = '';
+let DIAGNOSTIC_ADDENDUM = '';
 let chatReady = false;
 try {
   const instructions = fs.readFileSync(path.join(__dirname, 'knowledge', 'system-instructions.md'), 'utf8');
@@ -51,6 +52,12 @@ try {
   chatReady = true;
 } catch (err) {
   console.error('Não foi possível carregar knowledge/system-instructions.md ou knowledge/base-conhecimento.md. O agente de chat ficará desligado.', err.message);
+}
+// Modo diagnóstico: addendum carregado à parte, nunca derruba o chat normal se faltar.
+try {
+  DIAGNOSTIC_ADDENDUM = fs.readFileSync(path.join(__dirname, 'knowledge', 'modo-diagnostico.md'), 'utf8');
+} catch (err) {
+  console.error('knowledge/modo-diagnostico.md não encontrado. Modo diagnóstico ficará desligado (chat normal segue funcionando).', err.message);
 }
 
 const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
@@ -311,6 +318,23 @@ async function migrate() {
     );
     CREATE INDEX IF NOT EXISTS page_views_created_idx ON page_views (created_at DESC);
     CREATE INDEX IF NOT EXISTS page_views_visitor_idx ON page_views (visitor_id);
+
+    -- Contatos do diagnóstico gratuito (modo diagnóstico, entrada via diagnostico.finderlab.com.br).
+    -- Tabela separada de leads: aqui não há consentimento formal nem intenção de compra
+    -- confirmada, é captação de topo de funil. Não dispara notificação de WhatsApp por
+    -- registro (o volume esperado é maior que o de inscrição).
+    CREATE TABLE IF NOT EXISTS diagnostico_leads (
+      id          SERIAL PRIMARY KEY,
+      nome        TEXT NOT NULL,
+      whats       TEXT NOT NULL DEFAULT '',
+      email       TEXT NOT NULL DEFAULT '',
+      instagram   TEXT NOT NULL DEFAULT '',
+      linkedin    TEXT NOT NULL DEFAULT '',
+      decisao     TEXT NOT NULL DEFAULT '',
+      created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS diagnostico_leads_created_idx ON diagnostico_leads (created_at DESC);
   `);
 }
 
@@ -466,6 +490,28 @@ async function saveLead(input) {
     [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent]
   );
   notifyLeadWhatsApp({ id: rows[0].id, nome, email, whats, empresa, cargo });
+  return { ok: true, id: rows[0].id };
+}
+
+async function saveDiagnostico(input) {
+  const b = input || {};
+  const nome = clean(b.nome, 160);
+  const whats = clean(b.whats, 30);
+  const email = clean(b.email, 200).toLowerCase();
+  const instagram = clean(b.instagram, 120);
+  const linkedin = clean(b.linkedin, 200);
+  const decisao = clean(b.decisao, 400);
+
+  const errors = {};
+  if (nome.length < 2) errors.nome = 'Informe o nome.';
+  if (!whats && !email) errors.contato = 'Informe WhatsApp ou email.';
+  if (Object.keys(errors).length) return { ok: false, status: 400, error: 'Dados inválidos.', errors };
+
+  const { rows } = await pool.query(
+    `INSERT INTO diagnostico_leads (nome, whats, email, instagram, linkedin, decisao)
+     VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
+    [nome, whats, email, instagram, linkedin, decisao]
+  );
   return { ok: true, id: rows[0].id };
 }
 
@@ -660,11 +706,34 @@ const CHAT_TOOLS = [
       required: ['nome', 'email', 'whats', 'consent'],
     },
   },
+  {
+    name: 'registrar_diagnostico',
+    description:
+      'Registra o contato de quem está fazendo o diagnóstico gratuito de decisão (modo diagnóstico, entrada via diagnostico.finderlab.com.br). Diferente de registrar_inscricao: não exige consentimento formal de termos, só nome e pelo menos um contato (whats ou email). Chame assim que tiver esses dois campos, mesmo que instagram, linkedin ou decisao ainda estejam vazios. Se conseguir mais dados depois na mesma conversa, pode chamar de novo, mesmo que isso gere um novo registro.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        nome: { type: 'string', description: 'Nome da pessoa, exatamente como ela informou.' },
+        whats: { type: 'string', description: 'WhatsApp com DDD, se ela informou. String vazia se não informou.' },
+        email: { type: 'string', description: 'Email, se ela informou. String vazia se não informou.' },
+        instagram: { type: 'string', description: '@ do Instagram, se ela informou. String vazia se não informou.' },
+        linkedin: { type: 'string', description: 'Perfil ou URL do LinkedIn, se ela informou. String vazia se não informou.' },
+        decisao: { type: 'string', description: 'Resumo curto, em 1 frase, da decisão ou problema que ela trouxe no diagnóstico, na visão dela.' },
+      },
+      required: ['nome'],
+    },
+  },
 ];
 
 async function runChatTool(name, toolInput) {
   if (name === 'registrar_inscricao') {
     const result = await saveLead(toolInput);
+    return result.ok
+      ? { sucesso: true, id: result.id }
+      : { sucesso: false, erro: result.error, campos_invalidos: result.errors || null };
+  }
+  if (name === 'registrar_diagnostico') {
+    const result = await saveDiagnostico(toolInput);
     return result.ok
       ? { sucesso: true, id: result.id }
       : { sucesso: false, erro: result.error, campos_invalidos: result.errors || null };
@@ -675,11 +744,12 @@ async function runChatTool(name, toolInput) {
 // Chama o modelo com o loop de tool use (registrar_inscricao) até ele responder só com
 // texto ou até um limite de segurança. Compartilhado entre o chat do site e o WhatsApp,
 // pra não duplicar essa lógica em dois lugares.
-async function getAgentReply(messages) {
+async function getAgentReply(messages, systemPromptOverride) {
+  const system = systemPromptOverride || SYSTEM_PROMPT;
   let response = await anthropic.messages.create({
     model: ANTHROPIC_MODEL,
     max_tokens: CHAT_MAX_TOKENS,
-    system: SYSTEM_PROMPT,
+    system,
     messages,
     tools: CHAT_TOOLS,
   });
@@ -698,7 +768,7 @@ async function getAgentReply(messages) {
     response = await anthropic.messages.create({
       model: ANTHROPIC_MODEL,
       max_tokens: CHAT_MAX_TOKENS,
-      system: SYSTEM_PROMPT,
+      system,
       messages,
       tools: CHAT_TOOLS,
     });
@@ -746,7 +816,14 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
 
     const messages = history.concat([{ role: 'user', content: message }]);
 
-    const { reply, toolRounds } = await getAgentReply(messages);
+    // Modo diagnóstico: ativado pelo domínio de entrada (diagnostico.finderlab.com.br),
+    // não muda a persona nem a base de conhecimento, só acrescenta o addendum de fluxo.
+    const isDiagnostico = /diagnostico/i.test(req.hostname || '');
+    const systemPrompt = isDiagnostico && DIAGNOSTIC_ADDENDUM
+      ? SYSTEM_PROMPT + '\n\n---\n\n# MODO DIAGNÓSTICO (ativo nesta conversa)\n\n' + DIAGNOSTIC_ADDENDUM
+      : SYSTEM_PROMPT;
+
+    const { reply, toolRounds } = await getAgentReply(messages, systemPrompt);
 
     const elapsedMs = Date.now() - chatStartedAt;
     if (elapsedMs > 12000) {
