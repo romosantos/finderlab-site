@@ -85,7 +85,7 @@ const TWILIO_OWNER_WHATSAPP = process.env.TWILIO_OWNER_WHATSAPP || '';
 
 // SIDs dos Content Templates aprovados no console da Twilio (obrigatórios pra mensagem
 // business-initiated no WhatsApp — não dá pra mandar texto livre nesse caso).
-const TWILIO_CONFIRM_TEMPLATE_SID = process.env.TWILIO_CONFIRM_TEMPLATE_SID || '';
+const TWILIO_PAYMENT_TEMPLATE_SID = process.env.TWILIO_PAYMENT_TEMPLATE_SID || '';
 const TWILIO_OWNER_TEMPLATE_SID = process.env.TWILIO_OWNER_TEMPLATE_SID || '';
 
 const twilioClient = TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN ? twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) : null;
@@ -218,7 +218,7 @@ function toWhatsAppAddress(raw) {
 // Mensagem business-initiated no WhatsApp exige um Content Template aprovado — não dá
 // pra mandar texto livre (`body`) nesse caso, por isso usamos contentSid + contentVariables.
 async function sendWhatsApp(toRaw, contentSid, contentVariables) {
-  if (!twilioClient || !TWILIO_WHATSAPP_FROM || !contentSid) return;
+  if (!twilioClient || !TWILIO_WHATSAPP_FROM || !contentSid) return false;
   try {
     await twilioClient.messages.create({
       from: TWILIO_WHATSAPP_FROM,
@@ -226,16 +226,16 @@ async function sendWhatsApp(toRaw, contentSid, contentVariables) {
       contentSid,
       contentVariables: JSON.stringify(contentVariables || {}),
     });
+    return true;
   } catch (err) {
     console.error('Falha ao enviar WhatsApp via Twilio', err && err.message ? err.message : err);
+    return false;
   }
 }
 
-// Dispara as duas mensagens de uma inscrição nova/atualizada: confirmação pra pessoa e
-// aviso pro Rodrigo. Fire-and-forget, não bloqueia a resposta pro cliente.
+// A pessoa recebe o lembrete somente depois que o checkout existir.
+// Aqui permanece apenas o aviso interno de recebimento dos dados.
 function notifyLeadWhatsApp(lead) {
-  // Template maquina_confirmacao_inscricao: "Oi {{1}}, aqui é da Máquina de Decisões. ..."
-  sendWhatsApp(lead.whats, TWILIO_CONFIRM_TEMPLATE_SID, { '1': lead.nome });
   if (TWILIO_OWNER_WHATSAPP) {
     // Template maquina_aviso_inscricao: "Nova inscrição na Máquina de Decisões: {{1}} ({{2}}), WhatsApp {{3}}."
     sendWhatsApp(TWILIO_OWNER_WHATSAPP, TWILIO_OWNER_TEMPLATE_SID, {
@@ -243,6 +243,24 @@ function notifyLeadWhatsApp(lead) {
       '2': lead.email,
       '3': lead.whats,
     });
+  }
+}
+
+async function notifyPaymentWhatsApp(lead, paymentId, url) {
+  if (!TWILIO_PAYMENT_TEMPLATE_SID || !twilioClient || !TWILIO_WHATSAPP_FROM || lead.status === 'pago') return;
+  try {
+    // Claim once per checkout, including concurrent requests. Failed sends can retry.
+    const claimed = await pool.query(
+      `UPDATE payments SET whatsapp_payment_notified_at=now()
+       WHERE id=$1 AND whatsapp_payment_notified_at IS NULL
+       AND status NOT IN ('CONFIRMED','RECEIVED','RECEIVED_IN_CASH','PAYMENT_CONFIRMED','PAYMENT_RECEIVED','EXPIRED','CANCELLED','REFUNDED')
+       RETURNING id`, [paymentId]
+    );
+    if (!claimed.rows.length) return;
+    const sent = await sendWhatsApp(lead.whats, TWILIO_PAYMENT_TEMPLATE_SID, { '1': lead.nome, '2': url });
+    if (!sent) await pool.query('UPDATE payments SET whatsapp_payment_notified_at=NULL WHERE id=$1', [paymentId]);
+  } catch (err) {
+    console.error('Falha no lembrete de pagamento WhatsApp', err && err.message ? err.message : err);
   }
 }
 
@@ -317,6 +335,7 @@ async function migrate() {
     );
     CREATE UNIQUE INDEX IF NOT EXISTS payments_checkout_uq ON payments (asaas_checkout_id);
     CREATE INDEX IF NOT EXISTS payments_lead_idx ON payments (lead_id, created_at DESC);
+    ALTER TABLE payments ADD COLUMN IF NOT EXISTS whatsapp_payment_notified_at TIMESTAMPTZ;
 
     CREATE TABLE IF NOT EXISTS page_views (
       id            SERIAL PRIMARY KEY,
@@ -587,23 +606,26 @@ async function createCheckoutForLead(leadId, originUrl, billingType) {
 
   // já existe um checkout aberto pra essa inscrição? reaproveita em vez de criar outro
   const existing = await pool.query(
-    `SELECT checkout_url FROM payments
+    `SELECT id, checkout_url FROM payments
      WHERE lead_id=$1 AND status NOT IN ('EXPIRED', 'CANCELLED', 'REFUNDED')
      ORDER BY created_at DESC LIMIT 1`,
     [leadId]
   );
   if (existing.rows[0] && existing.rows[0].checkout_url) {
+    await notifyPaymentWhatsApp(lead, existing.rows[0].id, existing.rows[0].checkout_url);
     return { ok: true, url: existing.rows[0].checkout_url };
   }
 
   const checkout = await createAsaasCheckout(lead, originUrl, billingType);
   const url = checkout.link || ('https://asaas.com/checkoutSession/show?id=' + checkout.id);
 
-  await pool.query(
+  const payment = await pool.query(
     `INSERT INTO payments (lead_id, asaas_checkout_id, status, value, checkout_url)
-     VALUES ($1,$2,$3,$4,$5)`,
+     VALUES ($1,$2,$3,$4,$5) RETURNING id`,
     [leadId, checkout.id, checkout.status || 'PENDING', COURSE_PRICE, url]
   );
+
+  await notifyPaymentWhatsApp(lead, payment.rows[0].id, url);
 
   return { ok: true, url };
 }
