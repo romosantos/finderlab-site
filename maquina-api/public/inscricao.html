@@ -225,6 +225,43 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
               <div class="err" id="e-whats" role="alert" style="display:none">Informe o número com DDD.</div>
             </div>
             <div class="fw">
+              <label for="f-cpf">CPF ou CNPJ</label>
+              <input id="f-cpf" class="field" type="text" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" aria-describedby="e-cpf">
+              <div class="err" id="e-cpf" role="alert" style="display:none">Informe um CPF ou CNPJ válido.</div>
+            </div>
+            <div class="fw">
+              <label for="f-cep">CEP</label>
+              <input id="f-cep" class="field" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" aria-describedby="e-cep">
+              <div class="err" id="e-cep" role="alert" style="display:none">Informe um CEP válido.</div>
+            </div>
+            <div class="fw field-w">
+              <label for="f-endereco">Endereço</label>
+              <input id="f-endereco" class="field" type="text" autocomplete="address-line1" placeholder="Rua, avenida…" aria-describedby="e-endereco">
+              <div class="err" id="e-endereco" role="alert" style="display:none">Informe o endereço.</div>
+            </div>
+            <div class="fw">
+              <label for="f-numero">Número</label>
+              <input id="f-numero" class="field" type="text" autocomplete="address-line2" placeholder="Nº" aria-describedby="e-numero">
+              <div class="err" id="e-numero" role="alert" style="display:none">Informe o número.</div>
+            </div>
+            <div class="fw">
+              <label for="f-complemento">Complemento (opcional)</label>
+              <input id="f-complemento" class="field" type="text" autocomplete="address-line3" placeholder="Apto, sala…">
+            </div>
+            <div class="fw">
+              <label for="f-bairro">Bairro</label>
+              <input id="f-bairro" class="field" type="text" autocomplete="off" placeholder="Bairro" aria-describedby="e-bairro">
+              <div class="err" id="e-bairro" role="alert" style="display:none">Informe o bairro.</div>
+            </div>
+            <div class="fw">
+              <label for="f-cidade">Cidade</label>
+              <input id="f-cidade" class="field" type="text" autocomplete="address-level2" placeholder="Preenchido pelo CEP">
+            </div>
+            <div class="fw">
+              <label for="f-estado">Estado</label>
+              <input id="f-estado" class="field" type="text" autocomplete="address-level1" placeholder="UF" maxlength="2" style="text-transform:uppercase">
+            </div>
+            <div class="fw">
               <label for="f-empresa">Empresa</label>
               <input id="f-empresa" class="field" type="text" autocomplete="organization" placeholder="Nome da sua empresa">
             </div>
@@ -376,6 +413,19 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
   }
 
+  function maskCpfCnpj(v) {
+    var d = String(v).replace(/\D/g, '').slice(0, 14);
+    if (d.length <= 11) {
+      return d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    }
+    return d.replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1/$2').replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+  }
+  function maskCep(v) {
+    var d = String(v).replace(/\D/g, '').slice(0, 8);
+    if (d.length <= 5) return d;
+    return d.slice(0, 5) + '-' + d.slice(5);
+  }
+
   var els = {
     form: document.getElementById('lead-form'),
     done: document.getElementById('done-block'),
@@ -383,6 +433,14 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     nome: document.getElementById('f-nome'),
     email: document.getElementById('f-email'),
     whats: document.getElementById('f-whats'),
+    cpf: document.getElementById('f-cpf'),
+    cep: document.getElementById('f-cep'),
+    endereco: document.getElementById('f-endereco'),
+    numero: document.getElementById('f-numero'),
+    complemento: document.getElementById('f-complemento'),
+    bairro: document.getElementById('f-bairro'),
+    cidade: document.getElementById('f-cidade'),
+    estado: document.getElementById('f-estado'),
     empresa: document.getElementById('f-empresa'),
     cargo: document.getElementById('f-cargo'),
     consent: document.getElementById('f-consent'),
@@ -390,6 +448,11 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     eNome: document.getElementById('e-nome'),
     eEmail: document.getElementById('e-email'),
     eWhats: document.getElementById('e-whats'),
+    eCpf: document.getElementById('e-cpf'),
+    eCep: document.getElementById('e-cep'),
+    eEndereco: document.getElementById('e-endereco'),
+    eNumero: document.getElementById('e-numero'),
+    eBairro: document.getElementById('e-bairro'),
     eConsent: document.getElementById('e-consent'),
     submitBtn: document.getElementById('submit-btn'),
     doneGreet: document.getElementById('done-greet'),
@@ -402,22 +465,66 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   els.whats.addEventListener('input', function () {
     els.whats.value = mask(els.whats.value);
   });
+  els.cpf.addEventListener('input', function () {
+    els.cpf.value = maskCpfCnpj(els.cpf.value);
+  });
+  els.cep.addEventListener('input', function () {
+    els.cep.value = maskCep(els.cep.value);
+  });
+  els.estado.addEventListener('input', function () {
+    els.estado.value = els.estado.value.toUpperCase();
+  });
+  // Busca endereço pelo CEP (ViaCEP) pra reduzir o quanto a pessoa precisa digitar.
+  // Nunca bloqueia o envio se a busca falhar — os campos continuam editáveis.
+  els.cep.addEventListener('blur', function () {
+    var d = els.cep.value.replace(/\D/g, '');
+    if (d.length !== 8) return;
+    fetch('https://viacep.com.br/ws/' + d + '/json/')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data || data.erro) return;
+        if (!els.endereco.value.trim()) els.endereco.value = data.logradouro || '';
+        if (!els.bairro.value.trim()) els.bairro.value = data.bairro || '';
+        els.cidade.value = data.localidade || els.cidade.value;
+        els.estado.value = (data.uf || els.estado.value || '').toUpperCase();
+      })
+      .catch(function () {});
+  });
 
   function validate() {
     var nomeOk = els.nome.value.trim().length >= 2;
     var emailOk = /^\S+@\S+\.\S+$/.test(els.email.value.trim());
     var whatsOk = els.whats.value.replace(/\D/g, '').length >= 10;
+    var cpfDigits = els.cpf.value.replace(/\D/g, '');
+    var cpfOk = cpfDigits.length === 11 || cpfDigits.length === 14;
+    var cepOk = els.cep.value.replace(/\D/g, '').length === 8;
+    var enderecoOk = els.endereco.value.trim().length >= 3;
+    var numeroOk = els.numero.value.trim().length >= 1;
+    var bairroOk = els.bairro.value.trim().length >= 2;
     var consentOk = els.consent.checked;
-    return { nomeOk: nomeOk, emailOk: emailOk, whatsOk: whatsOk, consentOk: consentOk };
+    return {
+      nomeOk: nomeOk, emailOk: emailOk, whatsOk: whatsOk, cpfOk: cpfOk, cepOk: cepOk,
+      enderecoOk: enderecoOk, numeroOk: numeroOk, bairroOk: bairroOk, consentOk: consentOk
+    };
   }
   function showErrors(v) {
     els.eNome.style.display = tried && !v.nomeOk ? '' : 'none';
     els.eEmail.style.display = tried && !v.emailOk ? '' : 'none';
     els.eWhats.style.display = tried && !v.whatsOk ? '' : 'none';
+    els.eCpf.style.display = tried && !v.cpfOk ? '' : 'none';
+    els.eCep.style.display = tried && !v.cepOk ? '' : 'none';
+    els.eEndereco.style.display = tried && !v.enderecoOk ? '' : 'none';
+    els.eNumero.style.display = tried && !v.numeroOk ? '' : 'none';
+    els.eBairro.style.display = tried && !v.bairroOk ? '' : 'none';
     els.eConsent.style.display = tried && !v.consentOk ? '' : 'none';
     els.nome.setAttribute('aria-invalid', tried && !v.nomeOk ? 'true' : 'false');
     els.email.setAttribute('aria-invalid', tried && !v.emailOk ? 'true' : 'false');
     els.whats.setAttribute('aria-invalid', tried && !v.whatsOk ? 'true' : 'false');
+    els.cpf.setAttribute('aria-invalid', tried && !v.cpfOk ? 'true' : 'false');
+    els.cep.setAttribute('aria-invalid', tried && !v.cepOk ? 'true' : 'false');
+    els.endereco.setAttribute('aria-invalid', tried && !v.enderecoOk ? 'true' : 'false');
+    els.numero.setAttribute('aria-invalid', tried && !v.numeroOk ? 'true' : 'false');
+    els.bairro.setAttribute('aria-invalid', tried && !v.bairroOk ? 'true' : 'false');
   }
 
   function saveLead() {
@@ -429,6 +536,14 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
         nome: els.nome.value.trim(),
         email: els.email.value.trim(),
         whats: els.whats.value.trim(),
+        cpfCnpj: els.cpf.value.trim(),
+        cep: els.cep.value.trim(),
+        endereco: els.endereco.value.trim(),
+        numero: els.numero.value.trim(),
+        complemento: els.complemento.value.trim(),
+        bairro: els.bairro.value.trim(),
+        cidade: els.cidade.value.trim(),
+        estado: els.estado.value.trim(),
         empresa: els.empresa.value.trim(),
         cargo: els.cargo.value.trim(),
         consent: true,
@@ -474,9 +589,11 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     tried = true;
     var v = validate();
     showErrors(v);
-    var ok = v.nomeOk && v.emailOk && v.whatsOk && v.consentOk;
+    var ok = v.nomeOk && v.emailOk && v.whatsOk && v.cpfOk && v.cepOk && v.enderecoOk && v.numeroOk && v.bairroOk && v.consentOk;
     if (!ok) {
-      var firstId = !v.nomeOk ? 'f-nome' : !v.emailOk ? 'f-email' : !v.whatsOk ? 'f-whats' : 'f-consent';
+      var firstId = !v.nomeOk ? 'f-nome' : !v.emailOk ? 'f-email' : !v.whatsOk ? 'f-whats' :
+        !v.cpfOk ? 'f-cpf' : !v.cepOk ? 'f-cep' : !v.enderecoOk ? 'f-endereco' : !v.numeroOk ? 'f-numero' :
+        !v.bairroOk ? 'f-bairro' : 'f-consent';
       setTimeout(function () {
         var el = document.getElementById(firstId);
         if (el && el.focus) el.focus();

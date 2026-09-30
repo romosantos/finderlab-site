@@ -128,6 +128,31 @@ async function asaasRequest(method, endpoint, body) {
 // Cria um Asaas Checkout (página hospedada pelo próprio Asaas) pra uma inscrição.
 // A pessoa digita CPF e dados de cartão/PIX lá dentro, nunca no nosso formulário — por
 // isso Checkout em vez de criar Customer/Payment diretamente por aqui.
+// A API de Checkout do Asaas em produção (diferente do que o comentário original
+// assumia) exige CPF/CNPJ, telefone num formato válido e endereço completo já na
+// criação do checkout — não deixa pra pessoa preencher isso na página hospedada.
+// "province" aqui é como o Asaas chama o bairro (não o estado/UF).
+function buildAsaasCustomerData(lead) {
+  const digits = String(lead.whats || '').replace(/\D/g, '');
+  // Celular (WhatsApp) tem 11 dígitos com DDD (ex.: 11988887777); o Asaas valida o
+  // formato de forma diferente pra `phone` (fixo) e `mobilePhone` (celular).
+  const phoneField = digits.length === 11 ? { mobilePhone: digits } : { phone: digits };
+  const data = Object.assign(
+    {
+      name: lead.nome,
+      email: lead.email,
+      cpfCnpj: String(lead.cpf_cnpj || '').replace(/\D/g, ''),
+      postalCode: String(lead.cep || '').replace(/\D/g, ''),
+      address: lead.endereco || '',
+      addressNumber: lead.numero || '',
+      province: lead.bairro || '',
+    },
+    phoneField
+  );
+  if (lead.complemento) data.complement = lead.complemento;
+  return data;
+}
+
 async function createAsaasCheckout(lead, originUrl) {
   const payload = {
     billingTypes: ['PIX', 'CREDIT_CARD'],
@@ -143,11 +168,7 @@ async function createAsaasCheckout(lead, originUrl) {
       },
     ],
     installment: { maxInstallmentCount: COURSE_MAX_INSTALLMENTS },
-    customerData: {
-      name: lead.nome,
-      email: lead.email,
-      phone: String(lead.whats || '').replace(/\D/g, ''),
-    },
+    customerData: buildAsaasCustomerData(lead),
     callback: {
       successUrl: originUrl + '/inscricao.html?pagamento=ok',
       cancelUrl: originUrl + '/inscricao.html?pagamento=cancelado',
@@ -213,12 +234,32 @@ async function migrate() {
       whats       TEXT NOT NULL,
       empresa     TEXT NOT NULL DEFAULT '',
       cargo       TEXT NOT NULL DEFAULT '',
+      cpf_cnpj    TEXT NOT NULL DEFAULT '',
+      cep         TEXT NOT NULL DEFAULT '',
+      endereco    TEXT NOT NULL DEFAULT '',
+      numero      TEXT NOT NULL DEFAULT '',
+      complemento TEXT NOT NULL DEFAULT '',
+      bairro      TEXT NOT NULL DEFAULT '',
+      cidade      TEXT NOT NULL DEFAULT '',
+      estado      TEXT NOT NULL DEFAULT '',
       consent     BOOLEAN NOT NULL,
       status      TEXT NOT NULL DEFAULT 'novo',
       created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     CREATE UNIQUE INDEX IF NOT EXISTS leads_email_uq ON leads (lower(email));
+
+    -- Colunas de CPF/CNPJ e endereço foram adicionadas depois: em produção a tabela já
+    -- existe sem elas, então o CREATE TABLE acima não as cria. ALTER ... IF NOT EXISTS
+    -- garante que o banco existente seja atualizado também, sem quebrar nada.
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS cpf_cnpj    TEXT NOT NULL DEFAULT '';
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS cep         TEXT NOT NULL DEFAULT '';
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS endereco    TEXT NOT NULL DEFAULT '';
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS numero      TEXT NOT NULL DEFAULT '';
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS complemento TEXT NOT NULL DEFAULT '';
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS bairro      TEXT NOT NULL DEFAULT '';
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS cidade      TEXT NOT NULL DEFAULT '';
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS estado      TEXT NOT NULL DEFAULT '';
 
     CREATE TABLE IF NOT EXISTS chat_logs (
       id          SERIAL PRIMARY KEY,
@@ -325,6 +366,17 @@ async function saveLead(input) {
   const whats = clean(b.whats, 30);
   const empresa = clean(b.empresa, 160);
   const cargo = clean(b.cargo, 120);
+  // CPF/CNPJ e endereço: exigidos pelo formulário do site (pra gerar o checkout no
+  // Asaas), mas opcionais aqui porque o agente de chat também chama saveLead sem pedir
+  // esses dados. Quem valida se estão presentes na hora de cobrar é o POST /payments/checkout.
+  const cpfCnpj = clean(b.cpfCnpj, 20).replace(/\D/g, '');
+  const cep = clean(b.cep, 12).replace(/\D/g, '');
+  const endereco = clean(b.endereco, 200);
+  const numero = clean(b.numero, 20);
+  const complemento = clean(b.complemento, 120);
+  const bairro = clean(b.bairro, 120);
+  const cidade = clean(b.cidade, 120);
+  const estado = clean(b.estado, 2).toUpperCase();
   const consent = b.consent === true;
 
   const errors = {};
@@ -336,13 +388,22 @@ async function saveLead(input) {
 
   // mesma pessoa reenviando: atualiza os dados e preserva o andamento
   const { rows } = await pool.query(
-    `INSERT INTO leads (nome, email, whats, empresa, cargo, consent)
-     VALUES ($1,$2,$3,$4,$5,$6)
+    `INSERT INTO leads (nome, email, whats, empresa, cargo, cpf_cnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
      ON CONFLICT (lower(email)) DO UPDATE
        SET nome=EXCLUDED.nome, whats=EXCLUDED.whats, empresa=EXCLUDED.empresa,
-           cargo=EXCLUDED.cargo, consent=EXCLUDED.consent, updated_at=now()
+           cargo=EXCLUDED.cargo,
+           cpf_cnpj=CASE WHEN EXCLUDED.cpf_cnpj <> '' THEN EXCLUDED.cpf_cnpj ELSE leads.cpf_cnpj END,
+           cep=CASE WHEN EXCLUDED.cep <> '' THEN EXCLUDED.cep ELSE leads.cep END,
+           endereco=CASE WHEN EXCLUDED.endereco <> '' THEN EXCLUDED.endereco ELSE leads.endereco END,
+           numero=CASE WHEN EXCLUDED.numero <> '' THEN EXCLUDED.numero ELSE leads.numero END,
+           complemento=CASE WHEN EXCLUDED.complemento <> '' THEN EXCLUDED.complemento ELSE leads.complemento END,
+           bairro=CASE WHEN EXCLUDED.bairro <> '' THEN EXCLUDED.bairro ELSE leads.bairro END,
+           cidade=CASE WHEN EXCLUDED.cidade <> '' THEN EXCLUDED.cidade ELSE leads.cidade END,
+           estado=CASE WHEN EXCLUDED.estado <> '' THEN EXCLUDED.estado ELSE leads.estado END,
+           consent=EXCLUDED.consent, updated_at=now()
      RETURNING id`,
-    [nome, email, whats, empresa, cargo, consent]
+    [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent]
   );
   notifyLeadWhatsApp({ id: rows[0].id, nome, email, whats, empresa, cargo });
   return { ok: true, id: rows[0].id };
@@ -393,6 +454,12 @@ app.post('/payments/checkout', publicCors, paymentLimiter, async (req, res) => {
     const { rows } = await pool.query('SELECT * FROM leads WHERE id=$1', [leadId]);
     const lead = rows[0];
     if (!lead) return res.status(404).json({ error: 'Inscrição não encontrada.' });
+
+    if (!lead.cpf_cnpj || !lead.cep || !lead.endereco || !lead.numero || !lead.bairro) {
+      return res.status(400).json({
+        error: 'Faltam CPF/CNPJ ou dados de endereço para gerar o pagamento. Atualize seus dados na página de inscrição.',
+      });
+    }
 
     // já existe um checkout aberto pra essa inscrição? reaproveita em vez de criar outro
     const existing = await pool.query(
@@ -768,10 +835,13 @@ app.get('/admin/api/leads.csv', async (_req, res) => {
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // evita injeção de fórmula no Excel
     return '"' + s.replace(/"/g, '""') + '"';
   };
-  const head = ['Data', 'Nome', 'Email', 'WhatsApp', 'Empresa', 'Cargo', 'Status'];
+  const head = ['Data', 'Nome', 'Email', 'WhatsApp', 'CPF/CNPJ', 'CEP', 'Endereço', 'Número', 'Complemento', 'Bairro', 'Cidade', 'Estado', 'Empresa', 'Cargo', 'Status'];
   const lines = [head.map(esc).join(';')].concat(
     rows.map((l) =>
-      [new Date(l.created_at).toISOString(), l.nome, l.email, l.whats, l.empresa, l.cargo, l.status].map(esc).join(';')
+      [
+        new Date(l.created_at).toISOString(), l.nome, l.email, l.whats, l.cpf_cnpj, l.cep, l.endereco, l.numero,
+        l.complemento, l.bairro, l.cidade, l.estado, l.empresa, l.cargo, l.status,
+      ].map(esc).join(';')
     )
   );
   res.set('Content-Type', 'text/csv; charset=utf-8');
