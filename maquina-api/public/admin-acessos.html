@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin · Acessos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap">
+<style>
+:root{--accent:#7443F5;--accent2:#A88BFF;--muted:#AEA9C5;--green:#1E9E6A;--gold:#B8892B}
+*{box-sizing:border-box}
+body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;
+  background-image:radial-gradient(ellipse 900px 700px at 20% -10%,rgba(116,67,245,.28),transparent 65%)}
+.wrap{max-width:1240px;margin:0 auto;padding:40px 56px 96px}
+.pill{display:inline-flex;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:10px 18px;border-radius:8px}
+h1{margin:24px 0 0;font-size:clamp(30px,3.6vw,46px);font-weight:700;letter-spacing:-.04em;line-height:1;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
+.sub{margin:14px 0 0;color:var(--muted);font-size:16px;line-height:1.7;max-width:640px}
+.nav{display:flex;gap:10px;margin-top:24px}
+.nav a{display:inline-flex;align-items:center;min-height:42px;padding:0 16px;border-radius:9px;border:1px solid rgba(124,84,245,.4);color:#D2CEE6;font-size:13px;font-weight:600;text-decoration:none}
+.nav a.on{background:rgba(116,67,245,.35);border-color:#8B63FF;color:#fff}
+button{font-family:inherit;cursor:pointer}
+.bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:28px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:transparent;color:#D2CEE6;font-size:13px;font-weight:600}
+.chip.on{background:rgba(116,67,245,.35);border-color:#8B63FF;color:#fff}
+.today-line{color:var(--muted);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:20px}
+.stat{border:1px solid rgba(124,84,245,.5);background:rgba(20,12,46,.6);box-shadow:inset 0 0 24px rgba(116,67,245,.25),0 0 24px rgba(116,67,245,.12);border-radius:16px;padding:22px 24px}
+.stat b{display:block;font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.stat span{display:block;margin-top:8px;font-size:13px;color:var(--muted)}
+.section{margin-top:36px}
+.section h2{font-size:18px;font-weight:700;margin:0 0 4px;letter-spacing:-.02em}
+.section .hint{color:var(--muted);font-size:13px;margin:0 0 18px;line-height:1.6}
+.card{border:1px solid rgba(124,84,245,.4);background:rgba(20,12,46,.4);border-radius:18px;padding:24px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:start}
+.funnel{display:flex;flex-direction:column;gap:6px}
+.fstep{display:grid;grid-template-columns:120px minmax(0,1fr) 64px;align-items:center;gap:14px;padding:6px 0}
+.fstep .lbl{font-size:13px;color:var(--muted);font-weight:600}
+.fstep .track{height:14px;border-radius:8px;background:rgba(255,255,255,.06);overflow:hidden}
+.fstep .fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.fstep .val{font-size:14px;font-weight:700;text-align:right}
+.farrow{font-size:12px;color:var(--muted);padding:2px 0 2px 120px}
+.sources{display:flex;flex-direction:column;gap:10px}
+.srow{display:grid;grid-template-columns:150px minmax(0,1fr) 54px;align-items:center;gap:12px}
+.srow .lbl{font-size:13px;color:#D2CEE6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.srow .track{height:10px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden}
+.srow .fill{height:100%;border-radius:6px;background:var(--accent)}
+.srow .val{font-size:12px;color:var(--muted);text-align:right}
+.chart{display:flex;align-items:flex-end;gap:3px;height:150px;overflow-x:auto;padding:4px 4px 0}
+.chart .col{flex:0 0 auto;width:8px;min-height:2px;background:var(--accent);border-radius:3px 3px 0 0;opacity:.85;cursor:default}
+.chart .col:hover{opacity:1;background:var(--accent2)}
+.empty{color:var(--muted);line-height:1.7;padding:8px 0}
+@media(max-width:1100px){.wrap{padding-left:40px;padding-right:40px}}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
+@media(max-width:560px){.wrap{padding:28px 20px 72px}.stat{padding:18px}.stat b{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pill">Área administrativa</div>
+  <h1>Acessos ao site</h1>
+  <p class="sub">Quantas pessoas visitam a landing e a página de inscrição, de onde elas vêm, e quantas viram inscrição e pagamento.</p>
+  <div class="nav">
+    <a href="/admin">Inscrições</a>
+    <a href="/admin/whatsapp">Conversas WhatsApp</a>
+    <a href="/admin/acessos" class="on">Acessos</a>
+  </div>
+
+  <div class="bar">
+    <div class="chips" id="chips"></div>
+  </div>
+  <p class="today-line" id="todayLine">Carregando…</p>
+
+  <div class="stats">
+    <div class="stat"><b id="nVisits">0</b><span>Acessos no período</span></div>
+    <div class="stat"><b id="nUnique">0</b><span>Visitantes únicos</span></div>
+    <div class="stat"><b id="nLeads">0</b><span>Inscrições no período</span></div>
+    <div class="stat"><b id="nPaid">0</b><span>Pagas no período</span></div>
+  </div>
+
+  <div class="section">
+    <h2>Acessos por dia</h2>
+    <p class="hint">Cada barra é um dia. Passe o mouse pra ver acessos, visitantes únicos e inscrições daquele dia.</p>
+    <div class="card"><div class="chart" id="chart"></div></div>
+  </div>
+
+  <div class="section grid2">
+    <div>
+      <h2>Funil de conversão</h2>
+      <p class="hint">Do visitante único até virar inscrição paga, no período selecionado.</p>
+      <div class="card"><div class="funnel" id="funnel"></div></div>
+    </div>
+    <div>
+      <h2>De onde vêm os acessos</h2>
+      <p class="hint">Por UTM (campanhas de anúncio) ou pelo site de origem, quando identificável.</p>
+      <div class="card"><div class="sources" id="sources"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var days = 30;
+  var PERIODS = [[7, '7 dias'], [30, '30 dias'], [90, '90 dias']];
+  var SOURCE_LABELS = {
+    'instagram.com': 'Instagram', 'l.instagram.com': 'Instagram', 'lm.instagram.com': 'Instagram', 'instagram': 'Instagram',
+    'linkedin.com': 'LinkedIn', 'lnkd.in': 'LinkedIn', 'l.linkedin.com': 'LinkedIn', 'linkedin_ads': 'LinkedIn Ads', 'linkedin': 'LinkedIn',
+    'facebook.com': 'Facebook', 'm.facebook.com': 'Facebook', 'l.facebook.com': 'Facebook', 'lm.facebook.com': 'Facebook', 'fb': 'Meta Ads', 'meta': 'Meta Ads',
+    'google.com': 'Google', 'google': 'Google', 'google_ads': 'Google Ads', 'adwords': 'Google Ads', 'googleads': 'Google Ads',
+    't.co': 'X (Twitter)', 'twitter.com': 'X (Twitter)', 'x.com': 'X (Twitter)',
+    'whatsapp.com': 'WhatsApp', 'wa.me': 'WhatsApp', 'api.whatsapp.com': 'WhatsApp', 'whatsapp': 'WhatsApp',
+    'bing.com': 'Bing', 'youtube.com': 'YouTube'
+  };
+  var $ = function (id) { return document.getElementById(id); };
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text; // textContent: nunca interpreta HTML
+    return e;
+  }
+
+  function fmtInt(n) { return (n || 0).toLocaleString('pt-BR'); }
+  function pct(n, d) { return d > 0 ? Math.round((n / d) * 100) : 0; }
+
+  function labelSource(s) {
+    if (!s) return 'Direto / não identificado';
+    var key = s.toLowerCase();
+    if (SOURCE_LABELS[key]) return SOURCE_LABELS[key];
+    for (var k in SOURCE_LABELS) { if (key.indexOf(k) !== -1) return SOURCE_LABELS[k]; }
+    return s;
+  }
+
+  function api(url) {
+    return fetch(url, { credentials: 'same-origin' }).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    });
+  }
+
+  function renderChips() {
+    var box = $('chips'); box.textContent = '';
+    PERIODS.forEach(function (p) {
+      var b = el('button', 'chip' + (days === p[0] ? ' on' : ''), p[1]);
+      b.onclick = function () { days = p[0]; load(); };
+      box.appendChild(b);
+    });
+  }
+
+  function renderStats(d) {
+    $('nVisits').textContent = fmtInt(d.range.visits);
+    $('nUnique').textContent = fmtInt(d.range.uniqueVisitors);
+    $('nLeads').textContent = fmtInt(d.range.leads);
+    $('nPaid').textContent = fmtInt(d.range.paid);
+    $('todayLine').textContent =
+      'Hoje: ' + fmtInt(d.today.visits) + ' acessos · ' + fmtInt(d.today.uniqueVisitors) + ' visitantes únicos' +
+      '  ·  desde o início: ' + fmtInt(d.allTime.visits) + ' acessos, ' + fmtInt(d.allTime.uniqueVisitors) + ' visitantes únicos, ' +
+      fmtInt(d.allTime.leads) + ' inscrições, ' + fmtInt(d.allTime.paid) + ' pagas';
+  }
+
+  function renderFunnel(d) {
+    var box = $('funnel'); box.textContent = '';
+    var base = d.range.uniqueVisitors || 0;
+    var steps = [
+      ['Visitantes', base],
+      ['Inscrições', d.range.leads],
+      ['Pagas', d.range.paid]
+    ];
+    var max = base || 1;
+    steps.forEach(function (s, i) {
+      var row = el('div', 'fstep');
+      row.appendChild(el('div', 'lbl', s[0]));
+      var track = el('div', 'track');
+      var fill = el('div', 'fill');
+      fill.style.width = pct(s[1], max) + '%';
+      track.appendChild(fill);
+      row.appendChild(track);
+      row.appendChild(el('div', 'val', fmtInt(s[1])));
+      box.appendChild(row);
+      if (i < steps.length - 1) {
+        var from = steps[i][1] || 0;
+        var to = steps[i + 1][1] || 0;
+        box.appendChild(el('div', 'farrow', '↓ ' + pct(to, from || 1) + '% seguem para a próxima etapa'));
+      }
+    });
+  }
+
+  function renderSources(d) {
+    var box = $('sources'); box.textContent = '';
+    if (!d.sources.length) {
+      box.appendChild(el('div', 'empty', 'Ainda sem acessos suficientes no período pra identificar origem.'));
+      return;
+    }
+    var max = d.sources[0].visits || 1;
+    d.sources.forEach(function (s) {
+      var row = el('div', 'srow');
+      row.appendChild(el('div', 'lbl', labelSource(s.source)));
+      var track = el('div', 'track');
+      var fill = el('div', 'fill');
+      fill.style.width = pct(s.visits, max) + '%';
+      track.appendChild(fill);
+      row.appendChild(track);
+      row.appendChild(el('div', 'val', fmtInt(s.visits)));
+      box.appendChild(row);
+    });
+  }
+
+  function renderChart(d) {
+    var box = $('chart'); box.textContent = '';
+    if (!d.daily.length) {
+      box.appendChild(el('div', 'empty', 'Sem dados no período.'));
+      return;
+    }
+    var max = 1;
+    d.daily.forEach(function (p) { if (p.visits > max) max = p.visits; });
+    d.daily.forEach(function (p) {
+      var h = Math.max(2, Math.round((p.visits / max) * 100));
+      var b = el('div', 'col');
+      b.style.height = h + '%';
+      var dt = new Date(p.date + 'T00:00:00');
+      var dl = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      b.title = dl + ': ' + fmtInt(p.visits) + ' acessos · ' + fmtInt(p.uniqueVisitors) + ' únicos · ' + fmtInt(p.leads) + ' inscrições';
+      box.appendChild(b);
+    });
+  }
+
+  function load() {
+    renderChips();
+    return api('/admin/api/stats?days=' + days).then(function (d) {
+      renderStats(d);
+      renderFunnel(d);
+      renderSources(d);
+      renderChart(d);
+    }).catch(function () {
+      $('todayLine').textContent = 'Não foi possível carregar as estatísticas. Recarregue a página.';
+    });
+  }
+
+  load();
+  setInterval(load, 30000);
+})();
+</script>
+</body>
+</html>

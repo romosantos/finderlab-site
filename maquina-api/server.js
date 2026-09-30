@@ -296,6 +296,21 @@ async function migrate() {
     );
     CREATE UNIQUE INDEX IF NOT EXISTS payments_checkout_uq ON payments (asaas_checkout_id);
     CREATE INDEX IF NOT EXISTS payments_lead_idx ON payments (lead_id, created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS page_views (
+      id            SERIAL PRIMARY KEY,
+      path          TEXT NOT NULL,
+      visitor_id    TEXT NOT NULL,
+      referrer      TEXT NOT NULL DEFAULT '',
+      referrer_host TEXT NOT NULL DEFAULT '',
+      utm_source    TEXT NOT NULL DEFAULT '',
+      utm_medium    TEXT NOT NULL DEFAULT '',
+      utm_campaign  TEXT NOT NULL DEFAULT '',
+      user_agent    TEXT NOT NULL DEFAULT '',
+      created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS page_views_created_idx ON page_views (created_at DESC);
+    CREATE INDEX IF NOT EXISTS page_views_visitor_idx ON page_views (visitor_id);
   `);
 }
 
@@ -306,6 +321,51 @@ app.use(express.json({ limit: '20kb' }));
 
 // ---------- helpers ----------
 const clean = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
+
+// ---------- rastreamento de acessos (aba "Acessos" do admin) ----------
+const BOT_UA_RE = /(bot|spider|crawl|slurp|facebookexternalhit|whatsapp|telegrambot|pingdom|uptimerobot|headlesschrome|phantomjs|python-requests|curl\/|wget\/|ahrefsbot|semrushbot|mj12bot|dotbot|petalbot|bytespider|gptbot|claudebot|ccbot|google-inspectiontool|bingpreview)/i;
+const VISITOR_COOKIE = 'mdv';
+
+function extractHost(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+}
+
+async function trackPageView(req, res) {
+  try {
+    const ua = req.headers['user-agent'] || '';
+    if (BOT_UA_RE.test(ua)) return;
+
+    const cookieHeader = req.headers.cookie || '';
+    const match = cookieHeader.match(new RegExp('(?:^|;\\s*)' + VISITOR_COOKIE + '=([a-f0-9-]{36})'));
+    let visitorId = match ? match[1] : '';
+    if (!visitorId) {
+      visitorId = crypto.randomUUID();
+      res.setHeader(
+        'Set-Cookie',
+        VISITOR_COOKIE + '=' + visitorId + '; Max-Age=31536000; Path=/; HttpOnly; Secure; SameSite=Lax'
+      );
+    }
+
+    const referrer = clean(req.headers.referer || req.headers.referrer, 500);
+    const referrerHost = referrer ? extractHost(referrer) : '';
+    const utmSource = clean(req.query.utm_source, 80);
+    const utmMedium = clean(req.query.utm_medium, 80);
+    const utmCampaign = clean(req.query.utm_campaign, 120);
+    const pagePath = req.path === '/' || req.path === '/index.html' ? '/' : '/inscricao';
+
+    await pool.query(
+      `INSERT INTO page_views (path, visitor_id, referrer, referrer_host, utm_source, utm_medium, utm_campaign, user_agent)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [pagePath, visitorId, referrer, referrerHost, utmSource, utmMedium, utmCampaign, clean(ua, 300)]
+    );
+  } catch (err) {
+    console.error('trackPageView', err && err.message ? err.message : err);
+  }
+}
 
 function safeEqual(a, b) {
   const ha = crypto.createHash('sha256').update(String(a)).digest();
@@ -807,6 +867,7 @@ app.post('/whatsapp/inbound', whatsappWebhookParser, (req, res) => {
 app.use('/admin', adminLimiter, failLimiter, basicAuth);
 app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/admin/whatsapp', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-whatsapp.html')));
+app.get('/admin/acessos', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-acessos.html')));
 
 app.get('/admin/api/leads', async (_req, res) => {
   const { rows } = await pool.query('SELECT * FROM leads ORDER BY created_at DESC');
@@ -849,6 +910,102 @@ app.get('/admin/api/leads.csv', async (_req, res) => {
   res.send('﻿' + lines.join('\r\n'));
 });
 
+app.get('/admin/api/stats', async (req, res) => {
+  try {
+    const days = Math.min(180, Math.max(1, Number(req.query.days) || 30));
+    const TZ = 'America/Sao_Paulo';
+    const num = (v) => Number(v || 0);
+
+    const [totals, range, today, series, sources] = await Promise.all([
+      pool.query(`
+        SELECT
+          (SELECT COUNT(*) FROM page_views) AS visits,
+          (SELECT COUNT(DISTINCT visitor_id) FROM page_views) AS unique_visitors,
+          (SELECT COUNT(*) FROM leads) AS leads,
+          (SELECT COUNT(*) FROM leads WHERE status = 'pago') AS paid
+      `),
+      pool.query(
+        `
+        SELECT
+          (SELECT COUNT(*) FROM page_views WHERE created_at >= now() - make_interval(days => $1)) AS visits,
+          (SELECT COUNT(DISTINCT visitor_id) FROM page_views WHERE created_at >= now() - make_interval(days => $1)) AS unique_visitors,
+          (SELECT COUNT(*) FROM leads WHERE created_at >= now() - make_interval(days => $1)) AS leads,
+          (SELECT COUNT(*) FROM leads WHERE created_at >= now() - make_interval(days => $1) AND status = 'pago') AS paid
+        `,
+        [days]
+      ),
+      pool.query(`
+        SELECT
+          (SELECT COUNT(*) FROM page_views WHERE created_at >= date_trunc('day', now() AT TIME ZONE '${TZ}') AT TIME ZONE '${TZ}') AS visits,
+          (SELECT COUNT(DISTINCT visitor_id) FROM page_views WHERE created_at >= date_trunc('day', now() AT TIME ZONE '${TZ}') AT TIME ZONE '${TZ}') AS unique_visitors
+      `),
+      pool.query(
+        `
+        WITH days AS (
+          SELECT generate_series(
+            date_trunc('day', now() AT TIME ZONE '${TZ}') - make_interval(days => $1::int - 1),
+            date_trunc('day', now() AT TIME ZONE '${TZ}'),
+            interval '1 day'
+          )::date AS day
+        ),
+        pv AS (
+          SELECT date_trunc('day', created_at AT TIME ZONE '${TZ}')::date AS day,
+                 COUNT(*) AS visits, COUNT(DISTINCT visitor_id) AS unique_visitors
+          FROM page_views
+          WHERE created_at >= now() - make_interval(days => $1)
+          GROUP BY 1
+        ),
+        ld AS (
+          SELECT date_trunc('day', created_at AT TIME ZONE '${TZ}')::date AS day, COUNT(*) AS leads
+          FROM leads
+          WHERE created_at >= now() - make_interval(days => $1)
+          GROUP BY 1
+        )
+        SELECT to_char(days.day, 'YYYY-MM-DD') AS day,
+               COALESCE(pv.visits, 0) AS visits,
+               COALESCE(pv.unique_visitors, 0) AS unique_visitors,
+               COALESCE(ld.leads, 0) AS leads
+        FROM days
+        LEFT JOIN pv ON pv.day = days.day
+        LEFT JOIN ld ON ld.day = days.day
+        ORDER BY days.day
+        `,
+        [days]
+      ),
+      pool.query(
+        `
+        SELECT
+          COALESCE(NULLIF(utm_source, ''), NULLIF(referrer_host, ''), '') AS source,
+          COUNT(*) AS visits,
+          COUNT(DISTINCT visitor_id) AS unique_visitors
+        FROM page_views
+        WHERE created_at >= now() - make_interval(days => $1)
+        GROUP BY 1
+        ORDER BY visits DESC
+        LIMIT 12
+        `,
+        [days]
+      ),
+    ]);
+
+    const t = totals.rows[0], r = range.rows[0], td = today.rows[0];
+
+    res.json({
+      days,
+      today: { visits: num(td.visits), uniqueVisitors: num(td.unique_visitors) },
+      allTime: { visits: num(t.visits), uniqueVisitors: num(t.unique_visitors), leads: num(t.leads), paid: num(t.paid) },
+      range: { visits: num(r.visits), uniqueVisitors: num(r.unique_visitors), leads: num(r.leads), paid: num(r.paid) },
+      daily: series.rows.map((row) => ({
+        date: row.day, visits: num(row.visits), uniqueVisitors: num(row.unique_visitors), leads: num(row.leads),
+      })),
+      sources: sources.rows.map((row) => ({ source: row.source || '', visits: num(row.visits), uniqueVisitors: num(row.unique_visitors) })),
+    });
+  } catch (err) {
+    console.error('GET /admin/api/stats', err);
+    res.status(500).json({ error: 'Não foi possível carregar as estatísticas de acesso.' });
+  }
+});
+
 app.get('/admin/api/whatsapp/conversations', async (_req, res) => {
   try {
     const { rows } = await pool.query(`
@@ -887,6 +1044,12 @@ app.get('/admin/api/whatsapp/conversations/:phone', async (req, res) => {
 });
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
+
+// Conta o acesso (sem bloquear a resposta) antes de servir a página estática.
+app.get(['/', '/index.html', '/inscricao', '/inscricao.html'], (req, res, next) => {
+  trackPageView(req, res).catch(() => {});
+  next();
+});
 
 // ---------- Site estático (landing + inscrição) ----------
 // Registrado DEPOIS das rotas /admin (protegidas por basicAuth) de propósito:
