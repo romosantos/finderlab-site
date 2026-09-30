@@ -9,7 +9,7 @@ const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
 const Anthropic = require('@anthropic-ai/sdk');
 const twilio = require('twilio');
-const { extractRegistrationTerms, registrationTermsReply } = require('./lib/registration-terms');
+const { extractRegistrationTerms, registrationTermsReply, registrationConsentReply } = require('./lib/registration-terms');
 const { splitWhatsAppText } = require('./lib/whatsapp-text');
 const { lookupCep } = require('./lib/cep-address');
 
@@ -720,6 +720,11 @@ function stripMarkdown(text) {
 // instrui quando e como usar isso.
 const CHAT_TOOLS = [
   {
+    name: 'solicitar_concordancia_termos',
+    description: 'Apresenta o aviso de uso e privacidade dos dados e pede concordância explícita com botão sim, concordo no site. Use sempre na etapa de autorização, após confirmar os dados, antes de registrar inscrição ou gerar pagamento. Para ler o documento completo, use consultar_termos_privacidade. Esta ferramenta não registra aceite, inscrição nem pagamento; aguarde a próxima resposta da pessoa.',
+    input_schema: { type: 'object', properties: {}, required: [] },
+  },
+  {
     name: 'consultar_endereco_cep',
     description: 'Consulta o endereço oficial pelo CEP informado pela pessoa. Use assim que receber o CEP no fluxo de inscrição e pagamento, antes de perguntar rua ou bairro. Retorna rua, bairro, cidade e estado; peça somente número, complemento opcional e campos que a consulta não preencher. Não registra inscrição nem gera pagamento.',
     input_schema: {
@@ -883,6 +888,15 @@ async function getAgentReply(messages, systemPromptOverride, originUrl) {
         toolRounds,
       };
     }
+    if (toolUseBlocks.some((block) => block.name === 'solicitar_concordancia_termos')) {
+      // Showing the consent question must never execute registration/payment tools.
+      return {
+        reply: registrationConsentReply(),
+        showTermsAcceptance: true,
+        termsAcceptanceLabel: 'sim, concordo',
+        toolRounds,
+      };
+    }
     const toolResults = [];
     for (const block of toolUseBlocks) {
       const result = await runChatTool(block.name, block.input, originUrl);
@@ -949,7 +963,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       : SYSTEM_PROMPT;
 
     const originUrl = req.protocol + '://' + req.get('host');
-    const { reply, toolRounds, showTermsAcceptance } = await getAgentReply(messages, systemPrompt, originUrl);
+    const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel } = await getAgentReply(messages, systemPrompt, originUrl);
 
     const elapsedMs = Date.now() - chatStartedAt;
     if (elapsedMs > 12000) {
@@ -966,7 +980,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       )
       .catch((err) => console.error('Falha ao gravar chat_logs', err));
 
-    if (!clientGone) res.json({ reply, showTermsAcceptance: showTermsAcceptance === true });
+    if (!clientGone) res.json({ reply, showTermsAcceptance: showTermsAcceptance === true, termsAcceptanceLabel });
   } catch (err) {
     console.error('POST /chat', err && err.message ? err.message : err, `(${Date.now() - chatStartedAt}ms decorridos)`);
     if (!res.headersSent) res.status(500).json({ error: 'Não consegui responder agora. Tenta de novo em instantes.' });

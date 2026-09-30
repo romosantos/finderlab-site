@@ -36,4 +36,11 @@ function registrationTermsReply(terms, requestConsent) {
       : '\n\nSe tiver alguma dúvida sobre esse texto, pode perguntar por aqui.');
 }
 
-module.exports = { extractRegistrationTerms, registrationTermsReply };
+function registrationConsentReply() {
+  return 'Antes de continuar, preciso da sua concordância com os termos de uso e privacidade dos dados (LGPD).\n\n' +
+    'Ao se inscrever, você autoriza a Finder Lab a usar seus dados para registrar a inscrição, entrar em contato sobre o curso (pagamento, logística, data e local) e enviar informações sobre próximas turmas da Máquina de Decisões. O pagamento é processado pelo Asaas; os dados de cartão não são digitados nem guardados no chat.\n\n' +
+    'Se quiser ler os termos completos antes, pode pedir aqui na conversa ou acessar https://www.maquina.finderlab.com.br/inscricao.\n\n' +
+    'Você concorda com os termos de uso e privacidade e autoriza esse contato?';
+}
+
+module.exports = { extractRegistrationTerms, registrationTermsReply, registrationConsentReply };

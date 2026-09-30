@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="/chat-links.css?v=20260930accept">
+<link rel="stylesheet" href="/chat-links.css?v=20260930agree">
 <style>
 body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
   background-image:radial-gradient(ellipse 900px 700px at 50% -10%,rgba(116,67,245,.28),transparent 65%)}
@@ -104,7 +104,7 @@ a{color:inherit}
   <div class="foot"><a href="https://maquina.finderlab.com.br">um projeto da Finder Lab · conhecer a Máquina de Decisões ↗</a></div>
 </div>
 
-<script src="/chat-links.js?v=20260930accept"></script>
+<script src="/chat-links.js?v=20260930agree"></script>
 <script>
 (function () {
   var chatSession = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -116,18 +116,18 @@ a{color:inherit}
 
   function scrollChat() { chatBody.scrollTop = chatBody.scrollHeight; }
 
-  function addMsg(who, text, showTermsAcceptance) {
+  function addMsg(who, text, showTermsAcceptance, termsAcceptanceLabel) {
     var div = document.createElement('div');
     div.className = 'chat-msg ' + who;
     window.DrigoChatLinks.render(div, text);
     if (who === 'bot' && showTermsAcceptance === true) {
       window.DrigoChatLinks.addTermsAcceptance(div, function () {
         if (chatLoading) return false;
-        chatInput.value = 'sim, aceito';
+        chatInput.value = termsAcceptanceLabel === 'sim, concordo' ? 'sim, concordo' : 'sim, aceito';
         updateSendState();
         chatForm.requestSubmit();
         return true;
-      });
+      }, termsAcceptanceLabel);
     }
     chatBody.appendChild(div);
   }
@@ -184,7 +184,7 @@ a{color:inherit}
       })
       .then(function (data) {
         setLoading(false);
-        addMsg('bot', data.reply, data.showTermsAcceptance);
+        addMsg('bot', data.reply, data.showTermsAcceptance, data.termsAcceptanceLabel);
       })
       .catch(function () {
         clearTimeout(timeoutId);

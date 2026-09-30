@@ -61,11 +61,11 @@
     });
   }
 
-  function addTermsAcceptance(container, onAccept) {
+  function addTermsAcceptance(container, onAccept, label) {
     var button = document.createElement('button');
     button.type = 'button';
     button.className = 'chat-accept-terms';
-    button.textContent = 'sim, aceito';
+    button.textContent = label === 'sim, concordo' ? label : 'sim, aceito';
     button.addEventListener('click', function () {
       if (button.disabled) return;
       // The caller returns false while another response is in progress.
