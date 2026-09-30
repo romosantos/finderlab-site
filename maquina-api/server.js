@@ -9,6 +9,8 @@ const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
 const Anthropic = require('@anthropic-ai/sdk');
 const twilio = require('twilio');
+const { extractRegistrationTerms, registrationTermsReply } = require('./lib/registration-terms');
+const { splitWhatsAppText } = require('./lib/whatsapp-text');
 
 const PORT = process.env.PORT || 3000;
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
@@ -43,15 +45,18 @@ const STATUSES = ['novo', 'contatado', 'pago'];
 
 // ---------- agente de chat: persona + base de conhecimento ----------
 let SYSTEM_PROMPT = '';
+let REGISTRATION_TERMS = '';
 let DIAGNOSTIC_ADDENDUM = '';
 let chatReady = false;
 try {
   const instructions = fs.readFileSync(path.join(__dirname, 'knowledge', 'system-instructions.md'), 'utf8');
   const knowledge = fs.readFileSync(path.join(__dirname, 'knowledge', 'base-conhecimento.md'), 'utf8');
-  SYSTEM_PROMPT = instructions + '\n\n---\n\n# BASE DE CONHECIMENTO (fonte de verdade, use só o que está aqui)\n\n' + knowledge;
+  REGISTRATION_TERMS = extractRegistrationTerms(fs.readFileSync(path.join(__dirname, 'public', 'inscricao.html'), 'utf8'));
+  SYSTEM_PROMPT = instructions + '\n\n---\n\n# BASE DE CONHECIMENTO (fonte de verdade, use só o que está aqui)\n\n' + knowledge +
+    '\n\n---\n\n# TERMOS PUBLICADOS NA PÁGINA DE INSCRIÇÃO (texto completo e oficial)\n\n' + REGISTRATION_TERMS;
   chatReady = true;
 } catch (err) {
-  console.error('Não foi possível carregar knowledge/system-instructions.md ou knowledge/base-conhecimento.md. O agente de chat ficará desligado.', err.message);
+  console.error('Não foi possível carregar as instruções, a base de conhecimento ou os termos de inscrição. O agente de chat ficará desligado.', err.message);
 }
 // Modo diagnóstico: addendum carregado à parte, nunca derruba o chat normal se faltar.
 try {
@@ -694,6 +699,21 @@ function stripMarkdown(text) {
 // instrui quando e como usar isso.
 const CHAT_TOOLS = [
   {
+    name: 'consultar_termos_privacidade',
+    description:
+      'Mostra na própria conversa o texto completo e fiel dos termos de uso e privacidade publicados na página de inscrição. Use sempre que a pessoa pedir para ler, receber ou disponibilizar os termos, inclusive para não precisar abrir o site. Esta ferramenta só exibe os termos: não registra inscrição nem consentimento. A resposta completa será enviada diretamente à pessoa.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        solicitar_aceite: {
+          type: 'boolean',
+          description: 'true somente se a conversa já está no passo de aceite da inscrição, com nome, email e WhatsApp confirmados pela pessoa. Nesse caso, após o texto, pergunta se aceita os termos e autoriza o contato. Nos demais casos, false.',
+        },
+      },
+      required: ['solicitar_aceite'],
+    },
+  },
+  {
     name: 'registrar_inscricao',
     description:
       'Registra a inscrição da pessoa no curso Máquina de Decisões, salvando nome, email, WhatsApp (e empresa/cargo se informados) no mesmo cadastro que o formulário do site usa. Só chame depois de ter nome completo, email e WhatsApp confirmados pela pessoa na conversa, de ter repetido esses dados pra ela confirmar que estão certos, e de ela ter confirmado explicitamente (algo como "sim", "aceito", "pode registrar") que concorda com os termos de uso e privacidade (LGPD). Nunca invente, deduza ou preencha nenhum desses campos sozinho.',
@@ -770,6 +790,15 @@ async function getAgentReply(messages, systemPromptOverride) {
   while (response.stop_reason === 'tool_use' && toolRounds < 3) {
     toolRounds += 1;
     const toolUseBlocks = (response.content || []).filter((block) => block.type === 'tool_use');
+    const termsRequest = toolUseBlocks.find((block) => block.name === 'consultar_termos_privacidade');
+    if (termsRequest) {
+      // Deliver the published document verbatim, without model truncation or rewriting.
+      // Stop here even if the model also requested registration: reading is not consent.
+      return {
+        reply: registrationTermsReply(REGISTRATION_TERMS, termsRequest.input?.solicitar_aceite),
+        toolRounds,
+      };
+    }
     const toolResults = [];
     for (const block of toolUseBlocks) {
       const result = await runChatTool(block.name, block.input);
@@ -889,7 +918,9 @@ async function loadWhatsAppHistory(phone) {
 // texto livre, sem Content Template — diferente do envio business-initiated em notifyLeadWhatsApp.
 async function sendWhatsAppFreeform(phoneRaw, body) {
   if (!twilioClient || !TWILIO_WHATSAPP_FROM) return;
-  await twilioClient.messages.create({ from: TWILIO_WHATSAPP_FROM, to: toWhatsAppAddress(phoneRaw), body });
+  for (const chunk of splitWhatsAppText(body)) {
+    await twilioClient.messages.create({ from: TWILIO_WHATSAPP_FROM, to: toWhatsAppAddress(phoneRaw), body: chunk });
+  }
 }
 
 // Roda depois de já termos respondido 200 pra Twilio (veja a rota abaixo), então uma

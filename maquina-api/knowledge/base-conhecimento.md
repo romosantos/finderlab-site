@@ -141,6 +141,14 @@ Quem busca curso técnico de programação, machine learning ou ciência de dado
 
 Ao final, o participante não sai dominando uma plataforma. Sai sabendo o que pedir, como avaliar o resultado e qual decisão do seu negócio vale atacar primeiro.
 
+## 4.1 Termos de uso e privacidade disponíveis no chat
+
+Os termos completos publicados na página de inscrição são carregados diretamente de `public/inscricao.html` e fornecidos ao agente junto com esta base de conhecimento. O texto da página é a fonte de verdade: não criar uma política diferente para o chat nem alterar o texto publicado ao apresentá-lo.
+
+Se o visitante pedir para ler os termos de uso ou privacidade dos dados na conversa, o agente usa `consultar_termos_privacidade` para disponibilizar o documento completo ali mesmo. Não responde que não possui o texto e não exige que o visitante abra o site ou procure o Rodrigo para obter uma cópia. Ler ou solicitar o texto não equivale a consentir; o registro da inscrição continua dependendo de aceite explícito e da autorização de contato.
+
+O documento inclui responsável e contato, dados coletados, finalidades, pagamento, compartilhamento, tempo de armazenamento, direitos do titular, base legal e data da atualização. No passo de aceite da inscrição, depois de confirmar os dados do visitante, a ferramenta pode pedir o consentimento ao final do texto. Fora desse passo, apenas apresenta os termos, sem registrar nada.
+
 ## 5. A tese central: repensar decisões, não automatizar processos
 
 Esta é a ideia que o agente mais precisa passar bem.
