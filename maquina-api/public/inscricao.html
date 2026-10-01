@@ -181,6 +181,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
 .chat-send{width:44px;height:44px;flex-shrink:0;border-radius:10px;border:0;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .chat-send:disabled{opacity:.45;cursor:default}
 .chat-mic{width:56px;height:56px;flex-shrink:0;border-radius:12px;border:1px solid rgba(124,84,245,.4);background:rgba(255,255,255,.06);color:#F1EEFB;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.chat-mic.voice-active{background:#E5484D;border-color:#E5484D;color:#fff}
 .chat-mic.recording{background:#E5484D;border-color:#E5484D;color:#fff;animation:micPulse 1.1s infinite}
 @keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(229,72,77,.5)}50%{box-shadow:0 0 0 8px rgba(229,72,77,0)}}
 .chat-hint{padding:0 18px 12px;font-size:11px;color:#8F8AA8}
@@ -404,7 +405,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
       </div>
       <form class="chat-form" id="chat-form">
         <input type="text" id="chat-input" placeholder="Escreve sua pergunta..." aria-label="Sua mensagem" maxlength="600">
-        <button type="button" class="chat-mic" id="chat-mic" aria-label="Gravar áudio"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg></button>
+        <button type="button" class="chat-mic" id="chat-mic" aria-label="Iniciar conversa por voz" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg></button>
         <button type="submit" class="chat-send" id="chat-send" disabled aria-label="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
         <audio id="chat-voice-audio" style="display:none"></audio>
       </form>
@@ -413,6 +414,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   <button type="button" class="chat-fab" id="chat-fab" aria-expanded="false" aria-label="Conversar com o Drigo, assistente da Máquina de Decisões"><img class="chat-fab-avatar" src="/img/drigo-avatar.png" width="82" height="82" alt=""></button>
 </div>
 
+<script src="/chat-voice.js?v=20261001"></script>
 <script src="/chat-links.js?v=20260930agree"></script>
 <script>
 (function () {
@@ -677,6 +679,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     setTimeout(scrollChat, 50);
   }
   function closeChat() {
+    if (voice) voice.stop();
     chatOv.classList.remove('open');
     chatFab.setAttribute('aria-expanded', 'false');
   }
@@ -727,173 +730,21 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   }
   chatInput.addEventListener('input', updateSendState);
 
-  // ---------- Voz: grava a pergunta, manda pro Drigo, toca a resposta ----------
-  var chatMic = document.getElementById('chat-mic');
-  var chatVoiceAudio = document.getElementById('chat-voice-audio');
-  var mediaRecorder = null;
-  var recordedChunks = [];
-  var recording = false;
-  var voiceTurn = false; // true quando a pergunta foi por voz -> a resposta também sai falada
-
-  function micSupported() {
-    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
-  }
-  if (chatMic && !micSupported()) chatMic.style.display = 'none';
-
-  function pickMimeType() {
-    var candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
-    for (var i = 0; i < candidates.length; i++) {
-      if (window.MediaRecorder.isTypeSupported(candidates[i])) return candidates[i];
-    }
-    return '';
-  }
-
-  // Detecta sozinho quando a pessoa parou de falar, pra não precisar tocar o mic
-  // de novo só pra mandar -- toca uma vez, fala, solta o fone que ele manda sozinho.
-  // Tocar o mic de nov enquanto grava ainda funciona, pra quem quiser mandar na hora.
-  var micPlaceholder = '';
-  var vadAudioCtx = null;
-  var vadInterval = null;
-  var vadSilenceMs = 0;
-  var vadSpeechDetected = false;
-  var vadStartedAt = 0;
-  var VAD_STEP_MS = 150;
-  var VAD_SILENCE_THRESHOLD = 10; // 0-128, desvio do centro considerado silêncio
-  var VAD_SILENCE_TO_STOP_MS = 1400; // silêncio contínuo (depois de já ter falado) pra parar sozinho
-  var VAD_MAX_DURATION_MS = 45000; // trava de segurança, nunca grava mais que isso
-
-  function startSilenceWatch(stream) {
-    vadSilenceMs = 0;
-    vadSpeechDetected = false;
-    vadStartedAt = Date.now();
-    try {
-      vadAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      var source = vadAudioCtx.createMediaStreamSource(stream);
-      var analyser = vadAudioCtx.createAnalyser();
-      analyser.fftSize = 512;
-      source.connect(analyser);
-      var data = new Uint8Array(analyser.frequencyBinCount);
-      vadInterval = setInterval(function () {
-        analyser.getByteTimeDomainData(data);
-        var maxDeviation = 0;
-        for (var i = 0; i < data.length; i++) {
-          var dev = Math.abs(data[i] - 128);
-          if (dev > maxDeviation) maxDeviation = dev;
-        }
-        if (maxDeviation > VAD_SILENCE_THRESHOLD) {
-          vadSpeechDetected = true;
-          vadSilenceMs = 0;
-        } else {
-          vadSilenceMs += VAD_STEP_MS;
-        }
-        var elapsed = Date.now() - vadStartedAt;
-        if (elapsed > VAD_MAX_DURATION_MS || (vadSpeechDetected && vadSilenceMs >= VAD_SILENCE_TO_STOP_MS)) {
-          stopRecording();
-        }
-      }, VAD_STEP_MS);
-    } catch (e) {
-      // sem Web Audio API pra detectar silêncio -- sem problema, dá pra tocar o mic de novo pra parar
-    }
-  }
-
-  function stopSilenceWatch() {
-    if (vadInterval) { clearInterval(vadInterval); vadInterval = null; }
-    if (vadAudioCtx) { vadAudioCtx.close().catch(function () {}); vadAudioCtx = null; }
-  }
-
-  function startRecording() {
-    if (chatLoading || recording) return;
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
-      var mimeType = pickMimeType();
-      try {
-        mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType: mimeType }) : new MediaRecorder(stream);
-      } catch (e) {
-        mediaRecorder = new MediaRecorder(stream);
-      }
-      recordedChunks = [];
-      mediaRecorder.addEventListener('dataavailable', function (e) {
-        if (e.data && e.data.size) recordedChunks.push(e.data);
-      });
-      mediaRecorder.addEventListener('stop', function () {
-        stream.getTracks().forEach(function (t) { t.stop(); });
-        var blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-        sendVoiceMessage(blob);
-      });
-      mediaRecorder.start();
-      recording = true;
-      chatMic.classList.add('recording');
-      chatMic.setAttribute('aria-label', 'Parar gravação');
-      micPlaceholder = chatInput.placeholder;
-      chatInput.placeholder = 'Ouvindo… fala à vontade';
-      startSilenceWatch(stream);
-    }).catch(function () {
-      addMsg('err', 'Não consegui acessar o microfone. Verifica a permissão do navegador.');
-    });
-  }
-
-  function stopRecording() {
-    if (!recording || !mediaRecorder) return;
-    recording = false;
-    stopSilenceWatch();
-    chatMic.classList.remove('recording');
-    chatMic.setAttribute('aria-label', 'Gravar áudio');
-    if (micPlaceholder) { chatInput.placeholder = micPlaceholder; micPlaceholder = ''; }
-    mediaRecorder.stop();
-  }
-
-  if (chatMic) {
-    chatMic.addEventListener('click', function () {
-      if (chatLoading) return;
-      if (recording) stopRecording(); else startRecording();
-    });
-  }
-
-  function sendVoiceMessage(blob) {
-    if (!blob || !blob.size) return;
-    setLoading(true);
-    fetch('/voice/transcribe', {
-      method: 'POST',
-      headers: { 'Content-Type': blob.type || 'audio/webm' },
-      body: blob
-    })
-      .then(function (r) {
-        return r.json().catch(function () { return {}; }).then(function (data) {
-          if (!r.ok || !data.text) throw new Error((data && data.error) || 'falha');
-          return data;
-        });
-      })
-      .then(function (data) {
-        setLoading(false);
-        voiceTurn = true;
-        chatInput.value = data.text;
-        updateSendState();
-        chatForm.requestSubmit();
-      })
-      .catch(function () {
-        setLoading(false);
-        addMsg('err', 'Não consegui entender o áudio. Tenta de novo ou escreve sua mensagem.');
-      });
-  }
-
-  function speakReply(text) {
-    if (!text || !chatVoiceAudio) return;
-    fetch('/voice/speak', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: text })
-    })
-      .then(function (r) {
-        return r.json().catch(function () { return {}; }).then(function (data) {
-          if (!r.ok || !data.audio) throw new Error('falha');
-          return data;
-        });
-      })
-      .then(function (data) {
-        chatVoiceAudio.src = 'data:' + (data.mimeType || 'audio/wav') + ';base64,' + data.audio;
-        chatVoiceAudio.play().catch(function () {});
-      })
-      .catch(function () {});
-  }
+  var voiceTurn = false;
+  var voice = window.DrigoVoice.create({
+    button: document.getElementById('chat-mic'),
+    input: chatInput,
+    audio: document.getElementById('chat-voice-audio'),
+    busy: function () { return chatLoading; },
+    stopped: function () { voiceTurn = false; },
+    submit: function (text) {
+      voiceTurn = true;
+      chatInput.value = text;
+      updateSendState();
+      chatForm.requestSubmit();
+    },
+    error: function (text) { addMsg('err', text); scrollChat(); }
+  });
 
   chatForm.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -904,6 +755,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
       .map(function (el) {
         return { role: el.classList.contains('user') ? 'user' : 'assistant', content: el.dataset.message || el.textContent };
       });
+    voice.pause();
     addMsg('user', text);
     chatInput.value = '';
     updateSendState();
@@ -928,12 +780,13 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
       .then(function (data) {
         setLoading(false);
         addMsg('bot', data.reply, data.showTermsAcceptance, data.termsAcceptanceLabel);
-        if (voiceTurn) { voiceTurn = false; speakReply(data.reply); }
+        if (voiceTurn) { voiceTurn = false; voice.reply(data.reply); } else { voice.resume(); }
       })
       .catch(function () {
         clearTimeout(timeoutId);
         setLoading(false);
         voiceTurn = false;
+        voice.resume();
         addMsg('err', 'Não consegui responder agora. Fala com a gente pelo WhatsApp (11) 3164-3783 ou tenta de novo em instantes.');
       })
       .finally(function () { setTimeout(scrollChat, 30); });
