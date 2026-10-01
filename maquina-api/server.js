@@ -1073,6 +1073,7 @@ app.post(
 
       const mimeType = (req.headers['content-type'] || 'audio/webm').split(';')[0].trim();
       const audioB64 = req.body.toString('base64');
+      console.error('POST /voice/transcribe: recebido content-type=%s tamanho=%dB', req.headers['content-type'] || '(vazio)', req.body.length);
 
       const geminiRes = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_STT_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
@@ -1105,7 +1106,11 @@ app.post(
         .join('')
         .trim();
 
-      if (!text) return res.status(502).json({ error: 'Não consegui entender o áudio agora.' });
+      if (!text) {
+        const finishReason = data.candidates && data.candidates[0] && data.candidates[0].finishReason;
+        console.error('POST /voice/transcribe: Gemini respondeu 200 mas sem texto (finishReason=%s) — %s', finishReason || '?', JSON.stringify(data).slice(0, 400));
+        return res.status(502).json({ error: 'Não consegui entender o áudio agora.' });
+      }
       res.json({ text: clean(text, CHAT_MAX_MESSAGE_LEN) });
     } catch (err) {
       console.error('POST /voice/transcribe', err && err.message ? err.message : err);
