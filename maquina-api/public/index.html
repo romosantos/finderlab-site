@@ -295,6 +295,12 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
 .chat-dots span{width:6px;height:6px;border-radius:50%;background:#AEA9C5;opacity:.5;animation:chatDot 1s infinite}
 .chat-dots span:nth-child(2){animation-delay:.15s}
 .chat-dots span:nth-child(3){animation-delay:.3s}
+.chat-voice-wave{display:inline-flex;gap:3px;align-items:center;height:16px}
+.chat-voice-wave span{width:3px;height:4px;border-radius:2px;background:#7C54F5;animation:chatWave .9s ease-in-out infinite}
+.chat-voice-wave span:nth-child(2){animation-delay:.15s}
+.chat-voice-wave span:nth-child(3){animation-delay:.3s}
+.chat-voice-wave span:nth-child(4){animation-delay:.45s}
+@keyframes chatWave{0%,100%{height:4px}50%{height:16px}}
 @keyframes chatDot{0%,100%{opacity:.3}50%{opacity:1}}
 .chat-form{display:flex;gap:8px;padding:14px 16px;border-top:1px solid rgba(255,255,255,.08)}
 .chat-form input{flex:1;min-width:0;height:44px;padding:0 14px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-family:inherit;font-size:14px}
@@ -776,7 +782,9 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
         dots = document.createElement('div');
         dots.id = 'chat-loading-dots';
         dots.className = 'chat-msg bot';
-        dots.innerHTML = '<span class="chat-dots"><span></span><span></span><span></span></span>';
+        dots.innerHTML = voiceTurn
+          ? '<span class="chat-voice-wave"><span></span><span></span><span></span><span></span></span>'
+          : '<span class="chat-dots"><span></span><span></span><span></span></span>';
         chatBody.appendChild(dots);
       }
     } else if (dots) {
