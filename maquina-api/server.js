@@ -1100,9 +1100,12 @@ app.post(
       }
 
       const data = await geminiRes.json();
+      // O modelo dedicado de transcrição (gemini-*-transcribe) devolve o texto em
+      // parts[].audioTranscription.text, não em parts[].text como um generateContent comum.
+      // Aceita os dois formatos pra não quebrar se a Google mudar de novo.
       const text = (data.candidates || [])
         .flatMap((c) => (c.content && c.content.parts) || [])
-        .map((p) => p.text || '')
+        .map((p) => p.text || (p.audioTranscription && p.audioTranscription.text) || '')
         .join('')
         .trim();
 
