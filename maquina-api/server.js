@@ -891,6 +891,7 @@ const CHAT_TOOLS = [
       },
       required: ['nome', 'email', 'whats', 'cpfCnpj', 'cep', 'endereco', 'numero', 'bairro', 'consent'],
     },
+    cache_control: { type: 'ephemeral' },
   },
 ];
 
@@ -933,10 +934,15 @@ async function runChatTool(name, toolInput, originUrl) {
 // pra não duplicar essa lógica em dois lugares.
 async function getAgentReply(messages, systemPromptOverride, originUrl) {
   const system = systemPromptOverride || SYSTEM_PROMPT;
+  // Prompt caching: system prompt e tools são estáticos entre chamadas -- sem isso, cada
+  // chamada (e cada rodada de tool use) reprocessava ~16k tokens do zero, que era a maior
+  // parte da demora sentida no chat e na voz. Com cache_control, só a 1a chamada depois de
+  // ~5min paga o preço cheio; as seguintes reaproveitam o cache e saem bem mais rápido.
+  const systemBlocks = [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }];
   let response = await anthropic.messages.create({
     model: ANTHROPIC_MODEL,
     max_tokens: CHAT_MAX_TOKENS,
-    system,
+    system: systemBlocks,
     messages,
     tools: CHAT_TOOLS,
   });
@@ -974,7 +980,7 @@ async function getAgentReply(messages, systemPromptOverride, originUrl) {
     response = await anthropic.messages.create({
       model: ANTHROPIC_MODEL,
       max_tokens: CHAT_MAX_TOKENS,
-      system,
+      system: systemBlocks,
       messages,
       tools: CHAT_TOOLS,
     });
