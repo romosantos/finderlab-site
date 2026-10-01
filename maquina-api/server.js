@@ -73,6 +73,51 @@ if (!anthropic) {
   console.error('ANTHROPIC_API_KEY não definida. O agente de chat ficará desligado até você configurá-la.');
 }
 
+// ---------- Voz do Drigo (Gemini: STT + TTS) ----------
+// O Claude continua sendo o cérebro (chamado normalmente em /chat); o Gemini
+// só transcreve áudio e sintetiza fala, como um passo antes/depois do /chat.
+// Nomes de modelo em variável porque a Google tem trocado essa lista com frequência —
+// se parar de funcionar, confira https://ai.google.dev/gemini-api/docs/models antes de mexer no código.
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const GEMINI_STT_MODEL = process.env.GEMINI_STT_MODEL || 'gemini-3.5-transcribe';
+const GEMINI_TTS_MODEL = process.env.GEMINI_TTS_MODEL || 'gemini-3.8-flash-tts';
+const GEMINI_TTS_VOICE = process.env.GEMINI_TTS_VOICE || 'Puck';
+if (!GEMINI_API_KEY) {
+  console.error('GEMINI_API_KEY não definida. O modo de voz do Drigo (falar/ouvir) ficará desligado.');
+}
+
+// Gemini TTS devolve PCM cru (16-bit, geralmente 24kHz mono) em base64, sem cabeçalho.
+// Embrulhamos num WAV aqui no servidor pra o navegador tocar com um <audio> comum,
+// sem precisar de nenhuma lógica especial de decodificação no cliente.
+function pcmToWavBase64(pcmBase64, sampleRate, channels, bitDepth) {
+  const pcm = Buffer.from(pcmBase64, 'base64');
+  const byteRate = sampleRate * channels * (bitDepth / 8);
+  const blockAlign = channels * (bitDepth / 8);
+  const header = Buffer.alloc(44);
+  header.write('RIFF', 0);
+  header.writeUInt32LE(36 + pcm.length, 4);
+  header.write('WAVE', 8);
+  header.write('fmt ', 12);
+  header.writeUInt32LE(16, 16);
+  header.writeUInt16LE(1, 20);
+  header.writeUInt16LE(channels, 22);
+  header.writeUInt32LE(sampleRate, 24);
+  header.writeUInt32LE(byteRate, 28);
+  header.writeUInt16LE(blockAlign, 32);
+  header.writeUInt16LE(bitDepth, 34);
+  header.write('data', 36);
+  header.writeUInt32LE(pcm.length, 40);
+  return Buffer.concat([header, pcm]).toString('base64');
+}
+
+const voiceLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Muitos pedidos de voz. Espera um pouco e tenta de novo.' },
+});
+
 // ---------- WhatsApp (Twilio): confirmação pra quem se inscreve + aviso pro Rodrigo ----------
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || '';
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || '';
@@ -1006,6 +1051,117 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
   } catch (err) {
     console.error('POST /chat', err && err.message ? err.message : err, `(${Date.now() - chatStartedAt}ms decorridos)`);
     if (!res.headersSent) res.status(500).json({ error: 'Não consegui responder agora. Tenta de novo em instantes.' });
+  }
+});
+
+// ---------- /voice/transcribe: áudio -> texto (Gemini), cai no /chat normal depois ----------
+app.options('/voice/transcribe', publicCors);
+app.post(
+  '/voice/transcribe',
+  publicCors,
+  voiceLimiter,
+  express.raw({ type: ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav'], limit: '15mb' }),
+  async (req, res) => {
+    try {
+      if (!GEMINI_API_KEY) return res.status(503).json({ error: 'Transcrição de voz indisponível no momento.' });
+      if (ALLOWED_ORIGINS.length && req.headers.origin && !ALLOWED_ORIGINS.includes(req.headers.origin)) {
+        return res.status(403).json({ error: 'Origem não permitida.' });
+      }
+      if (!Buffer.isBuffer(req.body) || !req.body.length) {
+        return res.status(400).json({ error: 'Áudio vazio.' });
+      }
+
+      const mimeType = (req.headers['content-type'] || 'audio/webm').split(';')[0].trim();
+      const audioB64 = req.body.toString('base64');
+
+      const geminiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_STT_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { text: 'Transcreva o áudio a seguir em português do Brasil. Responda só com o texto transcrito, sem comentários nem pontuação extra.' },
+                  { inline_data: { mime_type: mimeType, data: audioB64 } },
+                ],
+              },
+            ],
+          }),
+        }
+      );
+
+      if (!geminiRes.ok) {
+        const errText = await geminiRes.text().catch(() => '');
+        console.error('POST /voice/transcribe: Gemini respondeu %d — %s', geminiRes.status, errText.slice(0, 300));
+        return res.status(502).json({ error: 'Não consegui entender o áudio agora.' });
+      }
+
+      const data = await geminiRes.json();
+      const text = (data.candidates || [])
+        .flatMap((c) => (c.content && c.content.parts) || [])
+        .map((p) => p.text || '')
+        .join('')
+        .trim();
+
+      if (!text) return res.status(502).json({ error: 'Não consegui entender o áudio agora.' });
+      res.json({ text: clean(text, CHAT_MAX_MESSAGE_LEN) });
+    } catch (err) {
+      console.error('POST /voice/transcribe', err && err.message ? err.message : err);
+      res.status(500).json({ error: 'Não consegui entender o áudio agora.' });
+    }
+  }
+);
+
+// ---------- /voice/speak: texto -> áudio (Gemini), usado na resposta do Drigo ----------
+app.options('/voice/speak', publicCors);
+app.post('/voice/speak', publicCors, voiceLimiter, async (req, res) => {
+  try {
+    if (!GEMINI_API_KEY) return res.status(503).json({ error: 'Voz indisponível no momento.' });
+    if (ALLOWED_ORIGINS.length && req.headers.origin && !ALLOWED_ORIGINS.includes(req.headers.origin)) {
+      return res.status(403).json({ error: 'Origem não permitida.' });
+    }
+
+    const text = clean((req.body || {}).text, 1200);
+    if (!text) return res.status(400).json({ error: 'Texto vazio.' });
+
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TTS_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text }] }],
+          generationConfig: {
+            responseModalities: ['AUDIO'],
+            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: GEMINI_TTS_VOICE } } },
+          },
+        }),
+      }
+    );
+
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text().catch(() => '');
+      console.error('POST /voice/speak: Gemini respondeu %d — %s', geminiRes.status, errText.slice(0, 300));
+      return res.status(502).json({ error: 'Não consegui gerar a voz agora.' });
+    }
+
+    const data = await geminiRes.json();
+    const parts = ((data.candidates || [])[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+    const audioPart = parts.find((p) => p.inlineData || p.inline_data);
+    const inline = audioPart && (audioPart.inlineData || audioPart.inline_data);
+    if (!inline || !inline.data) return res.status(502).json({ error: 'Não consegui gerar a voz agora.' });
+
+    const mime = inline.mimeType || inline.mime_type || 'audio/L16;rate=24000';
+    const rateMatch = /rate=(\d+)/.exec(mime);
+    const sampleRate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
+    const wavBase64 = pcmToWavBase64(inline.data, sampleRate, 1, 16);
+
+    res.json({ audio: wavBase64, mimeType: 'audio/wav' });
+  } catch (err) {
+    console.error('POST /voice/speak', err && err.message ? err.message : err);
+    res.status(500).json({ error: 'Não consegui gerar a voz agora.' });
   }
 });
 
