@@ -740,6 +740,59 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     return '';
   }
 
+  // Detecta sozinho quando a pessoa parou de falar, pra não precisar tocar o mic
+  // de novo só pra mandar -- toca uma vez, fala, solta o fone que ele manda sozinho.
+  // Tocar o mic de nov enquanto grava ainda funciona, pra quem quiser mandar na hora.
+  var micPlaceholder = '';
+  var vadAudioCtx = null;
+  var vadInterval = null;
+  var vadSilenceMs = 0;
+  var vadSpeechDetected = false;
+  var vadStartedAt = 0;
+  var VAD_STEP_MS = 150;
+  var VAD_SILENCE_THRESHOLD = 10; // 0-128, desvio do centro considerado silêncio
+  var VAD_SILENCE_TO_STOP_MS = 1400; // silêncio contínuo (depois de já ter falado) pra parar sozinho
+  var VAD_MAX_DURATION_MS = 45000; // trava de segurança, nunca grava mais que isso
+
+  function startSilenceWatch(stream) {
+    vadSilenceMs = 0;
+    vadSpeechDetected = false;
+    vadStartedAt = Date.now();
+    try {
+      vadAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var source = vadAudioCtx.createMediaStreamSource(stream);
+      var analyser = vadAudioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      source.connect(analyser);
+      var data = new Uint8Array(analyser.frequencyBinCount);
+      vadInterval = setInterval(function () {
+        analyser.getByteTimeDomainData(data);
+        var maxDeviation = 0;
+        for (var i = 0; i < data.length; i++) {
+          var dev = Math.abs(data[i] - 128);
+          if (dev > maxDeviation) maxDeviation = dev;
+        }
+        if (maxDeviation > VAD_SILENCE_THRESHOLD) {
+          vadSpeechDetected = true;
+          vadSilenceMs = 0;
+        } else {
+          vadSilenceMs += VAD_STEP_MS;
+        }
+        var elapsed = Date.now() - vadStartedAt;
+        if (elapsed > VAD_MAX_DURATION_MS || (vadSpeechDetected && vadSilenceMs >= VAD_SILENCE_TO_STOP_MS)) {
+          stopRecording();
+        }
+      }, VAD_STEP_MS);
+    } catch (e) {
+      // sem Web Audio API pra detectar silêncio -- sem problema, dá pra tocar o mic de novo pra parar
+    }
+  }
+
+  function stopSilenceWatch() {
+    if (vadInterval) { clearInterval(vadInterval); vadInterval = null; }
+    if (vadAudioCtx) { vadAudioCtx.close().catch(function () {}); vadAudioCtx = null; }
+  }
+
   function startRecording() {
     if (chatLoading || recording) return;
     navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
@@ -762,6 +815,9 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
       recording = true;
       chatMic.classList.add('recording');
       chatMic.setAttribute('aria-label', 'Parar gravação');
+      micPlaceholder = chatInput.placeholder;
+      chatInput.placeholder = 'Ouvindo… fala à vontade';
+      startSilenceWatch(stream);
     }).catch(function () {
       addMsg('err', 'Não consegui acessar o microfone. Verifica a permissão do navegador.');
     });
@@ -770,8 +826,10 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   function stopRecording() {
     if (!recording || !mediaRecorder) return;
     recording = false;
+    stopSilenceWatch();
     chatMic.classList.remove('recording');
     chatMic.setAttribute('aria-label', 'Gravar áudio');
+    if (micPlaceholder) { chatInput.placeholder = micPlaceholder; micPlaceholder = ''; }
     mediaRecorder.stop();
   }
 
