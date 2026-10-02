@@ -834,29 +834,104 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
 
     var ctrl = new AbortController();
     var timeoutId = setTimeout(function () { ctrl.abort(); }, 45000); // 45s: o agente pode fazer mais de uma chamada (ex.: ao registrar inscrição), 15s cortava respostas legítimas no meio
+    var streamDiv = null, streamedText = '';
+    function ensureStreamBubble() {
+      if (streamDiv) return;
+      setLoading(false);
+      streamDiv = document.createElement('div');
+      streamDiv.className = 'chat-msg bot';
+      chatBody.appendChild(streamDiv);
+      if (voiceTurn) voice.beginReply();
+    }
+    function finishStream(reply, showTermsAcceptance, termsAcceptanceLabel) {
+      ensureStreamBubble();
+      window.DrigoChatLinks.render(streamDiv, reply);
+      if (showTermsAcceptance === true) {
+        window.DrigoChatLinks.addTermsAcceptance(streamDiv, function () {
+          if (chatLoading) return false;
+          chatInput.value = termsAcceptanceLabel === 'sim, concordo' ? 'sim, concordo' : 'sim, aceito';
+          updateSendState();
+          chatForm.requestSubmit();
+          return true;
+        }, termsAcceptanceLabel);
+      }
+      if (voiceTurn) { voiceTurn = false; voice.replyEnd(reply); } else { voice.resume(); }
+    }
+
+    // Resposta em streaming: o texto (e, numa pergunta por voz, a fala) vai aparecendo
+    // conforme o Claude gera, em vez de esperar a resposta inteira pronta pra só então
+    // mostrar/falar algo.
     fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, history: history, sessionId: chatSession }),
+      body: JSON.stringify({ message: text, history: history, sessionId: chatSession, stream: true }),
       signal: ctrl.signal
     })
       .then(function (r) {
         clearTimeout(timeoutId);
-        return r.json().catch(function () { return {}; }).then(function (data) {
-          if (!r.ok || !data.reply) throw new Error((data && data.error) || 'falha');
-          return data;
-        });
-      })
-      .then(function (data) {
-        setLoading(false);
-        addMsg('bot', data.reply, data.showTermsAcceptance, data.termsAcceptanceLabel);
-        if (voiceTurn) { voiceTurn = false; voice.reply(data.reply); } else { voice.resume(); }
+        var isStream = r.ok && (r.headers.get('content-type') || '').indexOf('text/event-stream') !== -1;
+        if (!isStream) {
+          return r.json().catch(function () { return {}; }).then(function (data) {
+            if (!r.ok || !data.reply) throw new Error((data && data.error) || 'falha');
+            setLoading(false);
+            addMsg('bot', data.reply, data.showTermsAcceptance, data.termsAcceptanceLabel);
+            if (voiceTurn) { voiceTurn = false; voice.reply(data.reply); } else { voice.resume(); }
+          });
+        }
+        var reader = r.body.getReader();
+        var decoder = new TextDecoder();
+        var buffer = '';
+        var finalPayload = null;
+        function handle(obj) {
+          if (obj.reset) {
+            streamedText = '';
+            if (streamDiv) streamDiv.textContent = '';
+            if (voiceTurn) voice.resetReply();
+            return;
+          }
+          if (typeof obj.delta === 'string') {
+            ensureStreamBubble();
+            streamedText += obj.delta;
+            streamDiv.textContent = streamedText;
+            if (voiceTurn) voice.replyChunk(obj.delta);
+            scrollChat();
+            return;
+          }
+          if (obj.done) finalPayload = obj;
+        }
+        function pump() {
+          return reader.read().then(function (res) {
+            if (res.value) {
+              buffer += decoder.decode(res.value, { stream: !res.done });
+              var parts = buffer.split('\n\n');
+              buffer = parts.pop();
+              for (var i = 0; i < parts.length; i++) {
+                var line = parts[i].trim();
+                if (line.indexOf('data:') !== 0) continue;
+                var obj;
+                try { obj = JSON.parse(line.slice(5)); } catch (_) { continue; }
+                // Propaga erro do servidor pro .catch() de fora -- não pode ficar preso
+                // no try/catch do parse, senão o erro é engolido e o chat trava quieto.
+                if (obj.error) throw new Error(obj.error);
+                handle(obj);
+              }
+            }
+            if (res.done) {
+              if (!finalPayload) throw new Error('stream incompleto');
+              finishStream(finalPayload.reply, finalPayload.showTermsAcceptance, finalPayload.termsAcceptanceLabel);
+              return;
+            }
+            return pump();
+          });
+        }
+        return pump();
       })
       .catch(function () {
         clearTimeout(timeoutId);
         setLoading(false);
         voiceTurn = false;
         voice.resume();
+        if (streamDiv) { streamDiv.remove(); streamDiv = null; }
         addMsg('err', 'Não consegui responder agora. Fala com a gente pelo WhatsApp (11) 3164-3783 ou tenta de novo em instantes.');
       })
       .finally(function () { setTimeout(scrollChat, 30); });

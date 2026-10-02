@@ -932,24 +932,31 @@ async function runChatTool(name, toolInput, originUrl) {
 // Chama o modelo com o loop de tool use (registrar_inscricao) até ele responder só com
 // texto ou até um limite de segurança. Compartilhado entre o chat do site e o WhatsApp,
 // pra não duplicar essa lógica em dois lugares.
-async function getAgentReply(messages, systemPromptOverride, originUrl) {
+async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent) {
   const system = systemPromptOverride || SYSTEM_PROMPT;
   // Prompt caching: system prompt e tools são estáticos entre chamadas -- sem isso, cada
   // chamada (e cada rodada de tool use) reprocessava ~16k tokens do zero, que era a maior
   // parte da demora sentida no chat e na voz. Com cache_control, só a 1a chamada depois de
   // ~5min paga o preço cheio; as seguintes reaproveitam o cache e saem bem mais rápido.
   const systemBlocks = [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }];
-  let response = await anthropic.messages.create({
-    model: ANTHROPIC_MODEL,
-    max_tokens: CHAT_MAX_TOKENS,
-    system: systemBlocks,
-    messages,
-    tools: CHAT_TOOLS,
-  });
+
+  // onEvent(kind, payload), kind: 'delta' (pedaço de texto) | 'reset' (a rodada que acabou de
+  // streamar NÃO era a resposta final -- tinha tool use, descarta o texto que veio junto).
+  // Sem onEvent (ex.: chamada do WhatsApp), chama a API sem streaming, igual antes.
+  async function callModel() {
+    const params = { model: ANTHROPIC_MODEL, max_tokens: CHAT_MAX_TOKENS, system: systemBlocks, messages, tools: CHAT_TOOLS };
+    if (!onEvent) return anthropic.messages.create(params);
+    const stream = anthropic.messages.stream(params);
+    stream.on('text', (delta) => onEvent('delta', delta));
+    return stream.finalMessage();
+  }
+
+  let response = await callModel();
 
   let toolRounds = 0;
   while (response.stop_reason === 'tool_use' && toolRounds < 3) {
     toolRounds += 1;
+    if (onEvent) onEvent('reset');
     const toolUseBlocks = (response.content || []).filter((block) => block.type === 'tool_use');
     const termsRequest = toolUseBlocks.find((block) => block.name === 'consultar_termos_privacidade');
     if (termsRequest) {
@@ -977,13 +984,7 @@ async function getAgentReply(messages, systemPromptOverride, originUrl) {
     }
     messages.push({ role: 'assistant', content: response.content });
     messages.push({ role: 'user', content: toolResults });
-    response = await anthropic.messages.create({
-      model: ANTHROPIC_MODEL,
-      max_tokens: CHAT_MAX_TOKENS,
-      system: systemBlocks,
-      messages,
-      tools: CHAT_TOOLS,
-    });
+    response = await callModel();
   }
 
   const rawReply = (response.content || [])
@@ -1010,9 +1011,24 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
     }
   });
 
-  try {
-    const b = req.body || {};
+  const b = req.body || {};
+  const wantsStream = b.stream === true;
+  let sseStarted = false;
+  function sseSend(payload) {
+    if (clientGone || res.writableEnded) return;
+    if (!sseStarted) {
+      sseStarted = true;
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        Connection: 'keep-alive',
+        'X-Accel-Buffering': 'no',
+      });
+    }
+    res.write(`data: ${JSON.stringify(payload)}\n\n`);
+  }
 
+  try {
     if (ALLOWED_ORIGINS.length && req.headers.origin && !ALLOWED_ORIGINS.includes(req.headers.origin)) {
       return res.status(403).json({ error: 'Origem não permitida.' });
     }
@@ -1036,14 +1052,23 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       : SYSTEM_PROMPT;
 
     const originUrl = req.protocol + '://' + req.get('host');
-    const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel } = await getAgentReply(messages, systemPrompt, originUrl);
+    const onEvent = wantsStream
+      ? (kind, payload) => {
+          if (kind === 'delta') sseSend({ delta: payload });
+          else if (kind === 'reset') sseSend({ reset: true });
+        }
+      : null;
+    const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel } = await getAgentReply(messages, systemPrompt, originUrl, onEvent);
 
     const elapsedMs = Date.now() - chatStartedAt;
     if (elapsedMs > 12000) {
       console.error('POST /chat: resposta demorou %dms (rounds=%d) — perto ou acima do timeout do cliente', elapsedMs, toolRounds);
     }
 
-    if (!reply) return res.status(502).json({ error: 'Não veio resposta do assistente. Tenta de novo.' });
+    if (!reply) {
+      if (wantsStream) { sseSend({ error: 'Não veio resposta do assistente. Tenta de novo.' }); if (!clientGone) res.end(); return; }
+      return res.status(502).json({ error: 'Não veio resposta do assistente. Tenta de novo.' });
+    }
 
     const sessionId = clean(b.sessionId, 80);
     pool
@@ -1053,10 +1078,20 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       )
       .catch((err) => console.error('Falha ao gravar chat_logs', err));
 
-    if (!clientGone) res.json({ reply, showTermsAcceptance: showTermsAcceptance === true, termsAcceptanceLabel });
+    if (wantsStream) {
+      sseSend({ done: true, reply, showTermsAcceptance: showTermsAcceptance === true, termsAcceptanceLabel });
+      if (!clientGone) res.end();
+    } else if (!clientGone) {
+      res.json({ reply, showTermsAcceptance: showTermsAcceptance === true, termsAcceptanceLabel });
+    }
   } catch (err) {
     console.error('POST /chat', err && err.message ? err.message : err, `(${Date.now() - chatStartedAt}ms decorridos)`);
-    if (!res.headersSent) res.status(500).json({ error: 'Não consegui responder agora. Tenta de novo em instantes.' });
+    if (wantsStream) {
+      if (sseStarted) { sseSend({ error: 'Não consegui responder agora. Tenta de novo em instantes.' }); if (!res.writableEnded) res.end(); }
+      else if (!res.headersSent) res.status(500).json({ error: 'Não consegui responder agora. Tenta de novo em instantes.' });
+    } else if (!res.headersSent) {
+      res.status(500).json({ error: 'Não consegui responder agora. Tenta de novo em instantes.' });
+    }
   }
 });
 

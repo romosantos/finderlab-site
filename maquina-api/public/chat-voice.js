@@ -7,6 +7,70 @@
     var stream = null, recorder = null, context = null, interval = null, timer = null, request = null;
     var originalPlaceholder = input.placeholder, savedDraft = '', recognitionFailed = false;
     var utterance = null, captureVersion = 0;
+    // Vozes femininas conhecidas do sistema (ex.: "Luciana", única voz pt-BR embutida no
+    // Safari/iOS) -- evitamos usar a voz nativa do navegador quando só sobra uma dessas, pra
+    // manter a voz do Drigo sempre a mesma. Sem opção boa, cai pro /voice/speak (Gemini, "Puck").
+    var FEMALE_VOICE_NAMES = ['luciana', 'maria', 'camila', 'fernanda', 'helena', 'joana', 'vitória', 'vitoria', 'carla', 'raquel', 'marisa', 'isabela'];
+    function isKnownFemaleVoice(v) { return FEMALE_VOICE_NAMES.indexOf((v.name || '').trim().toLowerCase()) !== -1; }
+    function pickNonFemaleVoice() {
+      if (!(root.speechSynthesis && root.SpeechSynthesisUtterance)) return null;
+      var ptVoices = root.speechSynthesis.getVoices().filter(function (v) { return v.lang === 'pt-BR'; });
+      return ptVoices.find(function (v) { return v.localService && !isKnownFemaleVoice(v); })
+        || ptVoices.find(function (v) { return !isKnownFemaleVoice(v); })
+        || null;
+    }
+    // Fala progressiva (resposta em streaming): fala frase por frase conforme o texto vai
+    // chegando, em vez de esperar a resposta inteira -- é o que deixa a voz começar bem mais
+    // rápido. Só é usada quando tem uma voz nativa não-feminina disponível; senão, junta tudo e
+    // usa o caminho de sempre (reply(), via Gemini) quando o streaming termina.
+    var streamActive = false, streamBuffer = '', streamVoice = null, streamQueued = 0, streamFinished = 0, streamEnded = false;
+    function speakStreamChunk(text, ticket) {
+      streamQueued++;
+      var u = new root.SpeechSynthesisUtterance(text);
+      u.lang = 'pt-BR'; u.rate = 1.08; u.voice = streamVoice;
+      u.onend = u.onerror = function () { streamFinished++; maybeFinishStream(ticket); };
+      root.speechSynthesis.speak(u);
+    }
+    function extractCompleteSentences(buf) {
+      var re = /[.!?]+(?:["')\]]*)(\s+|$)/g, m, lastEnd = -1;
+      while ((m = re.exec(buf))) { lastEnd = re.lastIndex; }
+      if (lastEnd === -1) return null;
+      return [buf.slice(0, lastEnd), buf.slice(lastEnd)];
+    }
+    function maybeFinishStream(ticket) {
+      if (!active || ticket !== generation) return;
+      if (streamEnded && streamQueued === streamFinished) { display('waiting'); resume(); }
+    }
+    function beginReplyStream() {
+      if (!active) return;
+      pause(); display('speaking');
+      streamBuffer = ''; streamQueued = 0; streamFinished = 0; streamEnded = false; streamActive = true;
+      if (root.speechSynthesis) root.speechSynthesis.cancel();
+      streamVoice = pickNonFemaleVoice();
+    }
+    function replyChunkStream(delta) {
+      if (!active || !streamActive || !delta) return;
+      streamBuffer += delta;
+      if (!streamVoice) return; // sem voz nativa boa: só acumula, fala tudo no final via Gemini
+      var split = extractCompleteSentences(streamBuffer);
+      if (split) { streamBuffer = split[1]; speakStreamChunk(split[0], generation); }
+    }
+    function resetReplyStream() {
+      // Texto descartado (rodada de tool use que não era a resposta final): o que já tiver sido
+      // falado não dá pra desfazer, mas isso é raro -- o modelo normalmente não escreve frase
+      // inteira antes de decidir chamar uma ferramenta.
+      streamBuffer = '';
+    }
+    function replyEndStream(fullText) {
+      if (!active || !streamActive) return;
+      streamActive = false; streamEnded = true;
+      if (streamVoice) {
+        if (streamBuffer.trim()) { var t = streamBuffer; streamBuffer = ''; speakStreamChunk(t, generation); }
+        maybeFinishStream(generation);
+        return;
+      }
+      reply(fullText);
+    }
     function display(next) {
       state = next;
       button.classList.toggle('voice-active', active);
@@ -37,6 +101,7 @@
       if (root.speechSynthesis) root.speechSynthesis.cancel();
       if (audio) { audio.onended = null; audio.onerror = null; audio.pause(); audio.removeAttribute('src'); }
       utterance = null;
+      streamActive = false; streamBuffer = '';
       input.value = savedDraft;
       display('off');
     }
@@ -132,20 +197,10 @@
       pause(); display('speaking');
       var ticket = generation;
       function done() { if (active && ticket === generation) { display('waiting'); resume(); } }
-      // Native TTS starts without waiting for another AI audio-generation request --
-      // mas só usamos quando dá pra evitar cair numa voz feminina conhecida do sistema
-      // (ex.: "Luciana", única voz pt-BR embutida no Safari/iOS): senão a voz do Drigo
-      // trocava de gênero sozinha dependendo do aparelho. Sem opção boa, cai pro
-      // /voice/speak (Gemini, voz "Puck") que mantém a mesma voz sempre.
-      var FEMALE_VOICE_NAMES = ['luciana', 'maria', 'camila', 'fernanda', 'helena', 'joana', 'vitória', 'vitoria', 'carla', 'raquel', 'marisa', 'isabela'];
-      function isKnownFemaleVoice(v) { return FEMALE_VOICE_NAMES.indexOf((v.name || '').trim().toLowerCase()) !== -1; }
-      var nativeVoice = null;
-      if (root.speechSynthesis && root.SpeechSynthesisUtterance) {
-        var ptVoices = root.speechSynthesis.getVoices().filter(function (v) { return v.lang === 'pt-BR'; });
-        nativeVoice = ptVoices.find(function (v) { return v.localService && !isKnownFemaleVoice(v); })
-          || ptVoices.find(function (v) { return !isKnownFemaleVoice(v); })
-          || null;
-      }
+      // Native TTS starts without waiting for another AI audio-generation request -- mas só
+      // usamos quando dá pra evitar cair numa voz feminina conhecida do sistema (ver
+      // pickNonFemaleVoice acima); sem opção boa, cai pro /voice/speak (Gemini, voz "Puck").
+      var nativeVoice = pickNonFemaleVoice();
       if (nativeVoice) {
         root.speechSynthesis.cancel();
         utterance = new root.SpeechSynthesisUtterance(text);
@@ -166,7 +221,7 @@
           audio.play().catch(done);
         }).catch(done);
     }
-    if (!button) return { stop: function () {}, pause: function () {}, resume: function () {}, reply: function () {} };
+    if (!button) return { stop: function () {}, pause: function () {}, resume: function () {}, reply: function () {}, beginReply: function () {}, replyChunk: function () {}, resetReply: function () {}, replyEnd: function () {} };
     if (!Recognition && !(navigator.mediaDevices && root.MediaRecorder)) button.style.display = 'none';
     button.addEventListener('click', function () {
       if (active) { stop(); return; }
@@ -175,7 +230,7 @@
     });
     root.addEventListener('pagehide', stop);
     document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); });
-    return { stop: stop, pause: pause, resume: resume, reply: reply };
+    return { stop: stop, pause: pause, resume: resume, reply: reply, beginReply: beginReplyStream, replyChunk: replyChunkStream, resetReply: resetReplyStream, replyEnd: replyEndStream };
   }
   root.DrigoVoice = { create: create };
 })(window);
