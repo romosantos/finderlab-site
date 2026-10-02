@@ -132,13 +132,25 @@
       pause(); display('speaking');
       var ticket = generation;
       function done() { if (active && ticket === generation) { display('waiting'); resume(); } }
-      // Native TTS starts without waiting for another AI audio-generation request.
+      // Native TTS starts without waiting for another AI audio-generation request --
+      // mas só usamos quando dá pra evitar cair numa voz feminina conhecida do sistema
+      // (ex.: "Luciana", única voz pt-BR embutida no Safari/iOS): senão a voz do Drigo
+      // trocava de gênero sozinha dependendo do aparelho. Sem opção boa, cai pro
+      // /voice/speak (Gemini, voz "Puck") que mantém a mesma voz sempre.
+      var FEMALE_VOICE_NAMES = ['luciana', 'maria', 'camila', 'fernanda', 'helena', 'joana', 'vitória', 'vitoria', 'carla', 'raquel', 'marisa', 'isabela'];
+      function isKnownFemaleVoice(v) { return FEMALE_VOICE_NAMES.indexOf((v.name || '').trim().toLowerCase()) !== -1; }
+      var nativeVoice = null;
       if (root.speechSynthesis && root.SpeechSynthesisUtterance) {
+        var ptVoices = root.speechSynthesis.getVoices().filter(function (v) { return v.lang === 'pt-BR'; });
+        nativeVoice = ptVoices.find(function (v) { return v.localService && !isKnownFemaleVoice(v); })
+          || ptVoices.find(function (v) { return !isKnownFemaleVoice(v); })
+          || null;
+      }
+      if (nativeVoice) {
         root.speechSynthesis.cancel();
         utterance = new root.SpeechSynthesisUtterance(text);
         utterance.lang = 'pt-BR'; utterance.rate = 1.08;
-        var voices = root.speechSynthesis.getVoices();
-        utterance.voice = voices.find(function (v) { return v.lang === 'pt-BR' && v.localService; }) || voices.find(function (v) { return v.lang === 'pt-BR'; }) || null;
+        utterance.voice = nativeVoice;
         utterance.onend = done; utterance.onerror = done;
         root.speechSynthesis.speak(utterance);
         return;
