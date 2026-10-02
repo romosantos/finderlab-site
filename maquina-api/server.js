@@ -321,6 +321,63 @@ async function notifyPaymentWhatsApp(lead, paymentId, url) {
   }
 }
 
+// ---------- Email (Resend): manda a leitura do diagnóstico pra quem deixou o email ----------
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+// Precisa ser um remetente de um domínio verificado na Resend (ex.: diagnostico@finderlab.com.br).
+const EMAIL_FROM = process.env.EMAIL_FROM || 'Drigo (Finder Lab) <diagnostico@finderlab.com.br>';
+if (!RESEND_API_KEY) {
+  console.error('RESEND_API_KEY não definida. Envio do diagnóstico por email ficará desligado.');
+}
+
+function diagnosisEmailText(nome, leitura) {
+  const primeiroNome = String(nome || '').trim().split(' ')[0] || 'tudo bem';
+  return `Oi, ${primeiroNome}!\n\n` +
+    `Aqui está a leitura rápida que fizemos juntos sobre a decisão que você trouxe:\n\n` +
+    `${leitura}\n\n` +
+    `Se quiser continuar a conversa ou tirar mais dúvidas, é só responder este email ou chamar no WhatsApp (11) 3164-3783.\n\n` +
+    `Um abraço,\nDrigo (assistente de IA do Rodrigo Moraes, Finder Lab)`;
+}
+
+function diagnosisEmailHtml(nome, leitura) {
+  const primeiroNome = String(nome || '').trim().split(' ')[0] || 'tudo bem';
+  const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const leituraHtml = esc(leitura).replace(/\n+/g, '</p><p style="margin:0 0 16px">');
+  return `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+    <p style="margin:0 0 16px">Oi, ${esc(primeiroNome)}!</p>
+    <p style="margin:0 0 16px">Aqui está a leitura rápida que fizemos juntos sobre a decisão que você trouxe:</p>
+    <div style="background:#f6f3ff;border-left:3px solid #A88BFF;padding:16px 20px;border-radius:8px;margin:0 0 20px">
+      <p style="margin:0 0 16px">${leituraHtml}</p>
+    </div>
+    <p style="margin:0 0 16px">Se quiser continuar a conversa ou tirar mais dúvidas, é só responder este email ou chamar no WhatsApp
+      <a href="https://wa.me/551131643783" style="color:#7C5CFF">(11) 3164-3783</a>.</p>
+    <p style="margin:24px 0 0;color:#555">Um abraço,<br>Drigo (assistente de IA do Rodrigo Moraes, Finder Lab)</p>
+  </div>`;
+}
+
+// Best-effort: nunca bloqueia nem derruba a conversa se falhar -- o registro em
+// diagnostico_leads já aconteceu antes disso, então o lead não se perde de qualquer jeito.
+async function sendDiagnosisEmail(to, nome, leitura) {
+  if (!RESEND_API_KEY || !to || !leitura) return;
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: EMAIL_FROM,
+        to,
+        subject: 'Seu diagnóstico rápido, por Drigo (Finder Lab)',
+        text: diagnosisEmailText(nome, leitura),
+        html: diagnosisEmailHtml(nome, leitura),
+      }),
+    });
+    if (!r.ok) {
+      console.error('Falha ao enviar email do diagnóstico', r.status, await r.text().catch(() => ''));
+    }
+  } catch (err) {
+    console.error('Falha ao enviar email do diagnóstico', err && err.message ? err.message : err);
+  }
+}
+
 async function migrate() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS leads (
@@ -851,7 +908,7 @@ const CHAT_TOOLS = [
   {
     name: 'registrar_diagnostico',
     description:
-      'Registra o contato de quem está fazendo o diagnóstico gratuito de decisão (modo diagnóstico, entrada via diagnostico.finderlab.com.br). Diferente de registrar_inscricao: não exige consentimento formal de termos, só nome e pelo menos um contato (whats ou email). Chame assim que tiver esses dois campos, mesmo que instagram, linkedin ou decisao ainda estejam vazios. Se conseguir mais dados depois na mesma conversa, pode chamar de novo, mesmo que isso gere um novo registro.',
+      'Registra o contato de quem está fazendo o diagnóstico gratuito de decisão (modo diagnóstico, entrada via diagnostico.finderlab.com.br). Diferente de registrar_inscricao: não exige consentimento formal de termos, só nome e pelo menos um contato (whats ou email). Chame assim que tiver esses dois campos, mesmo que instagram, linkedin ou decisao ainda estejam vazios. Se conseguir mais dados depois na mesma conversa, pode chamar de novo, mesmo que isso gere um novo registro. Se você já tiver dado a leitura/diagnóstico pra pessoa nesta conversa E tiver o email dela, preencha também o campo leitura nessa mesma chamada: isso dispara o envio automático desse texto por email pra ela. Se a leitura ainda não foi dada, ou ainda não tem o email, deixe leitura vazia -- pode chamar de novo depois quando tiver os dois.',
     input_schema: {
       type: 'object',
       properties: {
@@ -865,6 +922,7 @@ const CHAT_TOOLS = [
         area: { type: 'string', description: 'Área ou departamento onde a decisão vive (ex: "comercial", "operações", "financeiro"). String vazia se não deu pra inferir nem foi dito.' },
         porte_time: { type: 'string', description: 'Porte do time, em texto livre, do jeito que você entendeu (ex: "só ele, sem time ainda", "por volta de 20 pessoas", "time grande, várias áreas"). Nunca invente um número exato que a pessoa não disse. String vazia se não deu pra inferir nem foi dito.' },
         faturamento: { type: 'string', description: 'Porte de faturamento, em texto livre e por faixa, nunca um valor exato inventado (ex: "negócio pequeno, começando", "faixa de alguns milhões por ano", "não sei, não veio à tona"). String vazia se não deu pra inferir nem foi dito.' },
+        leitura: { type: 'string', description: 'O texto da leitura/diagnóstico que você já deu pra pessoa nesta conversa, copiado exatamente como foi dito a ela. Preencha só quando a leitura já foi dada E você tem o email dela -- isso dispara o envio automático por email. Caso contrário, deixe string vazia.' },
       },
       required: ['nome'],
     },
@@ -917,6 +975,13 @@ async function runChatTool(name, toolInput, originUrl) {
   }
   if (name === 'registrar_diagnostico') {
     const result = await saveDiagnostico(toolInput);
+    if (result.ok) {
+      const email = clean(toolInput && toolInput.email, 200).toLowerCase();
+      const leitura = clean(toolInput && toolInput.leitura, 4000);
+      if (email && /^\S+@\S+\.\S+$/.test(email) && leitura) {
+        sendDiagnosisEmail(email, toolInput.nome, leitura); // best-effort, não bloqueia a resposta
+      }
+    }
     return result.ok
       ? { sucesso: true, id: result.id }
       : { sucesso: false, erro: result.error, campos_invalidos: result.errors || null };
