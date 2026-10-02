@@ -27,6 +27,15 @@ const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://maquina.finderlab.com.br
 // no Railway em vez de mudar aqui. Lista atual em: https://docs.claude.com/en/docs/about-claude/models
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5-20250929';
 const CHAT_MAX_TOKENS = 700;
+// Resposta de voz: respostas longas são lentas de gerar E lentas de ouvir -- um teto menor
+// resolve as duas coisas de uma vez (menos tempo de geração no Claude, e no fallback via
+// Gemini, menos tempo e menos áudio pra gerar/baixar também).
+const CHAT_VOICE_MAX_TOKENS = 260;
+const VOICE_REPLY_ADDENDUM =
+  '\n\n---\n\n# RESPOSTA POR VOZ (ativo nesta resposta)\n\nEsta resposta vai ser falada em voz alta, não lida. ' +
+  'Seja breve e direto: no máximo 2-3 frases curtas, como numa ligação de verdade. Nunca use listas, markdown, ' +
+  'emojis ou múltiplos parágrafos -- fale corrido, em tom de conversa. Se o assunto pedir mais detalhe do que cabe ' +
+  'numa resposta curta, responda o essencial e ofereça continuar por texto ou no WhatsApp.';
 const CHAT_MAX_HISTORY = 16; // mensagens (user+assistant) mantidas de contexto
 const CHAT_MAX_MESSAGE_LEN = 2000;
 
@@ -932,7 +941,7 @@ async function runChatTool(name, toolInput, originUrl) {
 // Chama o modelo com o loop de tool use (registrar_inscricao) até ele responder só com
 // texto ou até um limite de segurança. Compartilhado entre o chat do site e o WhatsApp,
 // pra não duplicar essa lógica em dois lugares.
-async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent) {
+async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent, maxTokens) {
   const system = systemPromptOverride || SYSTEM_PROMPT;
   // Prompt caching: system prompt e tools são estáticos entre chamadas -- sem isso, cada
   // chamada (e cada rodada de tool use) reprocessava ~16k tokens do zero, que era a maior
@@ -944,7 +953,7 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent)
   // streamar NÃO era a resposta final -- tinha tool use, descarta o texto que veio junto).
   // Sem onEvent (ex.: chamada do WhatsApp), chama a API sem streaming, igual antes.
   async function callModel() {
-    const params = { model: ANTHROPIC_MODEL, max_tokens: CHAT_MAX_TOKENS, system: systemBlocks, messages, tools: CHAT_TOOLS };
+    const params = { model: ANTHROPIC_MODEL, max_tokens: maxTokens || CHAT_MAX_TOKENS, system: systemBlocks, messages, tools: CHAT_TOOLS };
     if (!onEvent) return anthropic.messages.create(params);
     const stream = anthropic.messages.stream(params);
     stream.on('text', (delta) => onEvent('delta', delta));
@@ -1047,9 +1056,11 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
     // Modo diagnóstico: ativado pelo domínio de entrada (diagnostico.finderlab.com.br),
     // não muda a persona nem a base de conhecimento, só acrescenta o addendum de fluxo.
     const isDiagnostico = /diagnostico/i.test(req.hostname || '');
-    const systemPrompt = isDiagnostico && DIAGNOSTIC_ADDENDUM
+    const isVoiceTurn = b.voice === true;
+    let systemPrompt = isDiagnostico && DIAGNOSTIC_ADDENDUM
       ? SYSTEM_PROMPT + '\n\n---\n\n# MODO DIAGNÓSTICO (ativo nesta conversa)\n\n' + DIAGNOSTIC_ADDENDUM
       : SYSTEM_PROMPT;
+    if (isVoiceTurn) systemPrompt += VOICE_REPLY_ADDENDUM;
 
     const originUrl = req.protocol + '://' + req.get('host');
     const onEvent = wantsStream
@@ -1058,7 +1069,9 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
           else if (kind === 'reset') sseSend({ reset: true });
         }
       : null;
-    const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel } = await getAgentReply(messages, systemPrompt, originUrl, onEvent);
+    const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel } = await getAgentReply(
+      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : CHAT_MAX_TOKENS
+    );
 
     const elapsedMs = Date.now() - chatStartedAt;
     if (elapsedMs > 12000) {

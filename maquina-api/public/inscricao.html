@@ -794,7 +794,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, history: history, sessionId: chatSession, stream: true }),
+      body: JSON.stringify({ message: text, history: history, sessionId: chatSession, stream: true, voice: voiceTurn }),
       signal: ctrl.signal
     })
       .then(function (r) {
