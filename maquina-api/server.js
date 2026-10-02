@@ -30,12 +30,15 @@ const CHAT_MAX_TOKENS = 700;
 // Resposta de voz: respostas longas são lentas de gerar E lentas de ouvir -- um teto menor
 // resolve as duas coisas de uma vez (menos tempo de geração no Claude, e no fallback via
 // Gemini, menos tempo e menos áudio pra gerar/baixar também).
-const CHAT_VOICE_MAX_TOKENS = 260;
+const CHAT_VOICE_MAX_TOKENS = 380;
 const VOICE_REPLY_ADDENDUM =
   '\n\n---\n\n# RESPOSTA POR VOZ (ativo nesta resposta)\n\nEsta resposta vai ser falada em voz alta, não lida. ' +
-  'Seja breve e direto: no máximo 2-3 frases curtas, como numa ligação de verdade. Nunca use listas, markdown, ' +
-  'emojis ou múltiplos parágrafos -- fale corrido, em tom de conversa. Se o assunto pedir mais detalhe do que cabe ' +
-  'numa resposta curta, responda o essencial e ofereça continuar por texto ou no WhatsApp.';
+  'Fale corrido, em tom de conversa real -- nunca use listas, markdown, emojis ou múltiplos parágrafos. ' +
+  'Para perguntas diretas (preço, prazo, como funciona, próximo passo), responda em 2-3 frases curtas, como numa ligação. ' +
+  'Se o assunto realmente exigir mais contexto para não ficar incompleto ou impreciso, pode usar algumas frases extras -- ' +
+  'não sacrifique a resposta estar correta e completa só para ser curta. Mas se o assunto pedir uma explicação longa de verdade ' +
+  '(comparação detalhada, passo a passo extenso), dê o ponto essencial primeiro e ofereça continuar por texto ou no WhatsApp, ' +
+  'em vez de tentar encaixar tudo na fala.';
 const CHAT_MAX_HISTORY = 16; // mensagens (user+assistant) mantidas de contexto
 const CHAT_MAX_MESSAGE_LEN = 2000;
 
