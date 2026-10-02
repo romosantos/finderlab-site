@@ -19,6 +19,33 @@
         || ptVoices.find(function (v) { return !isKnownFemaleVoice(v); })
         || null;
     }
+    // Enquanto o Claude ainda esta processando (sobretudo numa rodada com uso de ferramenta,
+    // que pode levar alguns segundos), silencio total parece travado. Depois de um tempo de
+    // espera sem nenhuma fala real comecando, solta uma frase curta de espera na mesma voz que
+    // vai responder -- nunca inventa conteudo da resposta, so preenche o silencio. E cancelada
+    // assim que a fala real comeca (ou se a espera acabar em erro).
+    var FILLER_DELAY_MS = 1100;
+    var FILLER_PHRASES = ['Hum, deixa eu ver...', 'So um segundo...', 'Hum, vamos la...', 'Deixa eu pensar aqui...', 'Um segundinho...'];
+    var fillerTimer = null;
+    function cancelFiller() {
+      if (fillerTimer) { clearTimeout(fillerTimer); fillerTimer = null; }
+      if (root.speechSynthesis) root.speechSynthesis.cancel();
+    }
+    function armFiller() {
+      cancelFiller();
+      if (!active) return;
+      var ticket = generation;
+      fillerTimer = setTimeout(function () {
+        fillerTimer = null;
+        if (!active || ticket !== generation || streamActive) return;
+        var voice = pickNonFemaleVoice();
+        if (!voice) return; // sem voz nativa segura (ex.: Safari/iOS so com "Luciana") -- sem frase de espera por ora
+        var phrase = FILLER_PHRASES[Math.floor(Math.random() * FILLER_PHRASES.length)];
+        var u = new root.SpeechSynthesisUtterance(phrase);
+        u.lang = 'pt-BR'; u.rate = 1.05; u.voice = voice;
+        root.speechSynthesis.speak(u);
+      }, FILLER_DELAY_MS);
+    }
     // Fala progressiva (resposta em streaming): fala frase por frase conforme o texto vai
     // chegando, em vez de esperar a resposta inteira -- é o que deixa a voz começar bem mais
     // rápido. Só é usada quando tem uma voz nativa não-feminina disponível; senão, junta tudo e
@@ -43,6 +70,7 @@
     }
     function beginReplyStream() {
       if (!active) return;
+      cancelFiller();
       pause(); display('speaking');
       streamBuffer = ''; streamQueued = 0; streamFinished = 0; streamEnded = false; streamActive = true;
       if (root.speechSynthesis) root.speechSynthesis.cancel();
@@ -97,6 +125,7 @@
       if (options.stopped) options.stopped();
       active = false; generation++;
       clearCapture();
+      cancelFiller();
       if (request) request.abort(); request = null;
       if (root.speechSynthesis) root.speechSynthesis.cancel();
       if (audio) { audio.onended = null; audio.onerror = null; audio.pause(); audio.removeAttribute('src'); }
@@ -194,6 +223,7 @@
     }
     function reply(text) {
       if (!active || !text) return;
+      cancelFiller();
       pause(); display('speaking');
       var ticket = generation;
       function done() { if (active && ticket === generation) { display('waiting'); resume(); } }
@@ -221,7 +251,7 @@
           audio.play().catch(done);
         }).catch(done);
     }
-    if (!button) return { stop: function () {}, pause: function () {}, resume: function () {}, reply: function () {}, beginReply: function () {}, replyChunk: function () {}, resetReply: function () {}, replyEnd: function () {} };
+    if (!button) return { stop: function () {}, pause: function () {}, resume: function () {}, reply: function () {}, beginReply: function () {}, replyChunk: function () {}, resetReply: function () {}, replyEnd: function () {}, armWait: function () {}, cancelWait: function () {} };
     if (!Recognition && !(navigator.mediaDevices && root.MediaRecorder)) button.style.display = 'none';
     button.addEventListener('click', function () {
       if (active) { stop(); return; }
@@ -230,7 +260,7 @@
     });
     root.addEventListener('pagehide', stop);
     document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); });
-    return { stop: stop, pause: pause, resume: resume, reply: reply, beginReply: beginReplyStream, replyChunk: replyChunkStream, resetReply: resetReplyStream, replyEnd: replyEndStream };
+    return { stop: stop, pause: pause, resume: resume, reply: reply, beginReply: beginReplyStream, replyChunk: replyChunkStream, resetReply: resetReplyStream, replyEnd: replyEndStream, armWait: armFiller, cancelWait: cancelFiller };
   }
   root.DrigoVoice = { create: create };
 })(window);

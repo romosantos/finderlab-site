@@ -860,7 +860,9 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
 
     // Resposta em streaming: o texto (e, numa pergunta por voz, a fala) vai aparecendo
     // conforme o Claude gera, em vez de esperar a resposta inteira pronta pra só então
-    // mostrar/falar algo.
+    // mostrar/falar algo. Numa pergunta por voz, arma desde já uma frase curta de espera (ex.:
+    // "só um segundo...") pro caso de o Claude demorar pra começar a responder.
+    if (voiceTurn) voice.armWait();
     fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -886,7 +888,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
           if (obj.reset) {
             streamedText = '';
             if (streamDiv) streamDiv.textContent = '';
-            if (voiceTurn) voice.resetReply();
+            if (voiceTurn) { voice.resetReply(); voice.armWait(); }
             return;
           }
           if (typeof obj.delta === 'string') {
@@ -929,6 +931,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
       .catch(function () {
         clearTimeout(timeoutId);
         setLoading(false);
+        voice.cancelWait();
         voiceTurn = false;
         voice.resume();
         if (streamDiv) { streamDiv.remove(); streamDiv = null; }
