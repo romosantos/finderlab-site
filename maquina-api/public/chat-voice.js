@@ -1,5 +1,11 @@
 (function (root) {
   'use strict';
+  // WAV mono, 8kHz, 8-bit, com ~0.05s de silencio. Serve só pra "destravar" o elemento <audio>
+  // a partir do toque no botao (gesto do usuario) -- sem isso, o Safari/iOS bloqueia depois o
+  // play() programatico da resposta real do /voice/speak, que só chega de forma assincrona
+  // (apos falar, transcrever e esperar o Claude responder). O resultado: aparece o texto da
+  // resposta, mas nenhum audio toca, e sem erro nenhum pro usuario ver.
+  var SILENT_WAV = 'data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
   function create(options) {
     var button = options.button, input = options.input, audio = options.audio;
     var Recognition = root.SpeechRecognition || root.webkitSpeechRecognition;
@@ -255,6 +261,15 @@
     if (!Recognition && !(navigator.mediaDevices && root.MediaRecorder)) button.style.display = 'none';
     button.addEventListener('click', function () {
       if (active) { stop(); return; }
+      if (audio) {
+        try {
+          audio.muted = true;
+          audio.src = SILENT_WAV;
+          var unlock = audio.play();
+          if (unlock && unlock.then) { unlock.then(function () { audio.pause(); audio.currentTime = 0; audio.muted = false; }).catch(function () { audio.muted = false; }); }
+          else { audio.pause(); audio.muted = false; }
+        } catch (_) { audio.muted = false; }
+      }
       savedDraft = input.value; active = true; generation++; display('waiting');
       if (!options.busy()) listen();
     });
