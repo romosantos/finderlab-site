@@ -1006,6 +1006,44 @@ async function runChatTool(name, toolInput, originUrl) {
   return { sucesso: false, erro: 'Ferramenta desconhecida.' };
 }
 
+// Mesma coisa que stripInternalReasoning, mas incremental: filtra o bloco
+// [PENSAMENTO INTERNO]...[/PENSAMENTO INTERNO] ANTES de repassar os pedaços de texto pro
+// cliente via streaming. Sem isso, o raciocínio interno do modelo aparece ao vivo na tela
+// enquanto ainda está sendo gerado -- stripInternalReasoning só limpa o texto final, depois
+// que o usuário já teria visto o vazamento no meio do streaming.
+function makeThinkingFilter(emit) {
+  const OPEN_TAG = '[PENSAMENTO INTERNO]';
+  const CLOSE_TAG = '[/PENSAMENTO INTERNO]';
+  let state = 'detecting'; // 'detecting' | 'inside' | 'passthrough'
+  let pending = '';
+  return function (delta) {
+    if (state === 'passthrough') { emit(delta); return; }
+    pending += delta;
+    if (state === 'detecting') {
+      const trimmed = pending.replace(/^\s+/, '');
+      if (!trimmed) return; // só espaço em branco por enquanto, espera mais texto
+      const probe = trimmed.slice(0, OPEN_TAG.length).toLowerCase();
+      if (!OPEN_TAG.toLowerCase().startsWith(probe)) {
+        state = 'passthrough';
+        const out = pending; pending = '';
+        if (out) emit(out);
+        return;
+      }
+      if (trimmed.length < OPEN_TAG.length) return; // ainda não deu pra confirmar a tag
+      state = 'inside';
+      pending = trimmed.slice(OPEN_TAG.length);
+    }
+    if (state === 'inside') {
+      const idx = pending.toLowerCase().indexOf(CLOSE_TAG.toLowerCase());
+      if (idx === -1) return; // ainda dentro do pensamento, não emite nada
+      state = 'passthrough';
+      const rest = pending.slice(idx + CLOSE_TAG.length);
+      pending = '';
+      if (rest) emit(rest);
+    }
+  };
+}
+
 // Chama o modelo com o loop de tool use (registrar_inscricao) até ele responder só com
 // texto ou até um limite de segurança. Compartilhado entre o chat do site e o WhatsApp,
 // pra não duplicar essa lógica em dois lugares.
@@ -1024,7 +1062,7 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
     const params = { model: ANTHROPIC_MODEL, max_tokens: maxTokens || CHAT_MAX_TOKENS, system: systemBlocks, messages, tools: CHAT_TOOLS };
     if (!onEvent) return anthropic.messages.create(params);
     const stream = anthropic.messages.stream(params);
-    stream.on('text', (delta) => onEvent('delta', delta));
+    stream.on('text', makeThinkingFilter((delta) => onEvent('delta', delta)));
     return stream.finalMessage();
   }
 
