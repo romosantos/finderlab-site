@@ -85,6 +85,50 @@ try {
   console.error('knowledge/modo-diagnostico.md não encontrado. Modo diagnóstico ficará desligado (chat normal segue funcionando).', err.message);
 }
 
+// Lentes de domínio adicionais (M&A, vendas/GTM, arquitetura técnica, brainstorm de produto).
+// Só entram no modo diagnóstico, e só quando o assunto da conversa pede aquele domínio --
+// cada uma é um bloco pequeno e estático (não dinâmico por query), então o número de
+// variantes de prompt fica previsível (base, base+diagnóstico, base+diagnóstico+N lentes)
+// em vez de crescer linearmente com o conteúdo de todas as lentes em toda chamada.
+const DOMAIN_FILES = {
+  ma: 'addendum-ma.md',
+  vendasGtm: 'addendum-vendas-gtm.md',
+  engenhariaSenior: 'addendum-engenheiro-senior.md',
+  brainstorming: 'addendum-brainstorming.md',
+};
+const DOMAIN_LABELS = {
+  ma: 'M&A (venda ou compra de empresa, produto ou tecnologia)',
+  vendasGtm: 'Vendas e GTM',
+  engenhariaSenior: 'Arquitetura e decisão técnica',
+  brainstorming: 'Brainstorm de produto/ideia',
+};
+const DOMAIN_ADDENDA = {};
+for (const [key, file] of Object.entries(DOMAIN_FILES)) {
+  try {
+    DOMAIN_ADDENDA[key] = fs.readFileSync(path.join(__dirname, 'knowledge', file), 'utf8');
+  } catch (err) {
+    console.error(`knowledge/${file} não encontrado. Lente "${key}" ficará desligada (chat normal segue funcionando).`, err.message);
+  }
+}
+// Detecção por palavra-chave, não por chamada de modelo: roda sobre o texto já reenviado
+// pelo cliente a cada chamada (histórico + mensagem atual), então uma lente acionada numa
+// mensagem antiga continua ativa nas próximas da mesma conversa, sem precisar guardar
+// estado novo no servidor.
+const DOMAIN_TRIGGERS = {
+  ma: /\b(m&a|fus[ãa]o|aquisi[çc][ãa]o|vender a empresa|vender o negócio|vender meu produto|vender minha empresa|comprar (?:a |uma )?empresa|due diligence|earnout|valuation|asset deal|tuck-?in|acquihire|s[óo]cio saindo|vender a tecnologia|vender o ip)\b/i,
+  vendasGtm: /\b(gtm|pipeline|funil de vendas|prospec[çc][ãa]o|outbound|cold email|icp|cac|ltv|nrr|meddic|bant|pricing|precificar|fechar (?:um |o )?cliente|qualificar (?:o )?lead|forecast de (?:vendas|receita)|canal de venda|parceria comercial)\b/i,
+  engenhariaSenior: /\b(arquitetura (?:do|de) sistema|qual stack|build.?vs.?buy|construir ou comprar|comprar ou construir|escalar o sistema|mvp|decompor o projeto|desenho de sistema|microsservi[çc]os?|monolito|infraestrutura t[ée]cnica)\b/i,
+  brainstorming: /\b(brainstorm|validar essa ideia|[ée] uma boa ideia|explorar esse problema|gerar ideias|testar essa hip[óo]tese|nova funcionalidade|nova feature|lançar um produto novo|validar (?:o|esse) problema)\b/i,
+};
+function detectDomainAddenda(messages) {
+  const text = messages.map((m) => m.content || '').join('\n').toLowerCase();
+  const hits = [];
+  for (const [key, re] of Object.entries(DOMAIN_TRIGGERS)) {
+    if (DOMAIN_ADDENDA[key] && re.test(text)) hits.push(key);
+  }
+  return hits;
+}
+
 const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
 if (!anthropic) {
   console.error('ANTHROPIC_API_KEY não definida. O agente de chat ficará desligado até você configurá-la.');
@@ -1171,6 +1215,11 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
     let systemPrompt = isDiagnostico && DIAGNOSTIC_ADDENDUM
       ? SYSTEM_PROMPT + '\n\n---\n\n# MODO DIAGNÓSTICO (ativo nesta conversa)\n\n' + DIAGNOSTIC_ADDENDUM
       : SYSTEM_PROMPT;
+    if (isDiagnostico) {
+      for (const key of detectDomainAddenda(messages)) {
+        systemPrompt += '\n\n---\n\n# LENTE ADICIONAL: ' + DOMAIN_LABELS[key] + ' (ativa nesta conversa)\n\n' + DOMAIN_ADDENDA[key];
+      }
+    }
     if (isVoiceTurn) systemPrompt += VOICE_REPLY_ADDENDUM;
 
     const originUrl = req.protocol + '://' + req.get('host');
