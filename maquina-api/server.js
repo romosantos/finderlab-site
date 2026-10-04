@@ -26,7 +26,12 @@ const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://maquina.finderlab.com.br
 // Modelo padrão. Se um modelo mais novo estiver disponível, defina ANTHROPIC_MODEL
 // no Railway em vez de mudar aqui. Lista atual em: https://docs.claude.com/en/docs/about-claude/models
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5-20250929';
-const CHAT_MAX_TOKENS = 700;
+// 700 cortava respostas no meio em casos de decisão pesada: o raciocínio interno das
+// seis lentes (ver knowledge/system-instructions.md) já consome boa parte do teto antes
+// da resposta visível começar, e no modo diagnóstico a leitura final é instruída a ser
+// completa (sintoma/causa, custo de não mudar, primeiro movimento). 1400 dá fôlego pra
+// isso sem custar nada a mais nas respostas curtas, que já paravam bem antes do teto.
+const CHAT_MAX_TOKENS = 1400;
 // Resposta de voz: respostas longas são lentas de gerar E lentas de ouvir -- um teto menor
 // resolve as duas coisas de uma vez (menos tempo de geração no Claude, e no fallback via
 // Gemini, menos tempo e menos áudio pra gerar/baixar também).
