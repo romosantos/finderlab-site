@@ -76,11 +76,12 @@ html{scroll-behavior:smooth}
 .hero{position:relative;min-height:900px;overflow:hidden}
 .hero-glow{position:absolute;right:10px;top:0;width:820px;height:900px;background:radial-gradient(ellipse at 58% 30%,rgba(116,67,245,.35) 0%,rgba(116,67,245,0) 62%)}
 .hero-photo{position:absolute;right:0;top:-224px;width:820px;height:1275px;overflow:hidden}
-.hero-photo img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
+.hero-photo img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;opacity:.9}
 .hp-l{position:absolute;left:0;top:0;bottom:0;width:62%;background:linear-gradient(to right,#05040C 0%,rgba(5,4,12,.94) 12%,rgba(5,4,12,.78) 26%,rgba(5,4,12,.52) 42%,rgba(5,4,12,.26) 60%,rgba(5,4,12,.08) 80%,rgba(5,4,12,0) 100%)}
 .hp-r{position:absolute;right:0;top:0;bottom:0;width:6%;background:linear-gradient(to left,rgba(5,4,12,.5) 0%,rgba(5,4,12,0) 100%)}
 .hp-t{position:absolute;left:0;right:0;top:0;height:16%;background:linear-gradient(to bottom,#05040C 0%,rgba(5,4,12,0) 100%)}
 .hp-b{position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(to top,#05040C 0%,#05040C 30%,rgba(5,4,12,.7) 55%,rgba(5,4,12,0) 100%)}
+.hp-tint{position:absolute;inset:0;background:rgba(64,110,230,.14)}
 .nav{height:96px;display:flex;align-items:center;justify-content:space-between}
 .nav img{height:40px;width:auto}
 .hero-text{padding-top:8px;max-width:680px}
@@ -332,12 +333,12 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
       <div class="hp-r"></div>
       <div class="hp-t"></div>
       <div class="hp-b"></div>
+      <div class="hp-tint"></div>
     </div>
 
     <div class="wrap">
       <div class="nav">
         <img src="/img/logo-finderlab.png" alt="Finder Lab · Agentic Architecture Product House">
-        <a class="btn btn-line" href="/inscricao">Entrar na turma →</a>
       </div>
 
       <div class="hero-text">
