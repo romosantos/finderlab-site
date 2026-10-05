@@ -784,7 +784,7 @@ async function saveDiagnostico(input, sessionId) {
   const problema = clean(b.problema, 600);
   const canalRaw = clean(b.canal_preferido, 20).toLowerCase();
   const canal = canalRaw === 'whatsapp' || canalRaw === 'email' ? canalRaw : '';
-  const leitura = clean(b.leitura, 4000);
+  const leitura = stripMarkdown(clean(b.leitura, 4000)) || '';
   const mapa = cleanMapa(b.mapa);
   const enumOf = (v, allowed) => { const x = clean(v, 20).toLowerCase(); return allowed.includes(x) ? x : ''; };
   const autoridade = enumOf(b.autoridade, ['decide', 'influencia', 'desconhecida']);
@@ -815,9 +815,11 @@ async function saveDiagnostico(input, sessionId) {
     const { rows } = await pool.query(`INSERT INTO diagnostico_leads ${cols} VALUES ${vals} RETURNING id, email, whats, autoridade, urgencia, porte`, params);
     const r0 = rows[0];
     await pool.query('UPDATE diagnostico_leads SET temperatura=$2 WHERE id=$1', [r0.id, calcTemperatura(r0)]);
-    return { ok: true, id: r0.id, leitura, email, emailJaEnviado: false };
+    return { ok: true, id: r0.id, leitura, email, emailJaEnviado: false, leituraNova: !!leitura };
   }
 
+  const prevRow = await pool.query('SELECT leitura FROM diagnostico_leads WHERE session_id=$1', [sid]);
+  const leituraNova = !!leitura && !(prevRow.rows[0] && prevRow.rows[0].leitura);
   const keep = (col) => `${col} = COALESCE(NULLIF(EXCLUDED.${col}, ''), diagnostico_leads.${col})`;
   const { rows } = await pool.query(
     `INSERT INTO diagnostico_leads ${cols} VALUES ${vals}
@@ -831,7 +833,7 @@ async function saveDiagnostico(input, sessionId) {
   const r = rows[0];
   // faixa e temperatura sempre recalculadas a partir do mapa e da qualificação já acumulados
   await pool.query('UPDATE diagnostico_leads SET faixa=$2, temperatura=$3 WHERE id=$1', [r.id, calcFaixa(r.mapa), calcTemperatura(r)]);
-  return { ok: true, id: r.id, leitura: r.leitura, email: r.email, emailJaEnviado: !!r.leitura_email_enviada_em };
+  return { ok: true, id: r.id, leitura: r.leitura, email: r.email, emailJaEnviado: !!r.leitura_email_enviada_em, leituraNova };
 }
 
 app.options('/leads', publicCors);
@@ -1162,15 +1164,26 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
     if (result.ok) {
       // dispara o email quando o dossiê já tem leitura + email válido e ainda não foi enviado
       // (vale mesmo se o email chegou numa chamada depois da leitura; nunca reenvia)
+      const out = { sucesso: true, id: result.id };
       if (result.email && /^\S+@\S+\.\S+$/.test(result.email) && result.leitura && !result.emailJaEnviado) {
-        sendDiagnosisEmail(result.email, (toolInput && toolInput.nome) || '', result.leitura).then((ok) => {
-          if (ok) pool.query('UPDATE diagnostico_leads SET leitura_email_enviada_em = now() WHERE id=$1', [result.id]).catch(() => {});
-        }); // best-effort, não bloqueia a resposta
+        // espera o envio pra dizer a verdade ao modelo (a pessoa nunca deve ouvir "mandei" se falhou)
+        const ok = await sendDiagnosisEmail(result.email, (toolInput && toolInput.nome) || '', result.leitura);
+        if (ok) {
+          pool.query('UPDATE diagnostico_leads SET leitura_email_enviada_em = now() WHERE id=$1', [result.id]).catch(() => {});
+          out.email_enviado = true;
+        } else {
+          out.email_enviado = false;
+          out.aviso_email = 'O envio do email falhou. NÃO diga que enviou. Peça pra pessoa confirmar o endereço de email (pode ter errado) ou ofereça mandar pelo WhatsApp.';
+        }
+      } else if (result.emailJaEnviado) {
+        out.email_enviado = true;
       }
+      if (result.leituraNova) {
+        out.instrucao = 'Agora, na sua resposta, entregue por escrito pra pessoa a leitura completa (a mesma que você gravou), porque o chat é onde ela recebe o valor; o email é só uma cópia. Só depois disso, se fizer sentido, a ponte pra imersão.';
+      }
+      return out;
     }
-    return result.ok
-      ? { sucesso: true, id: result.id }
-      : { sucesso: false, erro: result.error, campos_invalidos: result.errors || null };
+    return { sucesso: false, erro: result.error, campos_invalidos: result.errors || null };
   }
   if (name === 'gerar_pagamento_inscricao') {
     const saved = await saveLead(toolInput);
