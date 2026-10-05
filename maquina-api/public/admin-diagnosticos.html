@@ -100,7 +100,7 @@ button{font-family:inherit;cursor:pointer}
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
   }
 
-  function hasContext(d) { return !!(d.tipo_negocio || d.area || d.porte_time || d.faturamento); }
+  function hasContext(d) { return !!(d.empresa || d.cargo || d.problema || d.tipo_negocio || d.area || d.porte_time || d.faturamento); }
   function hasWhats(d) { return !!(d.whats && d.whats.trim()); }
 
   function load() {
@@ -127,7 +127,7 @@ button{font-family:inherit;cursor:pointer}
       if (filter === 'full' && !hasContext(d)) return false;
       if (filter === 'partial' && hasContext(d)) return false;
       if (!t) return true;
-      return [d.nome, d.decisao, d.tipo_negocio, d.area].join(' ').toLowerCase().indexOf(t) !== -1;
+      return [d.nome, d.empresa, d.cargo, d.problema, d.decisao, d.tipo_negocio, d.area].join(' ').toLowerCase().indexOf(t) !== -1;
     });
   }
 
@@ -169,14 +169,23 @@ button{font-family:inherit;cursor:pointer}
       var row = el('div', 'row');
 
       var main = el('div');
-      main.appendChild(el('div', 'n', d.nome || '(sem nome)'));
-      main.appendChild(el('div', 's', d.decisao || 'Decisão não registrada nesta conversa.'));
+      main.appendChild(el('div', 'n', (d.nome || '(sem nome)') + (d.empresa || d.cargo ? ' · ' + [d.cargo, d.empresa].filter(Boolean).join(' @ ') : '')));
+      main.appendChild(el('div', 's', d.problema || d.decisao || 'Problema não registrado nesta conversa.'));
       var tags = el('div', 'tags');
       if (d.tipo_negocio) tags.appendChild(el('span', 'tag', d.tipo_negocio));
       if (d.area) tags.appendChild(el('span', 'tag', d.area));
       if (d.porte_time) tags.appendChild(el('span', 'tag', d.porte_time));
       if (d.faturamento) tags.appendChild(el('span', 'tag', d.faturamento));
+      if (d.canal_preferido) tags.appendChild(el('span', 'tag', 'prefere ' + d.canal_preferido));
+      if (d.canal_preferido === 'whatsapp' && d.leitura) tags.appendChild(el('span', 'tag', 'enviar leitura por WhatsApp'));
+      if (d.leitura_email_enviada_em) tags.appendChild(el('span', 'tag', 'leitura enviada por email'));
       if (tags.childNodes.length) main.appendChild(tags);
+      if (d.leitura) {
+        var det = el('details');
+        det.appendChild(el('summary', 's', 'Ver leitura entregue'));
+        det.appendChild(el('div', 's', d.leitura));
+        main.appendChild(det);
+      }
       row.appendChild(main);
 
       var contacts = el('div');

@@ -406,7 +406,7 @@ function diagnosisEmailHtml(nome, leitura) {
 // Best-effort: nunca bloqueia nem derruba a conversa se falhar -- o registro em
 // diagnostico_leads já aconteceu antes disso, então o lead não se perde de qualquer jeito.
 async function sendDiagnosisEmail(to, nome, leitura) {
-  if (!RESEND_API_KEY || !to || !leitura) return;
+  if (!RESEND_API_KEY || !to || !leitura) return false;
   try {
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -421,9 +421,12 @@ async function sendDiagnosisEmail(to, nome, leitura) {
     });
     if (!r.ok) {
       console.error('Falha ao enviar email do diagnóstico', r.status, await r.text().catch(() => ''));
+      return false;
     }
+    return true;
   } catch (err) {
     console.error('Falha ao enviar email do diagnóstico', err && err.message ? err.message : err);
+    return false;
   }
 }
 
@@ -535,6 +538,18 @@ async function migrate() {
       updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     CREATE INDEX IF NOT EXISTS diagnostico_leads_created_idx ON diagnostico_leads (created_at DESC);
+
+    -- Dossiê por conversa/empresa: a mesma linha vai sendo completada ao longo da conversa
+    -- (upsert por session_id), em vez de gerar um registro novo a cada chamada da ferramenta.
+    ALTER TABLE diagnostico_leads ALTER COLUMN nome SET DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS session_id TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS empresa TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS cargo TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS problema TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS canal_preferido TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS leitura TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS leitura_email_enviada_em TIMESTAMPTZ;
+    CREATE UNIQUE INDEX IF NOT EXISTS diagnostico_leads_session_uidx ON diagnostico_leads (session_id) WHERE session_id <> '';
   `);
 }
 
@@ -693,8 +708,11 @@ async function saveLead(input) {
   return { ok: true, id: rows[0].id };
 }
 
-async function saveDiagnostico(input) {
+// Dossiê da conversa: cada chamada soma o que o Drigo aprendeu. Com sessionId, a mesma linha
+// é atualizada (campo novo preenchido sobrescreve, campo vazio nunca apaga o que já existe).
+async function saveDiagnostico(input, sessionId) {
   const b = input || {};
+  const sid = clean(sessionId, 80);
   const nome = clean(b.nome, 160);
   const whats = clean(b.whats, 30);
   const email = clean(b.email, 200).toLowerCase();
@@ -705,18 +723,46 @@ async function saveDiagnostico(input) {
   const area = clean(b.area, 120);
   const porteTime = clean(b.porte_time, 160);
   const faturamento = clean(b.faturamento, 160);
+  const empresa = clean(b.empresa, 160);
+  const cargo = clean(b.cargo, 120);
+  const problema = clean(b.problema, 600);
+  const canalRaw = clean(b.canal_preferido, 20).toLowerCase();
+  const canal = canalRaw === 'whatsapp' || canalRaw === 'email' ? canalRaw : '';
+  const leitura = clean(b.leitura, 4000);
 
-  const errors = {};
-  if (nome.length < 2) errors.nome = 'Informe o nome.';
-  if (!whats && !email) errors.contato = 'Informe WhatsApp ou email.';
-  if (Object.keys(errors).length) return { ok: false, status: 400, error: 'Dados inválidos.', errors };
+  const campos = [nome, whats, email, instagram, linkedin, decisao, tipoNegocio, area, porteTime, faturamento, empresa, cargo, problema, canal];
+  if (!campos.some(Boolean)) {
+    return { ok: false, status: 400, error: 'Dados inválidos.', errors: { dados: 'Nada novo pra registrar.' } };
+  }
 
+  // sem sessão (não deveria acontecer pelo site), cai no comportamento antigo: exige nome + contato
+  if (!sid) {
+    const errors = {};
+    if (nome.length < 2) errors.nome = 'Informe o nome.';
+    if (!whats && !email) errors.contato = 'Informe WhatsApp ou email.';
+    if (Object.keys(errors).length) return { ok: false, status: 400, error: 'Dados inválidos.', errors };
+  }
+
+  const params = [sid, nome, whats, email, instagram, linkedin, decisao, tipoNegocio, area, porteTime, faturamento, empresa, cargo, problema, canal, leitura];
+  const cols = '(session_id, nome, whats, email, instagram, linkedin, decisao, tipo_negocio, area, porte_time, faturamento, empresa, cargo, problema, canal_preferido, leitura)';
+  const vals = '($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)';
+
+  if (!sid) {
+    const { rows } = await pool.query(`INSERT INTO diagnostico_leads ${cols} VALUES ${vals} RETURNING id`, params);
+    return { ok: true, id: rows[0].id, leitura, email, emailJaEnviado: false };
+  }
+
+  const keep = (col) => `${col} = COALESCE(NULLIF(EXCLUDED.${col}, ''), diagnostico_leads.${col})`;
   const { rows } = await pool.query(
-    `INSERT INTO diagnostico_leads (nome, whats, email, instagram, linkedin, decisao, tipo_negocio, area, porte_time, faturamento)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
-    [nome, whats, email, instagram, linkedin, decisao, tipoNegocio, area, porteTime, faturamento]
+    `INSERT INTO diagnostico_leads ${cols} VALUES ${vals}
+     ON CONFLICT (session_id) WHERE session_id <> '' DO UPDATE SET
+       ${['nome','whats','email','instagram','linkedin','decisao','tipo_negocio','area','porte_time','faturamento','empresa','cargo','problema','canal_preferido','leitura'].map(keep).join(',\n       ')},
+       updated_at = now()
+     RETURNING id, email, leitura, leitura_email_enviada_em`,
+    params
   );
-  return { ok: true, id: rows[0].id };
+  const r = rows[0];
+  return { ok: true, id: r.id, leitura: r.leitura, email: r.email, emailJaEnviado: !!r.leitura_email_enviada_em };
 }
 
 app.options('/leads', publicCors);
@@ -957,11 +1003,15 @@ const CHAT_TOOLS = [
   {
     name: 'registrar_diagnostico',
     description:
-      'Registra o contato de quem está fazendo o diagnóstico gratuito de decisão (modo diagnóstico, entrada via diagnostico.finderlab.com.br). Diferente de registrar_inscricao: não exige consentimento formal de termos, só nome e pelo menos um contato (whats ou email). Chame assim que tiver esses dois campos, mesmo que instagram, linkedin ou decisao ainda estejam vazios. Se conseguir mais dados depois na mesma conversa, pode chamar de novo, mesmo que isso gere um novo registro. Se você já tiver dado a leitura/diagnóstico pra pessoa nesta conversa E tiver o email dela, preencha também o campo leitura nessa mesma chamada: isso dispara o envio automático desse texto por email pra ela. Se a leitura ainda não foi dada, ou ainda não tem o email, deixe leitura vazia -- pode chamar de novo depois quando tiver os dois.',
+      'Atualiza o DOSSIÊ da conversa de quem está fazendo o diagnóstico gratuito (modo diagnóstico, entrada via diagnostico.finderlab.com.br). Há um único dossiê por conversa, e cada chamada soma ao que já existe: campo preenchido atualiza, campo vazio nunca apaga o que já foi guardado. Por isso chame sempre que descobrir qualquer dado novo (o problema que a pessoa trouxe, a empresa, o cargo, o tamanho do time, um contato, etc.), com os campos novos, sem esperar ter nome ou contato e sem repetir o que já registrou. Não exige consentimento formal de termos. Se você já tiver dado a leitura/diagnóstico pra pessoa nesta conversa E ela tiver informado o email, preencha também o campo leitura: isso dispara o envio automático desse texto por email (uma vez só). Se a pessoa preferir receber por WhatsApp, registre canal_preferido como "whatsapp" e preencha leitura mesmo assim: o envio por WhatsApp é feito pela equipe depois, a partir do dossiê.',
     input_schema: {
       type: 'object',
       properties: {
-        nome: { type: 'string', description: 'Nome da pessoa, exatamente como ela informou.' },
+        nome: { type: 'string', description: 'Nome da pessoa, exatamente como ela informou. String vazia se ainda não souber.' },
+        empresa: { type: 'string', description: 'Nome da empresa/negócio dela, se ela disse. String vazia se não disse.' },
+        cargo: { type: 'string', description: 'Função ou cargo dela na empresa (ex: "sócia", "diretor comercial"), se ela disse. String vazia se não disse.' },
+        problema: { type: 'string', description: 'O problema que ela quer resolver, em 1 a 3 frases, na visão dela e com os detalhes que foram aparecendo (sintoma, contexto, urgência). Pode ser refinado a cada chamada.' },
+        canal_preferido: { type: 'string', enum: ['email', 'whatsapp', ''], description: 'Canal em que ela prefere receber o diagnóstico completo, se ela disse. String vazia se ainda não escolheu.' },
         whats: { type: 'string', description: 'WhatsApp com DDD, se ela informou. String vazia se não informou.' },
         email: { type: 'string', description: 'Email, se ela informou. String vazia se não informou.' },
         instagram: { type: 'string', description: '@ do Instagram, se ela informou. String vazia se não informou.' },
@@ -969,11 +1019,11 @@ const CHAT_TOOLS = [
         decisao: { type: 'string', description: 'Resumo curto, em 1 frase, da decisão ou problema que ela trouxe no diagnóstico, na visão dela.' },
         tipo_negocio: { type: 'string', description: 'Tipo de negócio ou setor, do jeito que você entendeu pela conversa (ex: "clínica odontológica", "e-commerce de moda"). String vazia se não deu pra inferir nem foi dito.' },
         area: { type: 'string', description: 'Área ou departamento onde a decisão vive (ex: "comercial", "operações", "financeiro"). String vazia se não deu pra inferir nem foi dito.' },
-        porte_time: { type: 'string', description: 'Porte do time, em texto livre, do jeito que você entendeu (ex: "só ele, sem time ainda", "por volta de 20 pessoas", "time grande, várias áreas"). Nunca invente um número exato que a pessoa não disse. String vazia se não deu pra inferir nem foi dito.' },
+        porte_time: { type: 'string', description: 'Número de funcionários / porte do time, em texto livre, do jeito que a pessoa disse ou você entendeu (ex: "só ele, sem time ainda", "por volta de 20 pessoas", "time grande, várias áreas"). Nunca invente um número exato que a pessoa não disse. String vazia se não deu pra inferir nem foi dito.' },
         faturamento: { type: 'string', description: 'Porte de faturamento, em texto livre e por faixa, nunca um valor exato inventado (ex: "negócio pequeno, começando", "faixa de alguns milhões por ano", "não sei, não veio à tona"). String vazia se não deu pra inferir nem foi dito.' },
         leitura: { type: 'string', description: 'O texto da leitura/diagnóstico que você já deu pra pessoa nesta conversa, copiado exatamente como foi dito a ela. Preencha só quando a leitura já foi dada E você tem o email dela -- isso dispara o envio automático por email. Caso contrário, deixe string vazia.' },
       },
-      required: ['nome'],
+      required: [],
     },
   },
   {
@@ -1014,7 +1064,7 @@ const CHAT_TOOLS = [
   },
 ];
 
-async function runChatTool(name, toolInput, originUrl) {
+async function runChatTool(name, toolInput, originUrl, ctx) {
   if (name === 'consultar_endereco_cep') return lookupCep(toolInput?.cep);
   if (name === 'registrar_inscricao') {
     const result = await saveLead(toolInput);
@@ -1023,12 +1073,14 @@ async function runChatTool(name, toolInput, originUrl) {
       : { sucesso: false, erro: result.error, campos_invalidos: result.errors || null };
   }
   if (name === 'registrar_diagnostico') {
-    const result = await saveDiagnostico(toolInput);
+    const result = await saveDiagnostico(toolInput, ctx && ctx.sessionId);
     if (result.ok) {
-      const email = clean(toolInput && toolInput.email, 200).toLowerCase();
-      const leitura = clean(toolInput && toolInput.leitura, 4000);
-      if (email && /^\S+@\S+\.\S+$/.test(email) && leitura) {
-        sendDiagnosisEmail(email, toolInput.nome, leitura); // best-effort, não bloqueia a resposta
+      // dispara o email quando o dossiê já tem leitura + email válido e ainda não foi enviado
+      // (vale mesmo se o email chegou numa chamada depois da leitura; nunca reenvia)
+      if (result.email && /^\S+@\S+\.\S+$/.test(result.email) && result.leitura && !result.emailJaEnviado) {
+        sendDiagnosisEmail(result.email, (toolInput && toolInput.nome) || '', result.leitura).then((ok) => {
+          if (ok) pool.query('UPDATE diagnostico_leads SET leitura_email_enviada_em = now() WHERE id=$1', [result.id]).catch(() => {});
+        }); // best-effort, não bloqueia a resposta
       }
     }
     return result.ok
@@ -1096,7 +1148,7 @@ function makeThinkingFilter(emit) {
 // Chama o modelo com o loop de tool use (registrar_inscricao) até ele responder só com
 // texto ou até um limite de segurança. Compartilhado entre o chat do site e o WhatsApp,
 // pra não duplicar essa lógica em dois lugares.
-async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent, maxTokens) {
+async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent, maxTokens, ctx) {
   const system = systemPromptOverride || SYSTEM_PROMPT;
   // Prompt caching: system prompt e tools são estáticos entre chamadas -- sem isso, cada
   // chamada (e cada rodada de tool use) reprocessava ~16k tokens do zero, que era a maior
@@ -1143,7 +1195,7 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
     }
     const toolResults = [];
     for (const block of toolUseBlocks) {
-      const result = await runChatTool(block.name, block.input, originUrl);
+      const result = await runChatTool(block.name, block.input, originUrl, ctx);
       toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) });
     }
     messages.push({ role: 'assistant', content: response.content });
@@ -1207,6 +1259,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       .map((m) => ({ role: m.role, content: clean(m.content, CHAT_MAX_MESSAGE_LEN) }));
 
     const messages = history.concat([{ role: 'user', content: message }]);
+    const sessionId = clean(b.sessionId, 80);
 
     // Modo diagnóstico: ativado pelo domínio de entrada (diagnostico.finderlab.com.br),
     // não muda a persona nem a base de conhecimento, só acrescenta o addendum de fluxo.
@@ -1230,7 +1283,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
         }
       : null;
     const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel } = await getAgentReply(
-      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : CHAT_MAX_TOKENS
+      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : CHAT_MAX_TOKENS, { sessionId }
     );
 
     const elapsedMs = Date.now() - chatStartedAt;
@@ -1243,7 +1296,6 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       return res.status(502).json({ error: 'Não veio resposta do assistente. Tenta de novo.' });
     }
 
-    const sessionId = clean(b.sessionId, 80);
     pool
       .query(
         `INSERT INTO chat_logs (session_id, ip_hash, user_msg, reply_msg) VALUES ($1,$2,$3,$4)`,
@@ -1549,12 +1601,12 @@ app.get('/admin/api/diagnosticos.csv', async (_req, res) => {
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // evita injeção de fórmula no Excel
     return '"' + s.replace(/"/g, '""') + '"';
   };
-  const head = ['Data', 'Nome', 'WhatsApp', 'Email', 'Instagram', 'LinkedIn', 'Decisão', 'Tipo de negócio', 'Área', 'Porte do time', 'Faturamento'];
+  const head = ['Data', 'Atualizado', 'Nome', 'Empresa', 'Cargo', 'WhatsApp', 'Email', 'Instagram', 'LinkedIn', 'Problema', 'Decisão', 'Tipo de negócio', 'Área', 'Funcionários / porte do time', 'Faturamento', 'Canal preferido', 'Leitura'];
   const lines = [head.map(esc).join(';')].concat(
     rows.map((d) =>
       [
-        new Date(d.created_at).toISOString(), d.nome, d.whats, d.email, d.instagram, d.linkedin,
-        d.decisao, d.tipo_negocio, d.area, d.porte_time, d.faturamento,
+        new Date(d.created_at).toISOString(), new Date(d.updated_at).toISOString(), d.nome, d.empresa, d.cargo, d.whats, d.email, d.instagram, d.linkedin,
+        d.problema, d.decisao, d.tipo_negocio, d.area, d.porte_time, d.faturamento, d.canal_preferido, d.leitura,
       ].map(esc).join(';')
     )
   );
