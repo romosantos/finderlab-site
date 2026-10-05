@@ -1184,7 +1184,7 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
         out.email_enviado = true;
       }
       if (result.leituraNova) {
-        out.instrucao = 'Agora, na sua resposta, entregue por escrito pra pessoa a leitura completa (a mesma que você gravou), porque o chat é onde ela recebe o valor; o email é só uma cópia. Só depois disso, se fizer sentido, a ponte pra imersão.';
+        out.instrucao = 'Se você ainda NÃO entregou essa leitura por escrito na conversa, entregue agora, completa (a mesma que gravou), porque o chat é onde a pessoa recebe o valor e o email é só uma cópia; só depois, se fizer sentido, a ponte pra imersão. Se você JÁ entregou a leitura numa mensagem anterior desta conversa, NÃO a repita: só confirme o envio em uma ou duas frases.';
       }
       return out;
     }
