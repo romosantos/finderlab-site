@@ -45,6 +45,15 @@ button{font-family:inherit;cursor:pointer}
 .badge{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:9px;font-size:12px;font-weight:700;white-space:nowrap}
 .badge.full{background:rgba(30,158,106,.18);color:#5CD8A6;border:1px solid rgba(30,158,106,.5)}
 .badge.partial{background:rgba(184,137,43,.18);color:#E8B65E;border:1px solid rgba(184,137,43,.5)}
+.badge.quente{background:rgba(255,106,61,.18);color:#FF9B73;border:1px solid rgba(255,106,61,.55)}
+.badge.morna{background:rgba(184,137,43,.18);color:#E8B65E;border:1px solid rgba(184,137,43,.5)}
+.badge.fria{background:rgba(110,140,255,.14);color:#9DB4FF;border:1px solid rgba(110,140,255,.4)}
+.tag.faixa{border-color:#8B63FF;color:#fff;background:rgba(116,67,245,.3)}
+.nota{margin-top:8px;padding:10px 12px;border-left:3px solid #8B63FF;background:rgba(116,67,245,.1);border-radius:6px}
+.mapa{display:grid;gap:6px;margin-top:8px}
+.mapa .d{display:grid;grid-template-columns:88px 1fr;gap:10px;font-size:13px;line-height:1.5}
+.mapa .d b{color:#D2CEE6;font-weight:600}
+.mapa .lv{display:inline-block;margin-right:6px;color:var(--accent2);font-weight:700;letter-spacing:.1em}
 .del{min-height:44px;padding:0 14px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:transparent;color:var(--muted);font-size:12px;font-weight:600}
 .del:hover{border-color:#FFB86B;color:#FFB86B}
 .del.arm{border-color:#FF7A7A;color:#FF9A9A;background:rgba(255,80,80,.12)}
@@ -68,8 +77,8 @@ button{font-family:inherit;cursor:pointer}
 
   <div class="stats">
     <div class="stat"><b id="nTotal">0</b><span>Diagnósticos</span></div>
-    <div class="stat"><b id="nFull">0</b><span>Com contexto de negócio</span></div>
-    <div class="stat"><b id="nContato">0</b><span>Com WhatsApp</span></div>
+    <div class="stat"><b id="nFull">0</b><span>Quentes</span></div>
+    <div class="stat"><b id="nContato">0</b><span>Com contato</span></div>
     <div class="stat"><b id="nWeek">0</b><span>Últimos 7 dias</span></div>
   </div>
 
@@ -85,7 +94,12 @@ button{font-family:inherit;cursor:pointer}
 <script>
 (function () {
   var items = [], filter = 'all', q = '', armed = null, armT = null;
-  var FILTERS = [['all', 'Todos'], ['full', 'Com contexto'], ['partial', 'Só contato']];
+  var FILTERS = [['all', 'Todos'], ['quente', 'Quentes'], ['morna', 'Mornas'], ['fria', 'Frias'], ['pend', 'WhatsApp a enviar']];
+  var TEMP_ORD = { quente: 0, morna: 1, fria: 2 };
+  var TEMP_LABEL = { quente: 'Quente', morna: 'Morna', fria: 'Fria' };
+  var DIMS = [['decisao', 'Decisão'], ['custo', 'Custo'], ['dados', 'Dados'], ['gargalo', 'Gargalo'], ['prontidao', 'Prontidão']];
+  var AUTH = { decide: 'decide', influencia: 'influencia' };
+  var ROTA = { imersao: 'rota: imersão', consultoria: 'rota: consultoria', nutrir: 'rota: nutrir' };
   var $ = function (id) { return document.getElementById(id); };
 
   function el(tag, cls, text) {
@@ -102,6 +116,9 @@ button{font-family:inherit;cursor:pointer}
 
   function hasContext(d) { return !!(d.empresa || d.cargo || d.problema || d.tipo_negocio || d.area || d.porte_time || d.faturamento); }
   function hasWhats(d) { return !!(d.whats && d.whats.trim()); }
+  function hasContato(d) { return hasWhats(d) || !!(d.email && d.email.trim()); }
+  function pendWhats(d) { return d.canal_preferido === 'whatsapp' && !!d.leitura; }
+  function mapaKeys(d) { return DIMS.filter(function (x) { return d.mapa && d.mapa[x[0]]; }); }
 
   function load() {
     return api('GET', '/admin/api/diagnosticos').then(function (rows) { items = rows; render(); })
@@ -124,10 +141,15 @@ button{font-family:inherit;cursor:pointer}
   function shown() {
     var t = q.trim().toLowerCase();
     return items.filter(function (d) {
-      if (filter === 'full' && !hasContext(d)) return false;
-      if (filter === 'partial' && hasContext(d)) return false;
+      if (TEMP_ORD[filter] != null && d.temperatura !== filter) return false;
+      if (filter === 'pend' && !pendWhats(d)) return false;
       if (!t) return true;
-      return [d.nome, d.empresa, d.cargo, d.problema, d.decisao, d.tipo_negocio, d.area].join(' ').toLowerCase().indexOf(t) !== -1;
+      return [d.nome, d.empresa, d.cargo, d.problema, d.decisao, d.tipo_negocio, d.area, d.nota_interna].join(' ').toLowerCase().indexOf(t) !== -1;
+    }).sort(function (a, b) {
+      var ta = TEMP_ORD[a.temperatura] != null ? TEMP_ORD[a.temperatura] : 3;
+      var tb = TEMP_ORD[b.temperatura] != null ? TEMP_ORD[b.temperatura] : 3;
+      if (ta !== tb) return ta - tb;
+      return new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at);
     });
   }
 
@@ -153,11 +175,11 @@ button{font-family:inherit;cursor:pointer}
   function render() {
     renderChips();
     var rows = shown();
-    var full = items.filter(hasContext).length;
+    var full = items.filter(function (d) { return d.temperatura === 'quente'; }).length;
     var week = items.filter(function (d) { return Date.now() - new Date(d.created_at).getTime() < 7 * 24 * 60 * 60 * 1000; }).length;
     $('nTotal').textContent = items.length;
     $('nFull').textContent = full;
-    $('nContato').textContent = items.filter(hasWhats).length;
+    $('nContato').textContent = items.filter(hasContato).length;
     $('nWeek').textContent = week;
 
     var list = $('list'); list.textContent = '';
@@ -172,6 +194,10 @@ button{font-family:inherit;cursor:pointer}
       main.appendChild(el('div', 'n', (d.nome || '(sem nome)') + (d.empresa || d.cargo ? ' · ' + [d.cargo, d.empresa].filter(Boolean).join(' @ ') : '')));
       main.appendChild(el('div', 's', d.problema || d.decisao || 'Problema não registrado nesta conversa.'));
       var tags = el('div', 'tags');
+      if (d.faixa) tags.appendChild(el('span', 'tag faixa', d.faixa));
+      if (ROTA[d.rota]) tags.appendChild(el('span', 'tag', ROTA[d.rota]));
+      if (AUTH[d.autoridade]) tags.appendChild(el('span', 'tag', AUTH[d.autoridade]));
+      if (d.urgencia && d.urgencia !== 'desconhecida') tags.appendChild(el('span', 'tag', 'urgência ' + d.urgencia));
       if (d.tipo_negocio) tags.appendChild(el('span', 'tag', d.tipo_negocio));
       if (d.area) tags.appendChild(el('span', 'tag', d.area));
       if (d.porte_time) tags.appendChild(el('span', 'tag', d.porte_time));
@@ -180,6 +206,25 @@ button{font-family:inherit;cursor:pointer}
       if (d.canal_preferido === 'whatsapp' && d.leitura) tags.appendChild(el('span', 'tag', 'enviar leitura por WhatsApp'));
       if (d.leitura_email_enviada_em) tags.appendChild(el('span', 'tag', 'leitura enviada por email'));
       if (tags.childNodes.length) main.appendChild(tags);
+      if (d.nota_interna) main.appendChild(el('div', 's nota', d.nota_interna));
+      var mk = mapaKeys(d);
+      if (mk.length) {
+        var mdet = el('details');
+        mdet.appendChild(el('summary', 's', 'Ver mapa da decisão (' + mk.length + '/5)'));
+        var mbox = el('div', 'mapa');
+        mk.forEach(function (x) {
+          var m = d.mapa[x[0]];
+          var line = el('div', 'd');
+          line.appendChild(el('b', null, x[1]));
+          var txt = el('div');
+          txt.appendChild(el('span', 'lv', '●'.repeat(m.nivel) + '○'.repeat(3 - m.nivel)));
+          txt.appendChild(document.createTextNode(m.evidencia || ''));
+          line.appendChild(txt);
+          mbox.appendChild(line);
+        });
+        mdet.appendChild(mbox);
+        main.appendChild(mdet);
+      }
       if (d.leitura) {
         var det = el('details');
         det.appendChild(el('summary', 's', 'Ver leitura entregue'));
@@ -203,7 +248,7 @@ button{font-family:inherit;cursor:pointer}
 
       row.appendChild(el('div', 's', new Date(d.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })));
 
-      row.appendChild(el('span', 'badge ' + (hasContext(d) ? 'full' : 'partial'), hasContext(d) ? 'Com contexto' : 'Só contato'));
+      row.appendChild(el('span', 'badge ' + (d.temperatura || 'partial'), TEMP_LABEL[d.temperatura] || (hasContext(d) ? 'Com contexto' : 'Só contato')));
 
       var del = el('button', 'del' + (armed === d.id ? ' arm' : ''), armed === d.id ? 'Confirmar' : 'Excluir');
       del.type = 'button';

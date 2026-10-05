@@ -550,6 +550,16 @@ async function migrate() {
     ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS leitura TEXT NOT NULL DEFAULT '';
     ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS leitura_email_enviada_em TIMESTAMPTZ;
     CREATE UNIQUE INDEX IF NOT EXISTS diagnostico_leads_session_uidx ON diagnostico_leads (session_id) WHERE session_id <> '';
+
+    -- Mapa da decisão (5 dimensões, nível 0 a 3 + evidência) e qualificação interna do lead.
+    -- faixa e temperatura são calculadas no servidor a partir do que o Drigo registra, nunca pelo modelo.
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS mapa JSONB NOT NULL DEFAULT '{}'::jsonb;
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS faixa TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS autoridade TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS urgencia TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS rota TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS temperatura TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS nota_interna TEXT NOT NULL DEFAULT '';
   `);
 }
 
@@ -708,6 +718,45 @@ async function saveLead(input) {
   return { ok: true, id: rows[0].id };
 }
 
+const DIAG_DIMENSOES = ['decisao', 'custo', 'dados', 'gargalo', 'prontidao'];
+
+// Aceita só as 5 dimensões, nível inteiro de 0 a 3 e evidência curta. Descarta o resto.
+function cleanMapa(input) {
+  const out = {};
+  if (!input || typeof input !== 'object') return out;
+  for (const k of DIAG_DIMENSOES) {
+    const d = input[k];
+    if (!d || typeof d !== 'object') continue;
+    const nivel = Math.round(Number(d.nivel));
+    if (!Number.isFinite(nivel) || nivel < 0 || nivel > 3) continue;
+    out[k] = { nivel, evidencia: clean(d.evidencia, 300) };
+  }
+  return out;
+}
+
+// Faixa geral: média dos níveis, só com pelo menos 3 dimensões avaliadas (senão não finge precisão).
+function calcFaixa(mapa) {
+  const niveis = DIAG_DIMENSOES.map((k) => mapa && mapa[k] && mapa[k].nivel).filter((n) => typeof n === 'number');
+  if (niveis.length < 3) return '';
+  const media = niveis.reduce((a, b) => a + b, 0) / niveis.length;
+  if (media < 0.75) return 'decide no escuro';
+  if (media < 1.5) return 'decide com planilha';
+  if (media < 2.25) return 'decide com dados';
+  return 'decide com IA no centro';
+}
+
+// Temperatura interna (nunca mostrada ao lead): autoridade + urgência + ter contato.
+function calcTemperatura(row) {
+  const temContato = !!(row.email || row.whats);
+  let pts = 0;
+  if (row.autoridade === 'decide') pts += 2; else if (row.autoridade === 'influencia') pts += 1;
+  if (row.urgencia === 'alta') pts += 2; else if (row.urgencia === 'media') pts += 1;
+  if (!temContato) return pts >= 1 ? 'morna' : 'fria';
+  if (pts >= 4) return 'quente';
+  if (pts >= 2) return 'morna';
+  return 'fria';
+}
+
 // Dossiê da conversa: cada chamada soma o que o Drigo aprendeu. Com sessionId, a mesma linha
 // é atualizada (campo novo preenchido sobrescreve, campo vazio nunca apaga o que já existe).
 async function saveDiagnostico(input, sessionId) {
@@ -729,8 +778,14 @@ async function saveDiagnostico(input, sessionId) {
   const canalRaw = clean(b.canal_preferido, 20).toLowerCase();
   const canal = canalRaw === 'whatsapp' || canalRaw === 'email' ? canalRaw : '';
   const leitura = clean(b.leitura, 4000);
+  const mapa = cleanMapa(b.mapa);
+  const enumOf = (v, allowed) => { const x = clean(v, 20).toLowerCase(); return allowed.includes(x) ? x : ''; };
+  const autoridade = enumOf(b.autoridade, ['decide', 'influencia', 'desconhecida']);
+  const urgencia = enumOf(b.urgencia, ['alta', 'media', 'baixa', 'desconhecida']);
+  const rota = enumOf(b.rota, ['imersao', 'consultoria', 'nutrir']);
+  const notaInterna = clean(b.nota_interna, 600);
 
-  const campos = [nome, whats, email, instagram, linkedin, decisao, tipoNegocio, area, porteTime, faturamento, empresa, cargo, problema, canal];
+  const campos = [nome, whats, email, instagram, linkedin, decisao, tipoNegocio, area, porteTime, faturamento, empresa, cargo, problema, canal, autoridade, urgencia, rota, notaInterna, Object.keys(mapa).length ? 'mapa' : ''];
   if (!campos.some(Boolean)) {
     return { ok: false, status: 400, error: 'Dados inválidos.', errors: { dados: 'Nada novo pra registrar.' } };
   }
@@ -743,25 +798,31 @@ async function saveDiagnostico(input, sessionId) {
     if (Object.keys(errors).length) return { ok: false, status: 400, error: 'Dados inválidos.', errors };
   }
 
-  const params = [sid, nome, whats, email, instagram, linkedin, decisao, tipoNegocio, area, porteTime, faturamento, empresa, cargo, problema, canal, leitura];
-  const cols = '(session_id, nome, whats, email, instagram, linkedin, decisao, tipo_negocio, area, porte_time, faturamento, empresa, cargo, problema, canal_preferido, leitura)';
-  const vals = '($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)';
+  const faixaIn = calcFaixa(mapa);
+  const params = [sid, nome, whats, email, instagram, linkedin, decisao, tipoNegocio, area, porteTime, faturamento, empresa, cargo, problema, canal, leitura, JSON.stringify(mapa), faixaIn, autoridade, urgencia, rota, notaInterna];
+  const cols = '(session_id, nome, whats, email, instagram, linkedin, decisao, tipo_negocio, area, porte_time, faturamento, empresa, cargo, problema, canal_preferido, leitura, mapa, faixa, autoridade, urgencia, rota, nota_interna)';
+  const vals = '($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,$18,$19,$20,$21,$22)';
 
   if (!sid) {
-    const { rows } = await pool.query(`INSERT INTO diagnostico_leads ${cols} VALUES ${vals} RETURNING id`, params);
-    return { ok: true, id: rows[0].id, leitura, email, emailJaEnviado: false };
+    const { rows } = await pool.query(`INSERT INTO diagnostico_leads ${cols} VALUES ${vals} RETURNING id, email, whats, autoridade, urgencia`, params);
+    const r0 = rows[0];
+    await pool.query('UPDATE diagnostico_leads SET temperatura=$2 WHERE id=$1', [r0.id, calcTemperatura(r0)]);
+    return { ok: true, id: r0.id, leitura, email, emailJaEnviado: false };
   }
 
   const keep = (col) => `${col} = COALESCE(NULLIF(EXCLUDED.${col}, ''), diagnostico_leads.${col})`;
   const { rows } = await pool.query(
     `INSERT INTO diagnostico_leads ${cols} VALUES ${vals}
      ON CONFLICT (session_id) WHERE session_id <> '' DO UPDATE SET
-       ${['nome','whats','email','instagram','linkedin','decisao','tipo_negocio','area','porte_time','faturamento','empresa','cargo','problema','canal_preferido','leitura'].map(keep).join(',\n       ')},
+       ${['nome','whats','email','instagram','linkedin','decisao','tipo_negocio','area','porte_time','faturamento','empresa','cargo','problema','canal_preferido','leitura','autoridade','urgencia','rota','nota_interna'].map(keep).join(',\n       ')},
+       mapa = diagnostico_leads.mapa || EXCLUDED.mapa,
        updated_at = now()
-     RETURNING id, email, leitura, leitura_email_enviada_em`,
+     RETURNING id, email, whats, leitura, leitura_email_enviada_em, mapa, autoridade, urgencia`,
     params
   );
   const r = rows[0];
+  // faixa e temperatura sempre recalculadas a partir do mapa e da qualificação já acumulados
+  await pool.query('UPDATE diagnostico_leads SET faixa=$2, temperatura=$3 WHERE id=$1', [r.id, calcFaixa(r.mapa), calcTemperatura(r)]);
   return { ok: true, id: r.id, leitura: r.leitura, email: r.email, emailJaEnviado: !!r.leitura_email_enviada_em };
 }
 
@@ -1011,6 +1072,21 @@ const CHAT_TOOLS = [
         empresa: { type: 'string', description: 'Nome da empresa/negócio dela, se ela disse. String vazia se não disse.' },
         cargo: { type: 'string', description: 'Função ou cargo dela na empresa (ex: "sócia", "diretor comercial"), se ela disse. String vazia se não disse.' },
         problema: { type: 'string', description: 'O problema que ela quer resolver, em 1 a 3 frases, na visão dela e com os detalhes que foram aparecendo (sintoma, contexto, urgência). Pode ser refinado a cada chamada.' },
+        mapa: {
+          type: 'object',
+          description: 'Mapa da decisão: nível de 0 a 3 em cada dimensão, com a evidência que a pessoa deu (frase ou fato dito por ela, nunca sua suposição). Registre só as dimensões que a conversa já sustenta e atualize quando souber mais. Níveis: 0 = no escuro (sem dado, decide por intuição), 1 = manual (planilha, memória, reunião), 2 = estruturado (dados e regras definidos, mas análise manual), 3 = assistido (análise ou recomendação automática, IA já participa).',
+          properties: {
+            decisao: { type: 'object', description: 'Clareza da decisão: ela sabe qual decisão pesa e se repete?', properties: { nivel: { type: 'integer', minimum: 0, maximum: 3 }, evidencia: { type: 'string' } }, required: ['nivel', 'evidencia'] },
+            custo: { type: 'object', description: 'Custo de chegar na decisão: tempo, pessoas, sistemas e dados envolvidos (3 = barato e rápido, 0 = caro, lento e caótico).', properties: { nivel: { type: 'integer', minimum: 0, maximum: 3 }, evidencia: { type: 'string' } }, required: ['nivel', 'evidencia'] },
+            dados: { type: 'object', description: 'Dados que a decisão usa hoje: fontes (ERP, CRM, planilha), qualidade e acesso.', properties: { nivel: { type: 'integer', minimum: 0, maximum: 3 }, evidencia: { type: 'string' } }, required: ['nivel', 'evidencia'] },
+            gargalo: { type: 'object', description: 'O que hoje não é analisado, previsto ou recomendado de forma automática (3 = quase nada falta, 0 = tudo é manual e reativo).', properties: { nivel: { type: 'integer', minimum: 0, maximum: 3 }, evidencia: { type: 'string' } }, required: ['nivel', 'evidencia'] },
+            prontidao: { type: 'object', description: 'Prontidão: quem decide, quem executa e se existe um primeiro passo concreto possível.', properties: { nivel: { type: 'integer', minimum: 0, maximum: 3 }, evidencia: { type: 'string' } }, required: ['nivel', 'evidencia'] },
+          },
+        },
+        autoridade: { type: 'string', enum: ['decide', 'influencia', 'desconhecida', ''], description: 'USO INTERNO, nunca comente com a pessoa. A pessoa decide sozinha o tema (decide), participa mas outro decide (influencia) ou ainda não deu pra saber (desconhecida).' },
+        urgencia: { type: 'string', enum: ['alta', 'media', 'baixa', 'desconhecida', ''], description: 'USO INTERNO. Urgência da decisão: alta se é pesada, cara ou tem prazo próximo; baixa se é exploratória.' },
+        rota: { type: 'string', enum: ['imersao', 'consultoria', 'nutrir', ''], description: 'USO INTERNO. imersao se ela quer aprender a fazer; consultoria se quer alguém da Finder Lab dentro da operação ou há equipe/porte para isso; nutrir se ainda não há sinal claro.' },
+        nota_interna: { type: 'string', description: 'USO INTERNO, 1 a 2 frases para o Rodrigo ler antes de falar com ela: o que ela realmente quer, o que cuidar na abordagem. Nada que a pessoa não saberia que você registrou.' },
         canal_preferido: { type: 'string', enum: ['email', 'whatsapp', ''], description: 'Canal em que ela prefere receber o diagnóstico completo, se ela disse. String vazia se ainda não escolheu.' },
         whats: { type: 'string', description: 'WhatsApp com DDD, se ela informou. String vazia se não informou.' },
         email: { type: 'string', description: 'Email, se ela informou. String vazia se não informou.' },
@@ -1601,12 +1677,14 @@ app.get('/admin/api/diagnosticos.csv', async (_req, res) => {
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // evita injeção de fórmula no Excel
     return '"' + s.replace(/"/g, '""') + '"';
   };
-  const head = ['Data', 'Atualizado', 'Nome', 'Empresa', 'Cargo', 'WhatsApp', 'Email', 'Instagram', 'LinkedIn', 'Problema', 'Decisão', 'Tipo de negócio', 'Área', 'Funcionários / porte do time', 'Faturamento', 'Canal preferido', 'Leitura'];
+  const head = ['Data', 'Atualizado', 'Nome', 'Empresa', 'Cargo', 'WhatsApp', 'Email', 'Instagram', 'LinkedIn', 'Problema', 'Decisão', 'Tipo de negócio', 'Área', 'Funcionários / porte do time', 'Faturamento', 'Canal preferido', 'Leitura', 'Faixa', 'Temperatura', 'Autoridade', 'Urgência', 'Rota', 'Nota interna', 'Mapa'];
+  const mapaTxt = (m) => DIAG_DIMENSOES.filter((k) => m && m[k]).map((k) => k + ' ' + m[k].nivel + ': ' + m[k].evidencia).join(' | ');
   const lines = [head.map(esc).join(';')].concat(
     rows.map((d) =>
       [
         new Date(d.created_at).toISOString(), new Date(d.updated_at).toISOString(), d.nome, d.empresa, d.cargo, d.whats, d.email, d.instagram, d.linkedin,
         d.problema, d.decisao, d.tipo_negocio, d.area, d.porte_time, d.faturamento, d.canal_preferido, d.leitura,
+        d.faixa, d.temperatura, d.autoridade, d.urgencia, d.rota, d.nota_interna, mapaTxt(d.mapa),
       ].map(esc).join(';')
     )
   );
