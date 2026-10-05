@@ -196,6 +196,7 @@ button{font-family:inherit;cursor:pointer}
       var tags = el('div', 'tags');
       if (d.faixa) tags.appendChild(el('span', 'tag faixa', d.faixa));
       if (ROTA[d.rota]) tags.appendChild(el('span', 'tag', ROTA[d.rota]));
+      if (d.porte && d.porte !== 'desconhecido') tags.appendChild(el('span', 'tag', 'porte ' + d.porte));
       if (AUTH[d.autoridade]) tags.appendChild(el('span', 'tag', AUTH[d.autoridade]));
       if (d.urgencia && d.urgencia !== 'desconhecida') tags.appendChild(el('span', 'tag', 'urgência ' + d.urgencia));
       if (d.tipo_negocio) tags.appendChild(el('span', 'tag', d.tipo_negocio));

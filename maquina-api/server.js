@@ -560,6 +560,7 @@ async function migrate() {
     ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS rota TEXT NOT NULL DEFAULT '';
     ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS temperatura TEXT NOT NULL DEFAULT '';
     ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS nota_interna TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS porte TEXT NOT NULL DEFAULT '';
   `);
 }
 
@@ -745,16 +746,22 @@ function calcFaixa(mapa) {
   return 'decide com IA no centro';
 }
 
-// Temperatura interna (nunca mostrada ao lead): autoridade + urgência + ter contato.
+// Temperatura interna (nunca mostrada ao lead): autoridade + urgência + ter contato, com teto pelo porte do negócio.
 function calcTemperatura(row) {
   const temContato = !!(row.email || row.whats);
   let pts = 0;
   if (row.autoridade === 'decide') pts += 2; else if (row.autoridade === 'influencia') pts += 1;
   if (row.urgencia === 'alta') pts += 2; else if (row.urgencia === 'media') pts += 1;
-  if (!temContato) return pts >= 1 ? 'morna' : 'fria';
-  if (pts >= 4) return 'quente';
-  if (pts >= 2) return 'morna';
-  return 'fria';
+  let t;
+  if (!temContato) t = pts >= 1 ? 'morna' : 'fria';
+  else if (pts >= 4) t = 'quente';
+  else if (pts >= 2) t = 'morna';
+  else t = 'fria';
+  // Estatura mínima: negócio micro nunca passa de fria; porte desconhecido não chega a quente
+  // (quente exige saber que o negócio tem porte pra imersão/consultoria/agente).
+  if (row.porte === 'micro') return 'fria';
+  if (t === 'quente' && !['pequeno', 'medio', 'grande'].includes(row.porte)) return 'morna';
+  return t;
 }
 
 // Dossiê da conversa: cada chamada soma o que o Drigo aprendeu. Com sessionId, a mesma linha
@@ -783,9 +790,10 @@ async function saveDiagnostico(input, sessionId) {
   const autoridade = enumOf(b.autoridade, ['decide', 'influencia', 'desconhecida']);
   const urgencia = enumOf(b.urgencia, ['alta', 'media', 'baixa', 'desconhecida']);
   const rota = enumOf(b.rota, ['imersao', 'consultoria', 'nutrir']);
+  const porte = enumOf(b.porte, ['micro', 'pequeno', 'medio', 'grande', 'desconhecido']);
   const notaInterna = clean(b.nota_interna, 600);
 
-  const campos = [nome, whats, email, instagram, linkedin, decisao, tipoNegocio, area, porteTime, faturamento, empresa, cargo, problema, canal, autoridade, urgencia, rota, notaInterna, Object.keys(mapa).length ? 'mapa' : ''];
+  const campos = [nome, whats, email, instagram, linkedin, decisao, tipoNegocio, area, porteTime, faturamento, empresa, cargo, problema, canal, autoridade, urgencia, rota, notaInterna, porte, Object.keys(mapa).length ? 'mapa' : ''];
   if (!campos.some(Boolean)) {
     return { ok: false, status: 400, error: 'Dados inválidos.', errors: { dados: 'Nada novo pra registrar.' } };
   }
@@ -799,12 +807,12 @@ async function saveDiagnostico(input, sessionId) {
   }
 
   const faixaIn = calcFaixa(mapa);
-  const params = [sid, nome, whats, email, instagram, linkedin, decisao, tipoNegocio, area, porteTime, faturamento, empresa, cargo, problema, canal, leitura, JSON.stringify(mapa), faixaIn, autoridade, urgencia, rota, notaInterna];
-  const cols = '(session_id, nome, whats, email, instagram, linkedin, decisao, tipo_negocio, area, porte_time, faturamento, empresa, cargo, problema, canal_preferido, leitura, mapa, faixa, autoridade, urgencia, rota, nota_interna)';
-  const vals = '($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,$18,$19,$20,$21,$22)';
+  const params = [sid, nome, whats, email, instagram, linkedin, decisao, tipoNegocio, area, porteTime, faturamento, empresa, cargo, problema, canal, leitura, JSON.stringify(mapa), faixaIn, autoridade, urgencia, rota, notaInterna, porte];
+  const cols = '(session_id, nome, whats, email, instagram, linkedin, decisao, tipo_negocio, area, porte_time, faturamento, empresa, cargo, problema, canal_preferido, leitura, mapa, faixa, autoridade, urgencia, rota, nota_interna, porte)';
+  const vals = '($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,$18,$19,$20,$21,$22,$23)';
 
   if (!sid) {
-    const { rows } = await pool.query(`INSERT INTO diagnostico_leads ${cols} VALUES ${vals} RETURNING id, email, whats, autoridade, urgencia`, params);
+    const { rows } = await pool.query(`INSERT INTO diagnostico_leads ${cols} VALUES ${vals} RETURNING id, email, whats, autoridade, urgencia, porte`, params);
     const r0 = rows[0];
     await pool.query('UPDATE diagnostico_leads SET temperatura=$2 WHERE id=$1', [r0.id, calcTemperatura(r0)]);
     return { ok: true, id: r0.id, leitura, email, emailJaEnviado: false };
@@ -814,10 +822,10 @@ async function saveDiagnostico(input, sessionId) {
   const { rows } = await pool.query(
     `INSERT INTO diagnostico_leads ${cols} VALUES ${vals}
      ON CONFLICT (session_id) WHERE session_id <> '' DO UPDATE SET
-       ${['nome','whats','email','instagram','linkedin','decisao','tipo_negocio','area','porte_time','faturamento','empresa','cargo','problema','canal_preferido','leitura','autoridade','urgencia','rota','nota_interna'].map(keep).join(',\n       ')},
+       ${['nome','whats','email','instagram','linkedin','decisao','tipo_negocio','area','porte_time','faturamento','empresa','cargo','problema','canal_preferido','leitura','autoridade','urgencia','rota','nota_interna','porte'].map(keep).join(',\n       ')},
        mapa = diagnostico_leads.mapa || EXCLUDED.mapa,
        updated_at = now()
-     RETURNING id, email, whats, leitura, leitura_email_enviada_em, mapa, autoridade, urgencia`,
+     RETURNING id, email, whats, leitura, leitura_email_enviada_em, mapa, autoridade, urgencia, porte`,
     params
   );
   const r = rows[0];
@@ -1086,6 +1094,7 @@ const CHAT_TOOLS = [
         autoridade: { type: 'string', enum: ['decide', 'influencia', 'desconhecida', ''], description: 'USO INTERNO, nunca comente com a pessoa. A pessoa decide sozinha o tema (decide), participa mas outro decide (influencia) ou ainda não deu pra saber (desconhecida).' },
         urgencia: { type: 'string', enum: ['alta', 'media', 'baixa', 'desconhecida', ''], description: 'USO INTERNO. Urgência da decisão: alta se é pesada, cara ou tem prazo próximo; baixa se é exploratória.' },
         rota: { type: 'string', enum: ['imersao', 'consultoria', 'nutrir', ''], description: 'USO INTERNO. imersao se ela quer aprender a fazer; consultoria se quer alguém da Finder Lab dentro da operação ou há equipe/porte para isso; nutrir se ainda não há sinal claro.' },
+        porte: { type: 'string', enum: ['micro', 'pequeno', 'medio', 'grande', 'desconhecido'], description: 'USO INTERNO. Porte do negócio, pelo que a pessoa disse: micro = só o dono ou 1 a 5 pessoas, sem sinal de operação relevante (autônomo, lojinha, informal); pequeno = time de uns 6 a 29; medio = 30 a 199; grande = 200 ou mais. Faturamento alto com time pequeno sobe o porte. Sem informação, use desconhecido (não chute).' },
         nota_interna: { type: 'string', description: 'USO INTERNO, 1 a 2 frases para o Rodrigo ler antes de falar com ela: o que ela realmente quer, o que cuidar na abordagem. Nada que a pessoa não saberia que você registrou.' },
         canal_preferido: { type: 'string', enum: ['email', 'whatsapp', ''], description: 'Canal em que ela prefere receber o diagnóstico completo, se ela disse. String vazia se ainda não escolheu.' },
         whats: { type: 'string', description: 'WhatsApp com DDD, se ela informou. String vazia se não informou.' },
@@ -1677,14 +1686,14 @@ app.get('/admin/api/diagnosticos.csv', async (_req, res) => {
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // evita injeção de fórmula no Excel
     return '"' + s.replace(/"/g, '""') + '"';
   };
-  const head = ['Data', 'Atualizado', 'Nome', 'Empresa', 'Cargo', 'WhatsApp', 'Email', 'Instagram', 'LinkedIn', 'Problema', 'Decisão', 'Tipo de negócio', 'Área', 'Funcionários / porte do time', 'Faturamento', 'Canal preferido', 'Leitura', 'Faixa', 'Temperatura', 'Autoridade', 'Urgência', 'Rota', 'Nota interna', 'Mapa'];
+  const head = ['Data', 'Atualizado', 'Nome', 'Empresa', 'Cargo', 'WhatsApp', 'Email', 'Instagram', 'LinkedIn', 'Problema', 'Decisão', 'Tipo de negócio', 'Área', 'Funcionários / porte do time', 'Faturamento', 'Canal preferido', 'Leitura', 'Faixa', 'Temperatura', 'Autoridade', 'Urgência', 'Rota', 'Porte', 'Nota interna', 'Mapa'];
   const mapaTxt = (m) => DIAG_DIMENSOES.filter((k) => m && m[k]).map((k) => k + ' ' + m[k].nivel + ': ' + m[k].evidencia).join(' | ');
   const lines = [head.map(esc).join(';')].concat(
     rows.map((d) =>
       [
         new Date(d.created_at).toISOString(), new Date(d.updated_at).toISOString(), d.nome, d.empresa, d.cargo, d.whats, d.email, d.instagram, d.linkedin,
         d.problema, d.decisao, d.tipo_negocio, d.area, d.porte_time, d.faturamento, d.canal_preferido, d.leitura,
-        d.faixa, d.temperatura, d.autoridade, d.urgencia, d.rota, d.nota_interna, mapaTxt(d.mapa),
+        d.faixa, d.temperatura, d.autoridade, d.urgencia, d.rota, d.porte, d.nota_interna, mapaTxt(d.mapa),
       ].map(esc).join(';')
     )
   );
