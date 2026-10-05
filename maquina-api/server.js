@@ -32,6 +32,11 @@ const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5-202509
 // completa (sintoma/causa, custo de não mudar, primeiro movimento). 1400 dá fôlego pra
 // isso sem custar nada a mais nas respostas curtas, que já paravam bem antes do teto.
 const CHAT_MAX_TOKENS = 1400;
+// Modo diagnóstico: além do raciocínio oculto, a mesma rodada pode ter que escrever a leitura completa
+// na ferramenta (registrar_diagnostico, com mapa e nota interna) E de novo na resposta. Com 1400 o
+// teto estourava dentro do raciocínio e a pessoa recebia resposta vazia ("Não veio resposta").
+// Respostas curtas continuam curtas: o teto só vale como limite, o modelo para antes.
+const CHAT_DIAGNOSTIC_MAX_TOKENS = 3200;
 // Resposta de voz: respostas longas são lentas de gerar E lentas de ouvir -- um teto menor
 // resolve as duas coisas de uma vez (menos tempo de geração no Claude, e no fallback via
 // Gemini, menos tempo e menos áudio pra gerar/baixar também).
@@ -1381,7 +1386,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
         }
       : null;
     const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel } = await getAgentReply(
-      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : CHAT_MAX_TOKENS, { sessionId }
+      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : (isDiagnostico ? CHAT_DIAGNOSTIC_MAX_TOKENS : CHAT_MAX_TOKENS), { sessionId }
     );
 
     const elapsedMs = Date.now() - chatStartedAt;
