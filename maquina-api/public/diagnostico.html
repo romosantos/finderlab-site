@@ -79,13 +79,13 @@ a{color:inherit}
 @media(min-width:901px){
   .top{padding-left:64px;padding-right:64px}
   .main{justify-content:flex-start;padding:20px 64px 48px;gap:0}
-  .chat-row{display:grid;grid-template-columns:clamp(400px,30vw,430px) minmax(0,1fr);column-gap:36px;row-gap:0;align-items:start}
+  .chat-row{display:grid;--ch:max(500px,min(760px,calc(100vh - 235px)));grid-template-columns:minmax(420px,auto) minmax(0,1fr);column-gap:36px;row-gap:0;align-items:start}
   .hero,.hero-text-wrap{display:contents}
   .hero .pill{grid-column:1 / -1;grid-row:1;justify-self:start}
   .hero h1{grid-column:1 / -1;grid-row:2;max-width:none;font-size:clamp(24px,2.5vw,34px);margin:14px 0 48px}
-  .chat-companion{grid-column:1;grid-row:3;justify-self:start;margin-left:-8px;height:min(560px,calc(100vh - 440px));min-height:300px;width:auto;max-width:100%;object-fit:contain}
-  .hero p{grid-column:1;grid-row:4;width:0;min-width:100%;margin-top:-18px;position:relative;text-align:left;font-size:14px;line-height:1.7;text-wrap:balance}
-  .chat-modal{grid-column:2;grid-row:3 / span 2;align-self:start;height:min(760px,calc(100vh - 235px));min-height:500px}
+  .chat-companion{grid-column:1;grid-row:3;justify-self:start;margin-left:-8px;height:calc(var(--ch) - 112px);width:auto;max-width:none}
+  .hero p{grid-column:1;grid-row:4;width:0;min-width:min(100%,430px);margin-top:16px;position:relative;text-align:left;font-size:14px;line-height:1.7;text-wrap:balance}
+  .chat-modal{grid-column:2;grid-row:3 / span 2;align-self:start;height:var(--ch)}
   .chat-form{align-items:center;gap:20px;padding:16px 24px}
   .chat-form textarea{min-height:100px}
 }
