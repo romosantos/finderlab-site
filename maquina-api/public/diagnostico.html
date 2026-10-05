@@ -75,6 +75,20 @@ a{color:inherit}
 .foot a:hover{color:var(--accent2)}
 @media(max-width:900px){.top{padding-left:24px;padding-right:24px}.main{padding-left:24px;padding-right:24px;align-items:flex-start}.foot{padding-left:24px;padding-right:24px}.chat-row{flex-direction:column;justify-content:center;align-items:flex-start}.hero{max-width:480px;width:100%}.chat-modal{border-radius:22px}}
 @media(max-width:560px){.top{padding-left:16px;padding-right:16px}.main{padding:20px 16px 32px;gap:22px}.foot{padding-left:16px;padding-right:16px}.chat-modal{height:min(560px,70vh)}}
+/* ---------- desktop: texto no topo, Drigo + parágrafo à esquerda, chat grande à direita ---------- */
+@media(min-width:901px){
+  .top{padding-left:64px;padding-right:64px}
+  .main{justify-content:flex-start;padding:20px 64px 48px;gap:0}
+  .chat-row{display:grid;grid-template-columns:clamp(400px,30vw,430px) minmax(0,1fr);column-gap:36px;row-gap:0;align-items:start}
+  .hero,.hero-text-wrap{display:contents}
+  .hero .pill{grid-column:1 / -1;grid-row:1;justify-self:start}
+  .hero h1{grid-column:1 / -1;grid-row:2;max-width:none;font-size:clamp(24px,2.5vw,34px);margin:14px 0 48px}
+  .chat-companion{grid-column:1;grid-row:3;justify-self:start;margin-left:-8px;height:min(560px,calc(100vh - 440px));min-height:300px;width:auto;max-width:100%;object-fit:contain}
+  .hero p{grid-column:1;grid-row:4;width:0;min-width:100%;margin-top:-18px;position:relative;text-align:left;font-size:14px;line-height:1.7;text-wrap:balance}
+  .chat-modal{grid-column:2;grid-row:3 / span 2;align-self:start;height:min(760px,calc(100vh - 235px));min-height:500px}
+  .chat-form{align-items:center;gap:20px;padding:16px 24px}
+  .chat-form textarea{min-height:100px}
+}
 </style>
 </head>
 <body>
