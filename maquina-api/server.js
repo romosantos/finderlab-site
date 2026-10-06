@@ -72,7 +72,7 @@ const STATUSES = ['novo', 'contatado', 'pago'];
 let SYSTEM_PROMPT = '';
 let REGISTRATION_TERMS = '';
 function semValoresParaLista(texto) {
-  const DROP = /^- Formulário de inscrição:|^- (Investimento|Manutenção do agente após o curso|Cancelamento):|^O agente fica hospedado na infraestrutura|^\*\*"Está caro\."|^\*\*"O agente fica funcionando|Parcelamento para os pacotes|novos valores para 2 e 3|^Os itens 1 a 10 já foram respondidos/;
+  const DROP = /^- Formulário de inscrição:|^- Página da Máquina de Decisões:|^- (Investimento|Manutenção do agente após o curso|Cancelamento):|^O agente fica hospedado na infraestrutura|^\*\*"Está caro\."|^\*\*"O agente fica funcionando|Parcelamento para os pacotes|novos valores para 2 e 3|^Os itens 1 a 10 já foram respondidos/;
   let out = String(texto).split('\n').filter((l) => !DROP.test(l)).join('\n');
   out = out.replace(/, o mesmo processo que a Finder Lab cobra R\$ 5\.000 para fazer sob demanda/g, '');
   out = out.replace(/ É o mesmo processo que a Finder Lab constrói para clientes que contratam isso à parte, por R\$ 5\.000\. O agente pode citar esse valor como referência do que o curso já inclui, nunca como desconto ou promoção\./g, '');
@@ -123,7 +123,7 @@ try {
   // os termos de inscrição. Não basta pedir no addendum que o Drigo não fale disso: se o texto
   // está no que ele lê, vaza (já vazou o "R$ 5.000" do agente sob demanda). Aqui some do contexto.
   LISTA_PROMPT_BASE = semValoresParaLista(
-    semSecoes(instructions, LISTA_SECOES_FORA_INSTRUCOES).replace('Para inscrição use https://www.maquina.finderlab.com.br/inscricao; ', '') +
+    semSecoes(instructions, LISTA_SECOES_FORA_INSTRUCOES).replace('Para inscrição use https://www.maquina.finderlab.com.br/inscricao; para conhecer a imersão use https://www.maquina.finderlab.com.br/; ', '') +
       '\n\n---\n\n# BASE DE CONHECIMENTO (fonte de verdade, use só o que está aqui)\n\n' +
       semSecoes(knowledge, LISTA_SECOES_FORA_BASE)
   );
