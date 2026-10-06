@@ -17,7 +17,7 @@ body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans
 .pill{display:inline-flex;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:10px 18px;border-radius:8px}
 h1{margin:24px 0 0;font-size:clamp(34px,4vw,54px);font-weight:700;letter-spacing:-.04em;line-height:1;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
 .sub{margin:16px 0 0;color:var(--muted);font-size:16px;line-height:1.7;max-width:640px}
-.nav{display:flex;gap:10px;margin-top:24px}
+.nav{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
 .nav a{display:inline-flex;align-items:center;min-height:42px;padding:0 16px;border-radius:9px;border:1px solid rgba(124,84,245,.4);color:#D2CEE6;font-size:13px;font-weight:600;text-decoration:none}
 .nav a.on{background:rgba(116,67,245,.35);border-color:#8B63FF;color:#fff}
 button{font-family:inherit;cursor:pointer}
@@ -34,33 +34,48 @@ button{font-family:inherit;cursor:pointer}
 .btn{display:inline-flex;align-items:center;justify-content:center;border:0;background:var(--accent);color:#fff;font-size:14px;font-weight:700;min-height:46px;padding:0 22px;border-radius:10px;box-shadow:0 4px 24px rgba(116,67,245,.28);text-decoration:none}
 .btn:hover{box-shadow:0 12px 44px rgba(116,67,245,.55)}
 :focus-visible{outline:2px solid #A88BFF;outline-offset:3px}
-.list{display:flex;flex-direction:column;gap:10px;margin-top:22px}
-.row{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.6fr) minmax(0,1.4fr) auto auto;gap:18px;align-items:center;border:1px solid rgba(124,84,245,.4);background:rgba(20,12,46,.55);border-radius:16px;padding:18px 22px}
-.n{font-size:16px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
-.s{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
-.tags{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
-.tag{font-size:11px;font-weight:600;color:#D2CEE6;border:1px solid rgba(124,84,245,.4);border-radius:7px;padding:3px 8px;white-space:nowrap}
-.row a.l{display:block;font-size:14px;color:#E4E0F4;line-height:1.7;text-decoration:none;overflow-wrap:anywhere}
-.row a.l:hover{color:var(--accent2)}
+.list{display:flex;flex-direction:column;gap:14px;margin-top:22px}
+.row{border:1px solid rgba(124,84,245,.4);background:rgba(20,12,46,.55);border-radius:18px;padding:26px 28px}
+.head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.who{min-width:0}
+.n{font-size:19px;font-weight:600;letter-spacing:-.01em;line-height:1.3;overflow-wrap:anywhere}
+.s{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.6;overflow-wrap:anywhere}
+.right{display:flex;align-items:center;gap:14px;flex-shrink:0}
+.contacts{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.contacts a.l{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:6px 14px;border-radius:9px;border:1px solid rgba(124,84,245,.35);background:rgba(8,6,20,.5);color:#E4E0F4;font-size:13px;text-decoration:none;overflow-wrap:anywhere}
+.contacts a.l:hover{border-color:#8B63FF;color:#fff}
+.contacts a.l i{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent2)}
+.label{margin:22px 0 8px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2)}
+.prob{margin:0;font-size:15px;line-height:1.75;color:#E4E0F4;max-width:820px;overflow-wrap:anywhere}
+.tags{display:flex;gap:8px;flex-wrap:wrap}
+.tag{font-size:12px;font-weight:600;color:#D2CEE6;border:1px solid rgba(124,84,245,.35);border-radius:8px;padding:6px 11px}
+.foot{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid rgba(124,84,245,.25)}
+.foot .sp{flex:1}
+.ghost{min-height:40px;padding:0 14px;border-radius:9px;border:1px solid rgba(124,84,245,.35);background:transparent;color:#D2CEE6;font-size:13px;font-weight:600}
+.ghost:hover,.ghost.on{border-color:#8B63FF;color:#fff}
+.ghost.on{background:rgba(116,67,245,.25)}
+.painel{margin-top:14px;padding:16px 18px;border-radius:10px;background:rgba(8,6,20,.55);border:1px solid rgba(124,84,245,.25);max-width:820px}
+.painel .txt{font-size:14px;line-height:1.75;color:#E4E0F4;white-space:pre-wrap;overflow-wrap:anywhere}
 .badge{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:9px;font-size:12px;font-weight:700;white-space:nowrap}
 .badge.full{background:rgba(30,158,106,.18);color:#5CD8A6;border:1px solid rgba(30,158,106,.5)}
 .badge.partial{background:rgba(184,137,43,.18);color:#E8B65E;border:1px solid rgba(184,137,43,.5)}
 .badge.quente{background:rgba(255,106,61,.18);color:#FF9B73;border:1px solid rgba(255,106,61,.55)}
 .badge.morna{background:rgba(184,137,43,.18);color:#E8B65E;border:1px solid rgba(184,137,43,.5)}
 .badge.fria{background:rgba(110,140,255,.14);color:#9DB4FF;border:1px solid rgba(110,140,255,.4)}
-.tag.faixa{border-color:#8B63FF;color:#fff;background:rgba(116,67,245,.3)}
-.nota{margin-top:8px;padding:10px 12px;border-left:3px solid #8B63FF;background:rgba(116,67,245,.1);border-radius:6px}
-.mapa{display:grid;gap:6px;margin-top:8px}
-.mapa .d{display:grid;grid-template-columns:88px 1fr;gap:10px;font-size:13px;line-height:1.5}
+.tag.hi{border-color:#8B63FF;color:#fff;background:rgba(116,67,245,.3)}
+.nota{padding:16px 18px;border-left:3px solid #8B63FF;background:rgba(116,67,245,.1);border-radius:8px;font-size:14px;line-height:1.75;color:#E4E0F4;max-width:820px;overflow-wrap:anywhere}
+.mapa{display:grid;gap:10px}
+.mapa .d{display:grid;grid-template-columns:96px 1fr;gap:12px;font-size:14px;line-height:1.65}
 .mapa .d b{color:#D2CEE6;font-weight:600}
 .mapa .lv{display:inline-block;margin-right:6px;color:var(--accent2);font-weight:700;letter-spacing:.1em}
-.del{min-height:44px;padding:0 14px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:transparent;color:var(--muted);font-size:12px;font-weight:600}
+.date{font-size:13px;color:var(--muted)}
+.del{min-height:40px;padding:0 14px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:transparent;color:var(--muted);font-size:12px;font-weight:600}
 .del:hover{border-color:#FFB86B;color:#FFB86B}
 .del.arm{border-color:#FF7A7A;color:#FF9A9A;background:rgba(255,80,80,.12)}
 .empty{margin-top:28px;border:1px dashed rgba(124,84,245,.45);border-radius:16px;padding:48px 24px;text-align:center;color:var(--muted);line-height:1.7}
-@media(max-width:1100px){.wrap{padding-left:40px;padding-right:40px}.row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 20px}.badge,.del{justify-self:start}}
+@media(max-width:1100px){.wrap{padding-left:40px;padding-right:40px}}
 @media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.wrap{padding:28px 20px 72px}.stat{padding:18px}.stat b{font-size:28px}.row{grid-template-columns:1fr;padding:18px}}
+@media(max-width:560px){.wrap{padding:28px 20px 72px}.stat{padding:18px}.stat b{font-size:28px}.row{padding:20px 18px}.head{flex-direction:column;gap:12px}.n{font-size:18px}.foot .sp{display:none}.ghost,.del{flex:1 1 auto}}
 </style>
 </head>
 <body>
@@ -94,7 +109,7 @@ button{font-family:inherit;cursor:pointer}
 
 <script>
 (function () {
-  var items = [], filter = 'all', q = '', armed = null, armT = null;
+  var items = [], filter = 'all', q = '', armed = null, armT = null, aberto = {};
   var FILTERS = [['all', 'Todos'], ['quente', 'Quentes'], ['morna', 'Mornas'], ['fria', 'Frias'], ['pend', 'WhatsApp a enviar']];
   var TEMP_ORD = { quente: 0, morna: 1, fria: 2 };
   var TEMP_LABEL = { quente: 'Quente', morna: 'Morna', fria: 'Fria' };
@@ -166,10 +181,10 @@ button{font-family:inherit;cursor:pointer}
 
   function contactLine(d) {
     var parts = [];
-    if (d.whats) parts.push({ href: 'https://wa.me/' + d.whats.replace(/\D/g, ''), label: d.whats });
-    if (d.email) parts.push({ href: 'mailto:' + d.email, label: d.email });
-    if (d.instagram) parts.push({ href: 'https://instagram.com/' + d.instagram.replace(/^@/, ''), label: d.instagram });
-    if (d.linkedin) parts.push({ href: /^https?:\/\//.test(d.linkedin) ? d.linkedin : 'https://' + d.linkedin, label: d.linkedin });
+    if (d.whats) parts.push({ kind: 'WhatsApp', href: 'https://wa.me/' + d.whats.replace(/\D/g, ''), label: d.whats });
+    if (d.email) parts.push({ kind: 'E-mail', href: 'mailto:' + d.email, label: d.email });
+    if (d.instagram) parts.push({ kind: 'Instagram', href: 'https://instagram.com/' + d.instagram.replace(/^@/, ''), label: d.instagram });
+    if (d.linkedin) parts.push({ kind: 'LinkedIn', href: /^https?:\/\//.test(d.linkedin) ? d.linkedin : 'https://' + d.linkedin, label: d.linkedin });
     return parts;
   }
 
@@ -191,29 +206,81 @@ button{font-family:inherit;cursor:pointer}
     rows.forEach(function (d) {
       var row = el('div', 'row');
 
-      var main = el('div');
-      main.appendChild(el('div', 'n', (d.nome || '(sem nome)') + (d.empresa || d.cargo ? ' · ' + [d.cargo, d.empresa].filter(Boolean).join(' @ ') : '')));
-      main.appendChild(el('div', 's', d.problema || d.decisao || 'Problema não registrado nesta conversa.'));
+      // Cabeçalho: nome + contexto à esquerda, data e temperatura à direita
+      var head = el('div', 'head');
+      var who = el('div', 'who');
+      who.appendChild(el('div', 'n', d.nome || '(sem nome)'));
+      var sub = [d.cargo, d.empresa, d.tipo_negocio, d.porte_time, d.faturamento].filter(Boolean).join(' · ');
+      if (sub) who.appendChild(el('div', 's', sub));
+      head.appendChild(who);
+      var right = el('div', 'right');
+      right.appendChild(el('span', 'date', new Date(d.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })));
+      right.appendChild(el('span', 'badge ' + (d.temperatura || 'partial'), TEMP_LABEL[d.temperatura] || (hasContext(d) ? 'Com contexto' : 'Só contato')));
+      head.appendChild(right);
+      row.appendChild(head);
+
+      // Contatos como botões pequenos
+      var contacts = el('div', 'contacts');
+      var cs = contactLine(d);
+      if (cs.length) {
+        cs.forEach(function (c) {
+          var a = el('a', 'l');
+          a.appendChild(el('i', null, c.kind));
+          a.appendChild(document.createTextNode(c.label));
+          a.href = c.href; a.target = '_blank'; a.rel = 'noopener';
+          contacts.appendChild(a);
+        });
+      } else {
+        contacts.appendChild(el('div', 's', 'Sem contato registrado.'));
+      }
+      row.appendChild(contacts);
+
+      row.appendChild(el('div', 'label', 'Decisão que trouxe'));
+      row.appendChild(el('p', 'prob', d.problema || d.decisao || 'Problema não registrado nesta conversa.'));
+
       var tags = el('div', 'tags');
-      if (d.faixa) tags.appendChild(el('span', 'tag faixa', d.faixa));
-      if (ROTA[d.rota]) tags.appendChild(el('span', 'tag', ROTA[d.rota]));
+      if (d.faixa) tags.appendChild(el('span', 'tag hi', d.faixa));
+      if (ROTA[d.rota]) tags.appendChild(el('span', 'tag hi', ROTA[d.rota]));
       if (d.porte && d.porte !== 'desconhecido') tags.appendChild(el('span', 'tag', 'porte ' + d.porte));
       if (AUTH[d.autoridade]) tags.appendChild(el('span', 'tag', AUTH[d.autoridade]));
       if (d.urgencia && d.urgencia !== 'desconhecida') tags.appendChild(el('span', 'tag', 'urgência ' + d.urgencia));
-      if (d.tipo_negocio) tags.appendChild(el('span', 'tag', d.tipo_negocio));
       if (d.area) tags.appendChild(el('span', 'tag', d.area));
-      if (d.porte_time) tags.appendChild(el('span', 'tag', d.porte_time));
-      if (d.faturamento) tags.appendChild(el('span', 'tag', d.faturamento));
       if (d.canal_preferido) tags.appendChild(el('span', 'tag', 'prefere ' + d.canal_preferido));
-      if (pendWhats(d)) tags.appendChild(el('span', 'tag', 'enviar leitura por WhatsApp'));
+      if (pendWhats(d)) tags.appendChild(el('span', 'tag hi', 'enviar leitura por WhatsApp'));
       if (d.leitura_email_enviada_em) tags.appendChild(el('span', 'tag', 'leitura enviada por email'));
       if (d.leitura_whats_enviada_em) tags.appendChild(el('span', 'tag', 'leitura enviada por WhatsApp'));
-      if (tags.childNodes.length) main.appendChild(tags);
-      if (d.nota_interna) main.appendChild(el('div', 's nota', d.nota_interna));
+      if (tags.childNodes.length) {
+        row.appendChild(el('div', 'label', 'Perfil'));
+        row.appendChild(tags);
+      }
+
+      if (d.nota_interna) {
+        row.appendChild(el('div', 'label', 'Nota interna'));
+        row.appendChild(el('div', 'nota', d.nota_interna));
+      }
+
+      // Rodapé: mapa e leitura abrem sob demanda; excluir isolado à direita
       var mk = mapaKeys(d);
-      if (mk.length) {
-        var mdet = el('details');
-        mdet.appendChild(el('summary', 's', 'Ver mapa da decisão (' + mk.length + '/5)'));
+      var foot = el('div', 'foot');
+      function toggle(key, label) {
+        var on = !!aberto[d.id + ':' + key];
+        var b = el('button', 'ghost' + (on ? ' on' : ''), (on ? '▾ ' : '▸ ') + label);
+        b.type = 'button';
+        b.addEventListener('click', function () { aberto[d.id + ':' + key] = !on; render(); });
+        foot.appendChild(b);
+        return on;
+      }
+      var mapaOn = mk.length ? toggle('mapa', 'Mapa da decisão (' + mk.length + '/5)') : false;
+      var leituraOn = d.leitura ? toggle('leitura', 'Leitura entregue') : false;
+      foot.appendChild(el('span', 'sp'));
+      var del = el('button', 'del' + (armed === d.id ? ' arm' : ''), armed === d.id ? 'Confirmar' : 'Excluir');
+      del.type = 'button';
+      del.addEventListener('click', function () { remove(d.id); });
+      foot.appendChild(del);
+      row.appendChild(foot);
+
+      if (mapaOn) {
+        var pm = el('div', 'painel');
         var mbox = el('div', 'mapa');
         mk.forEach(function (x) {
           var m = d.mapa[x[0]];
@@ -225,38 +292,14 @@ button{font-family:inherit;cursor:pointer}
           line.appendChild(txt);
           mbox.appendChild(line);
         });
-        mdet.appendChild(mbox);
-        main.appendChild(mdet);
+        pm.appendChild(mbox);
+        row.appendChild(pm);
       }
-      if (d.leitura) {
-        var det = el('details');
-        det.appendChild(el('summary', 's', 'Ver leitura entregue'));
-        det.appendChild(el('div', 's', d.leitura));
-        main.appendChild(det);
+      if (leituraOn) {
+        var pl = el('div', 'painel');
+        pl.appendChild(el('div', 'txt', d.leitura));
+        row.appendChild(pl);
       }
-      row.appendChild(main);
-
-      var contacts = el('div');
-      var cs = contactLine(d);
-      if (cs.length) {
-        cs.forEach(function (c) {
-          var a = el('a', 'l', c.label);
-          a.href = c.href; a.target = '_blank'; a.rel = 'noopener';
-          contacts.appendChild(a);
-        });
-      } else {
-        contacts.appendChild(el('div', 's', 'Sem contato registrado.'));
-      }
-      row.appendChild(contacts);
-
-      row.appendChild(el('div', 's', new Date(d.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })));
-
-      row.appendChild(el('span', 'badge ' + (d.temperatura || 'partial'), TEMP_LABEL[d.temperatura] || (hasContext(d) ? 'Com contexto' : 'Só contato')));
-
-      var del = el('button', 'del' + (armed === d.id ? ' arm' : ''), armed === d.id ? 'Confirmar' : 'Excluir');
-      del.type = 'button';
-      del.addEventListener('click', function () { remove(d.id); });
-      row.appendChild(del);
 
       list.appendChild(row);
     });
