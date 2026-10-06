@@ -1934,7 +1934,9 @@ app.post('/whatsapp/inbound', whatsappWebhookParser, (req, res) => {
 
 // ---------- Admin (protegido por senha) ----------
 app.use('/admin', adminLimiter, failLimiter, basicAuth);
-app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+// A página principal do admin é Acessos; as inscrições ficam em /admin/inscricoes.
+app.get('/admin', (_req, res) => res.redirect(302, '/admin/acessos'));
+app.get('/admin/inscricoes', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/admin/whatsapp', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-whatsapp.html')));
 app.get('/admin/acessos', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-acessos.html')));
 app.get('/admin/diagnosticos', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-diagnosticos.html')));
