@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lista de prioridade · Máquina de Decisões · Finder Lab</title>
+<meta name="description" content="Entre na lista da próxima turma presencial da Máquina de Decisões, em São Paulo. 20 vagas. Quem está na lista é avisado primeiro e tem prioridade para preencher as vagas.">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/chat-links.css?v=20260930agree">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 900px 700px at 50% -10%,rgba(116,67,245,.28),transparent 65%)}
+a{color:inherit}
+.page{--accent:#7443F5;--accent2:#A88BFF;--muted:#AEA9C5;min-height:100vh;display:flex;flex-direction:column}
+.top{padding:32px 64px 0}
+.top img{height:31px;width:auto}
+.main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,480px);gap:56px;align-items:start;max-width:1160px;width:100%;margin:0 auto;padding:40px 64px 48px}
+.pill{display:inline-flex;align-items:center;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:9px 16px;border-radius:8px}
+h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing:-.03em;line-height:1.15;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
+.lead{margin:18px 0 0;color:var(--muted);font-size:16px;line-height:1.75;max-width:520px}
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0 0;padding:0;list-style:none}
+.facts li{border:1px solid rgba(124,84,245,.45);background:rgba(20,12,46,.55);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;color:#E4E0F4}
+.promise{margin:28px 0 0;max-width:520px;border-left:3px solid var(--accent2);background:rgba(116,67,245,.1);border-radius:8px;padding:14px 18px;font-size:15px;line-height:1.65;color:#E4E0F4}
+.avatar{display:block;margin-top:28px;height:240px;width:auto;object-fit:contain;filter:drop-shadow(0 0 4px rgba(168,139,255,.5)) drop-shadow(0 0 22px rgba(116,67,245,.65))}
+
+.card{border:1px solid rgba(124,84,245,.6);background:#0C0A1A;border-radius:22px;padding:28px;box-shadow:0 0 70px rgba(116,67,245,.3),0 30px 110px rgba(116,67,245,.22),inset 0 0 30px rgba(116,67,245,.1)}
+.card h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em}
+.card .hint{margin:6px 0 22px;color:var(--muted);font-size:14px;line-height:1.6}
+.field{margin-bottom:16px}
+.field label{display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#D2CEE6}
+.field label small{font-weight:400;color:var(--muted)}
+.field input,.field textarea{width:100%;padding:13px 14px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-family:inherit;font-size:16px;line-height:1.4}
+.field textarea{resize:vertical;min-height:84px}
+.field input::placeholder,.field textarea::placeholder{color:#8F8AA8}
+.field.err input,.field.err textarea{border-color:#FF7A7A}
+.msg{display:none;margin-top:6px;font-size:12px;color:#FFB0B0}
+.field.err .msg{display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.consent{display:flex;gap:10px;align-items:flex-start;margin:6px 0 4px;font-size:13px;line-height:1.55;color:#D2CEE6}
+.consent input{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--accent)}
+.consent.err{color:#FFB0B0}
+.submit{width:100%;margin-top:18px;min-height:52px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(116,67,245,.5)}
+.submit:disabled{opacity:.55;cursor:default}
+.formerr{display:none;margin-top:14px;padding:12px 14px;border-radius:10px;background:rgba(255,110,110,.12);border:1px solid rgba(255,110,110,.3);color:#FFC2C2;font-size:14px;line-height:1.5}
+.note{margin:14px 0 0;color:var(--muted);font-size:12.5px;line-height:1.6;text-align:center}
+.ok{display:none;text-align:left}
+.ok h2{font-size:22px}
+.ok p{margin:12px 0 0;color:#D2CEE6;font-size:15px;line-height:1.7}
+:focus-visible{outline:2px solid #A88BFF;outline-offset:3px}
+
+.askbtn{width:100%;margin-top:14px;min-height:48px;border-radius:12px;border:1.5px solid rgba(168,139,255,.55);background:transparent;color:var(--accent2);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.askbtn:hover{background:rgba(116,67,245,.14)}
+.chat{display:none;margin-top:14px;border:1px solid rgba(124,84,245,.5);background:#0C0A1A;border-radius:18px;overflow:hidden}
+.chat-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(116,67,245,.1)}
+.drigo-avatar{flex-shrink:0;border-radius:50%;object-fit:contain;padding:4px;border:1px solid rgba(168,139,255,.5);background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.chat-head b{display:block;font-size:14px}
+.chat-head span{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
+.chat-body{height:320px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{max-width:90%;padding:10px 13px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-msg.bot{align-self:flex-start;background:rgba(255,255,255,.06);color:#EDEAF7;border:1px solid rgba(255,255,255,.08)}
+.chat-msg.user{align-self:flex-end;background:var(--accent);color:#fff}
+.chat-msg.err{align-self:flex-start;background:rgba(255,110,110,.12);color:#FFC2C2;border:1px solid rgba(255,110,110,.3)}
+.chat-dots{display:inline-flex;gap:4px;align-items:center}
+.chat-dots span{width:6px;height:6px;border-radius:50%;background:var(--muted);opacity:.5;animation:chatDot 1s infinite}
+.chat-dots span:nth-child(2){animation-delay:.15s}
+.chat-dots span:nth-child(3){animation-delay:.3s}
+@keyframes chatDot{0%,100%{opacity:.3}50%{opacity:1}}
+.chat-form{display:flex;align-items:flex-end;gap:8px;padding:12px;border-top:1px solid rgba(255,255,255,.08)}
+.chat-form textarea{flex:1;min-width:0;min-height:48px;max-height:120px;padding:12px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-family:inherit;font-size:16px;line-height:1.4;resize:none}
+.chat-send{width:48px;height:48px;flex-shrink:0;border-radius:50%;border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.chat-send:disabled{opacity:.45;cursor:default}
+
+.foot{padding:20px 64px 32px;text-align:center}
+.foot a{font-size:13px;color:var(--muted);text-decoration:none}
+.foot a:hover{color:var(--accent2)}
+@media(max-width:900px){
+  .top{padding:24px 24px 0}
+  .main{grid-template-columns:1fr;gap:32px;padding:28px 24px 40px}
+  .avatar{display:none}
+  .foot{padding-left:24px;padding-right:24px}
+}
+@media(max-width:560px){
+  .top{padding:20px 16px 0}
+  .main{padding:20px 16px 32px}
+  .card{padding:22px 18px;border-radius:18px}
+  .two{grid-template-columns:1fr;gap:0}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="top"><a href="https://maquina.finderlab.com.br"><img src="/img/logo-finderlab.png" alt="Finder Lab · Agentic Architecture Product House"></a></div>
+
+  <div class="main">
+    <section>
+      <span class="pill">Lista de prioridade</span>
+      <h1>Entre na lista da próxima turma da Máquina de Decisões</h1>
+      <p class="lead">Uma imersão presencial de um dia, em São Paulo, para líderes e empresários repensarem as decisões do negócio a partir da IA. A turma terá só 20 vagas, para manter a qualidade da troca e do diagnóstico de cada um.</p>
+      <ul class="facts">
+        <li>Presencial</li>
+        <li>1 dia · 6 horas</li>
+        <li>São Paulo</li>
+        <li>20 vagas</li>
+      </ul>
+      <p class="promise">Data e local ainda estão sendo fechados. Quem entrar na lista agora será avisado primeiro, e as 20 vagas serão oferecidas primeiro a quem está nela.</p>
+      <img class="avatar" src="/img/drigo-avatar.png" alt="">
+    </section>
+
+    <section>
+      <div class="card">
+        <form id="form" novalidate>
+          <h2>Quero ser avisado primeiro</h2>
+          <p class="hint">Sem pagamento e sem compromisso. Você só recebe o aviso quando a turma abrir.</p>
+
+          <div class="field" id="f-nome"><label for="nome">Nome</label><input id="nome" name="nome" autocomplete="name" maxlength="120" required><div class="msg"></div></div>
+          <div class="field" id="f-email"><label for="email">E-mail</label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="160" required><div class="msg"></div></div>
+          <div class="field" id="f-whats"><label for="whats">WhatsApp com DDD</label><input id="whats" name="whats" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000" maxlength="30" required><div class="msg"></div></div>
+          <div class="two">
+            <div class="field"><label for="empresa">Empresa <small>(opcional)</small></label><input id="empresa" name="empresa" autocomplete="organization" maxlength="120"></div>
+            <div class="field"><label for="cargo">Cargo <small>(opcional)</small></label><input id="cargo" name="cargo" autocomplete="organization-title" maxlength="80"></div>
+          </div>
+          <div class="field"><label for="decisao">Qual decisão do seu negócio mais pesa hoje? <small>(opcional)</small></label><textarea id="decisao" name="decisao" maxlength="400"></textarea></div>
+          <div class="hp" aria-hidden="true"><label>Não preencha<input id="website" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+          <label class="consent" id="f-consent"><input type="checkbox" id="consentimento"><span>Aceito receber contato da Finder Lab por e-mail e WhatsApp sobre a Máquina de Decisões. Posso sair da lista quando quiser.</span></label>
+          <div class="msg" id="m-consent" style="display:none;color:#FFB0B0">Precisamos da sua confirmação para avisar você.</div>
+
+          <button type="submit" class="submit" id="submit">Entrar na lista</button>
+          <div class="formerr" id="formerr" role="alert"></div>
+          <p class="note">Respondemos qualquer dúvida pelo WhatsApp (11) 3164-3783.</p>
+        </form>
+
+        <div class="ok" id="ok" role="status">
+          <h2 id="ok-title">Você está na lista.</h2>
+          <p>Vamos te avisar por e-mail e WhatsApp assim que data e local estiverem definidos, antes de abrir para todo mundo. Mandamos uma confirmação para o seu e-mail agora (olhe também a caixa de spam).</p>
+          <p>Se quiser, tire uma dúvida com o Drigo enquanto isso.</p>
+        </div>
+
+        <button type="button" class="askbtn" id="askbtn">Tem uma dúvida? Fale com o Drigo</button>
+        <div class="chat" id="chat">
+          <div class="chat-head">
+            <img class="drigo-avatar" src="/img/drigo-avatar-cabeca.png" width="36" height="36" alt="">
+            <div><b>Drigo</b><span>Assistente de IA da Finder Lab</span></div>
+          </div>
+          <div class="chat-body" id="chat-body" aria-live="polite">
+            <div class="chat-msg bot">Oi, tudo bem? Eu sou o Drigo, assistente de IA do Rodrigo. Posso tirar suas dúvidas sobre a imersão, e te ajudar a ver se ela faz sentido pra você. O que você quer saber?</div>
+          </div>
+          <form class="chat-form" id="chat-form">
+            <textarea id="chat-input" autocomplete="off" placeholder="Escreve aqui..." aria-label="Sua mensagem" maxlength="600" rows="1"></textarea>
+            <button type="submit" class="chat-send" id="chat-send" disabled aria-label="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="foot"><a href="https://maquina.finderlab.com.br">um projeto da Finder Lab · conhecer a Máquina de Decisões ↗</a></div>
+</div>
+
+<script src="/chat-links.js?v=20260930agree"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var params = new URLSearchParams(location.search);
+
+  // ---------- formulário ----------
+  var form = $('form'), submit = $('submit'), formerr = $('formerr');
+  function setErr(fieldId, text) {
+    var f = $(fieldId);
+    if (!f) return;
+    f.classList.toggle('err', !!text);
+    var m = f.querySelector('.msg');
+    if (m) m.textContent = text || '';
+  }
+  function clearErrs() {
+    ['f-nome', 'f-email', 'f-whats'].forEach(function (id) { setErr(id, ''); });
+    $('f-consent').classList.remove('err');
+    $('m-consent').style.display = 'none';
+    formerr.style.display = 'none';
+  }
+  function showErrs(errors) {
+    var first = null;
+    function mark(id, text) { setErr(id, text); if (!first) first = id; }
+    if (errors.nome) mark('f-nome', errors.nome);
+    if (errors.email) mark('f-email', errors.email);
+    if (errors.whats) mark('f-whats', errors.whats);
+    if (errors.consentimento) { $('f-consent').classList.add('err'); $('m-consent').style.display = 'block'; if (!first) first = 'f-consent'; }
+    if (first) { var t = $(first); var inp = t.querySelector('input'); if (inp) inp.focus(); }
+  }
+  function validate() {
+    var e = {};
+    if ($('nome').value.trim().length < 2) e.nome = 'Informe seu nome.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test($('email').value.trim())) e.email = 'Informe um e-mail válido.';
+    var d = $('whats').value.replace(/\D/g, '');
+    if (d.length < 10 || d.length > 13) e.whats = 'Informe seu WhatsApp com DDD.';
+    if (!$('consentimento').checked) e.consentimento = 'x';
+    return e;
+  }
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    clearErrs();
+    var e = validate();
+    if (Object.keys(e).length) { showErrs(e); return; }
+    submit.disabled = true;
+    submit.textContent = 'Enviando...';
+    fetch('/lista/entrar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: $('nome').value, email: $('email').value, whats: $('whats').value,
+        empresa: $('empresa').value, cargo: $('cargo').value, decisao: $('decisao').value,
+        website: $('website').value, consentimento: $('consentimento').checked,
+        utm_source: params.get('utm_source') || '', utm_campaign: params.get('utm_campaign') || ''
+      })
+    })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (data) { return { ok: r.ok, data: data }; });
+      })
+      .then(function (res) {
+        if (!res.ok) {
+          if (res.data && res.data.errors) { showErrs(res.data.errors); }
+          else { formerr.textContent = (res.data && res.data.error) || 'Não consegui registrar agora. Tenta de novo em instantes ou fala com a gente pelo WhatsApp (11) 3164-3783.'; formerr.style.display = 'block'; }
+          submit.disabled = false; submit.textContent = 'Entrar na lista';
+          return;
+        }
+        var primeiro = $('nome').value.trim().split(' ')[0];
+        $('ok-title').textContent = primeiro ? 'Você está na lista, ' + primeiro + '.' : 'Você está na lista.';
+        form.style.display = 'none';
+        $('ok').style.display = 'block';
+      })
+      .catch(function () {
+        formerr.textContent = 'Sem conexão agora. Tenta de novo em instantes ou fala com a gente pelo WhatsApp (11) 3164-3783.';
+        formerr.style.display = 'block';
+        submit.disabled = false; submit.textContent = 'Entrar na lista';
+      });
+  });
+
+  // ---------- chat do Drigo (só tira dúvidas, sem ferramentas) ----------
+  var chat = $('chat'), chatBody = $('chat-body'), chatForm = $('chat-form'), chatInput = $('chat-input'), chatSend = $('chat-send');
+  var chatSession = 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  var chatLoading = false;
+
+  $('askbtn').addEventListener('click', function () {
+    var open = chat.style.display === 'block';
+    chat.style.display = open ? 'none' : 'block';
+    if (!open) { chatInput.focus(); setTimeout(function () { chat.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 50); }
+  });
+
+  function scrollChat() { chatBody.scrollTop = chatBody.scrollHeight; }
+  function addMsg(who, text) {
+    var div = document.createElement('div');
+    div.className = 'chat-msg ' + who;
+    window.DrigoChatLinks.render(div, text);
+    chatBody.appendChild(div);
+  }
+  function setLoading(v) {
+    chatLoading = v;
+    var dots = $('chat-loading-dots');
+    if (v && !dots) {
+      dots = document.createElement('div');
+      dots.id = 'chat-loading-dots';
+      dots.className = 'chat-msg bot';
+      dots.innerHTML = '<span class="chat-dots"><span></span><span></span><span></span></span>';
+      chatBody.appendChild(dots);
+    } else if (!v && dots) { dots.remove(); }
+    updateSend();
+  }
+  function updateSend() {
+    chatSend.disabled = !chatInput.value.trim() || chatLoading;
+    chatInput.style.height = 'auto';
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+  }
+  chatInput.addEventListener('input', updateSend);
+  chatInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); chatForm.requestSubmit(); }
+  });
+
+  chatForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var text = chatInput.value.trim();
+    if (!text || chatLoading) return;
+    var history = Array.prototype.slice.call(chatBody.querySelectorAll('.chat-msg.user, .chat-msg.bot'))
+      .slice(-16)
+      .map(function (el) { return { role: el.classList.contains('user') ? 'user' : 'assistant', content: el.dataset.message || el.textContent }; });
+    addMsg('user', text);
+    chatInput.value = '';
+    setLoading(true);
+    setTimeout(scrollChat, 30);
+
+    var ctrl = new AbortController();
+    var timeoutId = setTimeout(function () { ctrl.abort(); }, 45000);
+    var streamDiv = null, streamed = '';
+    function ensureBubble() {
+      if (streamDiv) return;
+      setLoading(false);
+      streamDiv = document.createElement('div');
+      streamDiv.className = 'chat-msg bot';
+      chatBody.appendChild(streamDiv);
+    }
+    fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, history: history, sessionId: chatSession, stream: true, modo: 'lista' }),
+      signal: ctrl.signal
+    })
+      .then(function (r) {
+        clearTimeout(timeoutId);
+        var isStream = r.ok && (r.headers.get('content-type') || '').indexOf('text/event-stream') !== -1;
+        if (!isStream) {
+          return r.json().catch(function () { return {}; }).then(function (data) {
+            if (!r.ok || !data.reply) throw new Error((data && data.error) || 'falha');
+            setLoading(false);
+            addMsg('bot', data.reply);
+          });
+        }
+        var reader = r.body.getReader(), decoder = new TextDecoder(), buffer = '', finalPayload = null;
+        function handle(obj) {
+          if (obj.reset) { streamed = ''; if (streamDiv) streamDiv.textContent = ''; return; }
+          if (typeof obj.delta === 'string') { ensureBubble(); streamed += obj.delta; streamDiv.textContent = streamed; scrollChat(); return; }
+          if (obj.done) finalPayload = obj;
+        }
+        function pump() {
+          return reader.read().then(function (res) {
+            if (res.value) {
+              buffer += decoder.decode(res.value, { stream: !res.done });
+              var parts = buffer.split('\n\n');
+              buffer = parts.pop();
+              for (var i = 0; i < parts.length; i++) {
+                var line = parts[i].trim();
+                if (line.indexOf('data:') !== 0) continue;
+                var obj;
+                try { obj = JSON.parse(line.slice(5)); } catch (_) { continue; }
+                if (obj.error) throw new Error(obj.error);
+                handle(obj);
+              }
+            }
+            if (res.done) {
+              if (!finalPayload) throw new Error('stream incompleto');
+              ensureBubble();
+              window.DrigoChatLinks.render(streamDiv, finalPayload.reply);
+              return;
+            }
+            return pump();
+          });
+        }
+        return pump();
+      })
+      .catch(function () {
+        clearTimeout(timeoutId);
+        setLoading(false);
+        if (streamDiv) { streamDiv.remove(); streamDiv = null; }
+        addMsg('err', 'Não consegui responder agora. Fala com a gente pelo WhatsApp (11) 3164-3783 ou tenta de novo em instantes.');
+      })
+      .finally(function () { setTimeout(scrollChat, 30); });
+  });
+})();
+</script>
+
+<!-- LinkedIn Insight Tag (conta de anúncios Finder Lab) -->
+<script type="text/javascript">
+_linkedin_partner_id = "10962449";
+window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+</script><script type="text/javascript">
+(function(l) {
+if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
+window.lintrk.q=[]}
+var s = document.getElementsByTagName("script")[0];
+var b = document.createElement("script");
+b.type = "text/javascript";b.async = true;
+b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+s.parentNode.insertBefore(b, s);})(window.lintrk);
+</script>
+<noscript>
+<img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=10962449&fmt=gif" />
+</noscript>
+</body>
+</html>

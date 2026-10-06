@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Admin · Diagnósticos</title>
+<title>Admin · Lista de prioridade</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap">
@@ -66,27 +66,26 @@ button{font-family:inherit;cursor:pointer}
 <body>
 <div class="wrap">
   <div class="pill">Área administrativa</div>
-  <h1>Diagnósticos gratuitos</h1>
-  <p class="sub">Quem passou pelo modo diagnóstico do Drigo (entrada via diagnostico.finderlab.com.br) aparece aqui, com a decisão que trouxe e o que deu pra captar de contexto do negócio, sempre do jeito que a conversa permitiu — captura é discreta e nem sempre completa.</p>
+  <h1>Lista de prioridade</h1>
+  <p class="sub">Quem entrou na lista da próxima turma pela página /lista. A ordem é a ordem de entrada: é ela que define quem é chamado primeiro quando a turma abrir. Todos aceitaram receber contato por e-mail e WhatsApp.</p>
   <div class="nav">
     <a href="/admin">Inscrições</a>
     <a href="/admin/whatsapp">Conversas WhatsApp</a>
     <a href="/admin/acessos">Acessos</a>
-    <a href="/admin/diagnosticos" class="on">Diagnósticos</a>
-    <a href="/admin/lista">Lista de prioridade</a>
+    <a href="/admin/diagnosticos">Diagnósticos</a>
+    <a href="/admin/lista" class="on">Lista de prioridade</a>
   </div>
 
   <div class="stats">
-    <div class="stat"><b id="nTotal">0</b><span>Diagnósticos</span></div>
-    <div class="stat"><b id="nFull">0</b><span>Quentes</span></div>
-    <div class="stat"><b id="nContato">0</b><span>Com contato</span></div>
+    <div class="stat"><b id="nTotal">0</b><span>Na lista</span></div>
+    <div class="stat"><b id="nVagas">0</b><span>Das 20 vagas (pessoas na lista)</span></div>
+    <div class="stat"><b id="nEmpresa">0</b><span>Com empresa informada</span></div>
     <div class="stat"><b id="nWeek">0</b><span>Últimos 7 dias</span></div>
   </div>
 
   <div class="bar">
-    <input id="q" class="search" type="search" placeholder="Buscar por nome, decisão ou tipo de negócio" aria-label="Buscar diagnósticos">
-    <div class="chips" id="chips"></div>
-    <a class="btn" href="/admin/api/diagnosticos.csv">Exportar CSV</a>
+    <input id="q" class="search" type="search" placeholder="Buscar por nome, empresa, cargo ou decisão" aria-label="Buscar na lista">
+    <a class="btn" href="/admin/api/lista.csv">Exportar CSV</a>
   </div>
 
   <div class="list" id="list" aria-live="polite"></div>
@@ -94,41 +93,29 @@ button{font-family:inherit;cursor:pointer}
 
 <script>
 (function () {
-  var items = [], filter = 'all', q = '', armed = null, armT = null;
-  var FILTERS = [['all', 'Todos'], ['quente', 'Quentes'], ['morna', 'Mornas'], ['fria', 'Frias'], ['pend', 'WhatsApp a enviar']];
-  var TEMP_ORD = { quente: 0, morna: 1, fria: 2 };
-  var TEMP_LABEL = { quente: 'Quente', morna: 'Morna', fria: 'Fria' };
-  var DIMS = [['decisao', 'Decisão'], ['custo', 'Custo'], ['dados', 'Dados'], ['gargalo', 'Gargalo'], ['prontidao', 'Prontidão']];
-  var AUTH = { decide: 'decide', influencia: 'influencia' };
-  var ROTA = { imersao: 'rota: imersão', consultoria: 'rota: consultoria', nutrir: 'rota: nutrir' };
+  var items = [], q = '', armed = null, armT = null;
   var $ = function (id) { return document.getElementById(id); };
-
   function el(tag, cls, text) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
     if (text != null) e.textContent = text; // textContent: nunca interpreta HTML
     return e;
   }
-
   function api(method, url) {
     return fetch(url, { method: method, credentials: 'same-origin' })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
   }
-
-  function hasContext(d) { return !!(d.empresa || d.cargo || d.problema || d.tipo_negocio || d.area || d.porte_time || d.faturamento); }
-  function hasWhats(d) { return !!(d.whats && d.whats.trim()); }
-  function hasContato(d) { return hasWhats(d) || !!(d.email && d.email.trim()); }
-  function pendWhats(d) { return d.canal_preferido === 'whatsapp' && hasWhats(d) && !d.leitura_whats_enviada_em; }
-  function mapaKeys(d) { return DIMS.filter(function (x) { return d.mapa && d.mapa[x[0]]; }); }
-
+  function fmt(d) {
+    var x = new Date(d);
+    return x.toLocaleDateString('pt-BR') + ' ' + x.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
   function load() {
-    return api('GET', '/admin/api/diagnosticos').then(function (rows) { items = rows; render(); })
+    return api('GET', '/admin/api/lista').then(function (rows) { items = rows; render(); })
       .catch(function () {
         var l = $('list'); l.textContent = '';
-        l.appendChild(el('div', 'empty', 'Não foi possível carregar os diagnósticos. Recarregue a página.'));
+        l.appendChild(el('div', 'empty', 'Não foi possível carregar a lista. Recarregue a página.'));
       });
   }
-
   function remove(id) {
     if (armed !== id) {
       armed = id; clearTimeout(armT);
@@ -136,124 +123,53 @@ button{font-family:inherit;cursor:pointer}
       render(); return;
     }
     armed = null;
-    api('DELETE', '/admin/api/diagnosticos/' + id).then(load);
+    api('DELETE', '/admin/api/lista/' + id).then(load);
   }
-
-  function shown() {
-    var t = q.trim().toLowerCase();
-    return items.filter(function (d) {
-      if (TEMP_ORD[filter] != null && d.temperatura !== filter) return false;
-      if (filter === 'pend' && !pendWhats(d)) return false;
-      if (!t) return true;
-      return [d.nome, d.empresa, d.cargo, d.problema, d.decisao, d.tipo_negocio, d.area, d.nota_interna].join(' ').toLowerCase().indexOf(t) !== -1;
-    }).sort(function (a, b) {
-      var ta = TEMP_ORD[a.temperatura] != null ? TEMP_ORD[a.temperatura] : 3;
-      var tb = TEMP_ORD[b.temperatura] != null ? TEMP_ORD[b.temperatura] : 3;
-      if (ta !== tb) return ta - tb;
-      return new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at);
-    });
-  }
-
-  function renderChips() {
-    var box = $('chips'); box.textContent = '';
-    FILTERS.forEach(function (f) {
-      var b = el('button', 'chip' + (filter === f[0] ? ' on' : ''), f[1]);
-      b.type = 'button';
-      b.addEventListener('click', function () { filter = f[0]; render(); });
-      box.appendChild(b);
-    });
-  }
-
-  function contactLine(d) {
-    var parts = [];
-    if (d.whats) parts.push({ href: 'https://wa.me/' + d.whats.replace(/\D/g, ''), label: d.whats });
-    if (d.email) parts.push({ href: 'mailto:' + d.email, label: d.email });
-    if (d.instagram) parts.push({ href: 'https://instagram.com/' + d.instagram.replace(/^@/, ''), label: d.instagram });
-    if (d.linkedin) parts.push({ href: /^https?:\/\//.test(d.linkedin) ? d.linkedin : 'https://' + d.linkedin, label: d.linkedin });
-    return parts;
-  }
-
   function render() {
-    renderChips();
-    var rows = shown();
-    var full = items.filter(function (d) { return d.temperatura === 'quente'; }).length;
     var week = items.filter(function (d) { return Date.now() - new Date(d.created_at).getTime() < 7 * 24 * 60 * 60 * 1000; }).length;
     $('nTotal').textContent = items.length;
-    $('nFull').textContent = full;
-    $('nContato').textContent = items.filter(hasContato).length;
+    $('nVagas').textContent = Math.min(items.length, 20) + ' / 20';
+    $('nEmpresa').textContent = items.filter(function (d) { return d.empresa; }).length;
     $('nWeek').textContent = week;
 
+    var t = q.trim().toLowerCase();
     var list = $('list'); list.textContent = '';
-    if (!rows.length) {
-      list.appendChild(el('div', 'empty', items.length ? 'Nada encontrado com esse filtro.' : 'Ainda não chegou nenhum diagnóstico.'));
+    var shown = [];
+    items.forEach(function (d, i) {
+      d._pos = i + 1;
+      if (!t || [d.nome, d.email, d.empresa, d.cargo, d.decisao].join(' ').toLowerCase().indexOf(t) !== -1) shown.push(d);
+    });
+    if (!shown.length) {
+      list.appendChild(el('div', 'empty', items.length ? 'Nada encontrado com essa busca.' : 'Ainda não entrou ninguém na lista.'));
       return;
     }
-    rows.forEach(function (d) {
+    shown.forEach(function (d) {
       var row = el('div', 'row');
 
       var main = el('div');
-      main.appendChild(el('div', 'n', (d.nome || '(sem nome)') + (d.empresa || d.cargo ? ' · ' + [d.cargo, d.empresa].filter(Boolean).join(' @ ') : '')));
-      main.appendChild(el('div', 's', d.problema || d.decisao || 'Problema não registrado nesta conversa.'));
+      main.appendChild(el('div', 'n', '#' + d._pos + ' · ' + d.nome + (d.empresa || d.cargo ? ' · ' + [d.cargo, d.empresa].filter(Boolean).join(' @ ') : '')));
+      main.appendChild(el('div', 's', d.decisao || 'Não informou a decisão que mais pesa.'));
       var tags = el('div', 'tags');
-      if (d.faixa) tags.appendChild(el('span', 'tag faixa', d.faixa));
-      if (ROTA[d.rota]) tags.appendChild(el('span', 'tag', ROTA[d.rota]));
-      if (d.porte && d.porte !== 'desconhecido') tags.appendChild(el('span', 'tag', 'porte ' + d.porte));
-      if (AUTH[d.autoridade]) tags.appendChild(el('span', 'tag', AUTH[d.autoridade]));
-      if (d.urgencia && d.urgencia !== 'desconhecida') tags.appendChild(el('span', 'tag', 'urgência ' + d.urgencia));
-      if (d.tipo_negocio) tags.appendChild(el('span', 'tag', d.tipo_negocio));
-      if (d.area) tags.appendChild(el('span', 'tag', d.area));
-      if (d.porte_time) tags.appendChild(el('span', 'tag', d.porte_time));
-      if (d.faturamento) tags.appendChild(el('span', 'tag', d.faturamento));
-      if (d.canal_preferido) tags.appendChild(el('span', 'tag', 'prefere ' + d.canal_preferido));
-      if (pendWhats(d)) tags.appendChild(el('span', 'tag', 'enviar leitura por WhatsApp'));
-      if (d.leitura_email_enviada_em) tags.appendChild(el('span', 'tag', 'leitura enviada por email'));
-      if (d.leitura_whats_enviada_em) tags.appendChild(el('span', 'tag', 'leitura enviada por WhatsApp'));
-      if (tags.childNodes.length) main.appendChild(tags);
-      if (d.nota_interna) main.appendChild(el('div', 's nota', d.nota_interna));
-      var mk = mapaKeys(d);
-      if (mk.length) {
-        var mdet = el('details');
-        mdet.appendChild(el('summary', 's', 'Ver mapa da decisão (' + mk.length + '/5)'));
-        var mbox = el('div', 'mapa');
-        mk.forEach(function (x) {
-          var m = d.mapa[x[0]];
-          var line = el('div', 'd');
-          line.appendChild(el('b', null, x[1]));
-          var txt = el('div');
-          txt.appendChild(el('span', 'lv', '●'.repeat(m.nivel) + '○'.repeat(3 - m.nivel)));
-          txt.appendChild(document.createTextNode(m.evidencia || ''));
-          line.appendChild(txt);
-          mbox.appendChild(line);
-        });
-        mdet.appendChild(mbox);
-        main.appendChild(mdet);
-      }
-      if (d.leitura) {
-        var det = el('details');
-        det.appendChild(el('summary', 's', 'Ver leitura entregue'));
-        det.appendChild(el('div', 's', d.leitura));
-        main.appendChild(det);
-      }
+      tags.appendChild(el('span', 'tag', 'entrou em ' + fmt(d.created_at)));
+      if (d.origem) tags.appendChild(el('span', 'tag', 'origem: ' + d.origem));
+      if (d.campanha) tags.appendChild(el('span', 'tag', 'campanha: ' + d.campanha));
+      tags.appendChild(el('span', 'tag', d.confirmacao_enviada_em ? 'confirmação por e-mail enviada' : 'confirmação por e-mail NÃO enviada'));
+      main.appendChild(tags);
       row.appendChild(main);
 
-      var contacts = el('div');
-      var cs = contactLine(d);
-      if (cs.length) {
-        cs.forEach(function (c) {
-          var a = el('a', 'l', c.label);
-          a.href = c.href; a.target = '_blank'; a.rel = 'noopener';
-          contacts.appendChild(a);
-        });
-      } else {
-        contacts.appendChild(el('div', 's', 'Sem contato registrado.'));
-      }
-      row.appendChild(contacts);
+      var c1 = el('div');
+      var w = el('a', 'l', d.whats); w.href = 'https://wa.me/' + String(d.whats || '').replace(/\D/g, ''); w.target = '_blank'; w.rel = 'noopener';
+      c1.appendChild(w);
+      var m = el('a', 'l', d.email); m.href = 'mailto:' + d.email;
+      c1.appendChild(m);
+      row.appendChild(c1);
 
-      row.appendChild(el('div', 's', new Date(d.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })));
+      row.appendChild(el('div'));
 
-      row.appendChild(el('span', 'badge ' + (d.temperatura || 'partial'), TEMP_LABEL[d.temperatura] || (hasContext(d) ? 'Com contexto' : 'Só contato')));
+      var b = el('span', 'badge ' + (d._pos <= 20 ? 'full' : 'partial'), d._pos <= 20 ? 'dentro das 20' : 'lista de espera');
+      row.appendChild(b);
 
-      var del = el('button', 'del' + (armed === d.id ? ' arm' : ''), armed === d.id ? 'Confirmar' : 'Excluir');
+      var del = el('button', 'del' + (armed === d.id ? ' arm' : ''), armed === d.id ? 'Confirmar' : 'Remover');
       del.type = 'button';
       del.addEventListener('click', function () { remove(d.id); });
       row.appendChild(del);
@@ -261,9 +177,7 @@ button{font-family:inherit;cursor:pointer}
       list.appendChild(row);
     });
   }
-
   $('q').addEventListener('input', function (e) { q = e.target.value; render(); });
-
   load();
 })();
 </script>

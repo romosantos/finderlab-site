@@ -72,6 +72,7 @@ const STATUSES = ['novo', 'contatado', 'pago'];
 let SYSTEM_PROMPT = '';
 let REGISTRATION_TERMS = '';
 let DIAGNOSTIC_ADDENDUM = '';
+let LISTA_ADDENDUM = '';
 let chatReady = false;
 try {
   const instructions = fs.readFileSync(path.join(__dirname, 'knowledge', 'system-instructions.md'), 'utf8');
@@ -88,6 +89,13 @@ try {
   DIAGNOSTIC_ADDENDUM = fs.readFileSync(path.join(__dirname, 'knowledge', 'modo-diagnostico.md'), 'utf8');
 } catch (err) {
   console.error('knowledge/modo-diagnostico.md não encontrado. Modo diagnóstico ficará desligado (chat normal segue funcionando).', err.message);
+}
+
+// Modo lista de prioridade (página /lista): sem ferramentas, sem preço, sem inscrição.
+try {
+  LISTA_ADDENDUM = fs.readFileSync(path.join(__dirname, 'knowledge', 'modo-lista.md'), 'utf8');
+} catch (err) {
+  console.error('knowledge/modo-lista.md não encontrado. O chat da página /lista ficará desligado (o formulário segue funcionando).', err.message);
 }
 
 // Lentes de domínio adicionais (M&A, vendas/GTM, arquitetura técnica, brainstorm de produto).
@@ -596,6 +604,28 @@ async function migrate() {
     ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS token TEXT;
     ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS leitura_whats_enviada_em TIMESTAMPTZ;
     CREATE UNIQUE INDEX IF NOT EXISTS diagnostico_leads_token_uidx ON diagnostico_leads (token) WHERE token IS NOT NULL;
+
+    -- Lista de prioridade da próxima turma (página /lista). Captação de intenção, sem pagamento.
+    -- A ordem de entrada (created_at) é a ordem de prioridade; reenvio do mesmo e-mail atualiza
+    -- os dados sem mudar a posição.
+    CREATE TABLE IF NOT EXISTS lista_interesse (
+      id                    SERIAL PRIMARY KEY,
+      nome                  TEXT NOT NULL,
+      email                 TEXT NOT NULL,
+      whats                 TEXT NOT NULL DEFAULT '',
+      empresa               TEXT NOT NULL DEFAULT '',
+      cargo                 TEXT NOT NULL DEFAULT '',
+      decisao               TEXT NOT NULL DEFAULT '',
+      origem                TEXT NOT NULL DEFAULT '',
+      campanha              TEXT NOT NULL DEFAULT '',
+      consentimento_em      TIMESTAMPTZ NOT NULL DEFAULT now(),
+      consentimento_texto   TEXT NOT NULL DEFAULT '',
+      ip_hash               TEXT NOT NULL DEFAULT '',
+      confirmacao_enviada_em TIMESTAMPTZ,
+      created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS lista_interesse_email_uidx ON lista_interesse ((lower(email)));
   `);
 }
 
@@ -892,6 +922,123 @@ app.post('/leads', publicCors, leadLimiter, async (req, res) => {
   } catch (err) {
     console.error('POST /leads', err);
     res.status(500).json({ error: 'Não foi possível registrar agora.' });
+  }
+});
+
+// ---------- Lista de prioridade (página /lista) ----------
+const LISTA_CONSENTIMENTO = 'Aceito receber contato da Finder Lab por e-mail e WhatsApp sobre a Máquina de Decisões. Posso sair da lista quando quiser.';
+
+const listaLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Muitas tentativas. Tente novamente mais tarde.' },
+});
+
+function listaEmailText(nome) {
+  const primeiroNome = String(nome || '').trim().split(' ')[0] || 'tudo bem';
+  return `Oi, ${primeiroNome}!\n\n` +
+    `Seu nome está na lista de prioridade da próxima turma da Máquina de Decisões.\n\n` +
+    `A imersão é presencial, de um dia, num sábado, em São Paulo, com 20 vagas. Ainda estamos fechando data e local. Assim que isso estiver definido, você é avisado antes de todo mundo, e as 20 vagas são oferecidas primeiro a quem está na lista.\n\n` +
+    `Não precisa fazer nada agora e não há nenhum pagamento. Se tiver qualquer dúvida, é só responder este email ou chamar no WhatsApp (11) 3164-3783.\n\n` +
+    `Um abraço,\nDrigo (assistente de IA do Rodrigo Moraes, Finder Lab)`;
+}
+
+function listaEmailHtml(nome) {
+  const primeiroNome = String(nome || '').trim().split(' ')[0] || 'tudo bem';
+  const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+    <p style="margin:0 0 16px">Oi, ${esc(primeiroNome)}!</p>
+    <p style="margin:0 0 16px">Seu nome está na <b>lista de prioridade</b> da próxima turma da Máquina de Decisões.</p>
+    <div style="background:#f6f3ff;border-left:3px solid #A88BFF;padding:16px 20px;border-radius:8px;margin:0 0 20px">
+      <p style="margin:0">A imersão é presencial, de um dia, num sábado, em São Paulo, com 20 vagas. Ainda estamos fechando data e local. Assim que isso estiver definido, você é avisado antes de todo mundo, e as 20 vagas são oferecidas primeiro a quem está na lista.</p>
+    </div>
+    <p style="margin:0 0 16px">Não precisa fazer nada agora e não há nenhum pagamento. Se tiver qualquer dúvida, é só responder este email ou chamar no WhatsApp
+      <a href="https://wa.me/551131643783" style="color:#7C5CFF">(11) 3164-3783</a>.</p>
+    <p style="margin:24px 0 0;color:#555">Um abraço,<br>Drigo (assistente de IA do Rodrigo Moraes, Finder Lab)</p>
+  </div>`;
+}
+
+async function sendListaEmail(to, nome) {
+  if (!RESEND_API_KEY || !to) return false;
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: EMAIL_FROM,
+        to,
+        subject: 'Você está na lista de prioridade da Máquina de Decisões',
+        text: listaEmailText(nome),
+        html: listaEmailHtml(nome),
+      }),
+    });
+    if (!r.ok) {
+      console.error('Falha ao enviar confirmação da lista', r.status, await r.text().catch(() => ''));
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Falha ao enviar confirmação da lista', err && err.message ? err.message : err);
+    return false;
+  }
+}
+
+app.post('/lista/entrar', listaLimiter, async (req, res) => {
+  try {
+    const b = req.body || {};
+
+    // campo invisível: robôs preenchem, pessoas não. Responde ok sem gravar.
+    if (clean(b.website, 200)) return res.status(201).json({ ok: true });
+
+    if (ALLOWED_ORIGINS.length && req.headers.origin && !ALLOWED_ORIGINS.includes(req.headers.origin)) {
+      return res.status(403).json({ error: 'Origem não permitida.' });
+    }
+
+    const nome = clean(b.nome, 120);
+    const email = clean(b.email, 160).toLowerCase();
+    const whats = clean(b.whats, 30);
+    const empresa = clean(b.empresa, 120);
+    const cargo = clean(b.cargo, 80);
+    const decisao = clean(b.decisao, 400);
+    const origem = clean(b.utm_source, 80);
+    const campanha = clean(b.utm_campaign, 120);
+
+    const errors = {};
+    if (nome.length < 2) errors.nome = 'Informe seu nome.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errors.email = 'Informe um e-mail válido.';
+    const digitos = whats.replace(/\D/g, '');
+    if (digitos.length < 10 || digitos.length > 13) errors.whats = 'Informe seu WhatsApp com DDD.';
+    if (b.consentimento !== true) errors.consentimento = 'Precisamos da sua confirmação para avisar você.';
+    if (Object.keys(errors).length) return res.status(400).json({ error: 'Confira os campos.', errors });
+
+    const { rows } = await pool.query(
+      `INSERT INTO lista_interesse (nome, email, whats, empresa, cargo, decisao, origem, campanha, consentimento_texto, ip_hash)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       ON CONFLICT ((lower(email))) DO UPDATE SET
+         nome = EXCLUDED.nome,
+         whats = EXCLUDED.whats,
+         empresa = COALESCE(NULLIF(EXCLUDED.empresa, ''), lista_interesse.empresa),
+         cargo = COALESCE(NULLIF(EXCLUDED.cargo, ''), lista_interesse.cargo),
+         decisao = COALESCE(NULLIF(EXCLUDED.decisao, ''), lista_interesse.decisao),
+         consentimento_em = now(),
+         consentimento_texto = EXCLUDED.consentimento_texto,
+         updated_at = now()
+       RETURNING id, (xmax = 0) AS novo`,
+      [nome, email, whats, empresa, cargo, decisao, origem, campanha, LISTA_CONSENTIMENTO, hashIp(req.ip)]
+    );
+
+    // Confirmação por e-mail só na primeira entrada (reenvio do formulário não repete o e-mail).
+    // Best-effort e síncrona antes de responder: a pessoa já está na lista de qualquer jeito.
+    if (rows[0].novo) {
+      const enviado = await sendListaEmail(email, nome);
+      if (enviado) await pool.query('UPDATE lista_interesse SET confirmacao_enviada_em = now() WHERE id=$1', [rows[0].id]);
+    }
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    console.error('POST /lista/entrar', err);
+    res.status(500).json({ error: 'Não foi possível registrar agora. Tente de novo em instantes.' });
   }
 });
 
@@ -1303,7 +1450,8 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
   // streamar NÃO era a resposta final -- tinha tool use, descarta o texto que veio junto).
   // Sem onEvent (ex.: chamada do WhatsApp), chama a API sem streaming, igual antes.
   async function callModel() {
-    const params = { model: ANTHROPIC_MODEL, max_tokens: maxTokens || CHAT_MAX_TOKENS, system: systemBlocks, messages, tools: CHAT_TOOLS };
+    const params = { model: ANTHROPIC_MODEL, max_tokens: maxTokens || CHAT_MAX_TOKENS, system: systemBlocks, messages };
+    if (!(ctx && ctx.semFerramentas)) params.tools = CHAT_TOOLS;
     if (!onEvent) return anthropic.messages.create(params);
     const stream = anthropic.messages.stream(params);
     stream.on('text', makeThinkingFilter((delta) => onEvent('delta', delta)));
@@ -1408,7 +1556,15 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
     // não muda a persona nem a base de conhecimento, só acrescenta o addendum de fluxo.
     const isDiagnostico = /diagnostico/i.test(req.hostname || '');
     const isVoiceTurn = b.voice === true;
-    let systemPrompt = isDiagnostico && DIAGNOSTIC_ADDENDUM
+    // Modo lista: pedido pela página /lista. Sem ferramentas (não há inscrição nem pagamento
+    // nessa etapa), então nada do que o cliente mandar consegue disparar registro ou cobrança.
+    const isLista = b.modo === 'lista' && !isDiagnostico;
+    if (isLista && !LISTA_ADDENDUM) {
+      return res.status(503).json({ error: 'O assistente está indisponível no momento. Fala com a gente pelo WhatsApp (11) 3164-3783.' });
+    }
+    let systemPrompt = isLista
+      ? SYSTEM_PROMPT + '\n\n---\n\n# MODO LISTA DE PRIORIDADE (ativo nesta conversa)\n\n' + LISTA_ADDENDUM
+      : isDiagnostico && DIAGNOSTIC_ADDENDUM
       ? SYSTEM_PROMPT + '\n\n---\n\n# MODO DIAGNÓSTICO (ativo nesta conversa)\n\n' + DIAGNOSTIC_ADDENDUM
       : SYSTEM_PROMPT;
     if (isDiagnostico) {
@@ -1426,7 +1582,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
         }
       : null;
     const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel } = await getAgentReply(
-      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : (isDiagnostico ? CHAT_DIAGNOSTIC_MAX_TOKENS : CHAT_MAX_TOKENS), { sessionId }
+      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : (isDiagnostico ? CHAT_DIAGNOSTIC_MAX_TOKENS : CHAT_MAX_TOKENS), { sessionId, semFerramentas: isLista }
     );
 
     const elapsedMs = Date.now() - chatStartedAt;
@@ -1757,6 +1913,41 @@ app.get('/admin/api/diagnosticos.csv', async (_req, res) => {
   );
   res.set('Content-Type', 'text/csv; charset=utf-8');
   res.set('Content-Disposition', 'attachment; filename="diagnosticos-maquina-de-decisoes.csv"');
+  res.send('﻿' + lines.join('\r\n'));
+});
+
+app.get('/admin/lista', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-lista.html')));
+
+app.get('/admin/api/lista', async (_req, res) => {
+  const { rows } = await pool.query('SELECT id, nome, email, whats, empresa, cargo, decisao, origem, campanha, confirmacao_enviada_em, created_at, updated_at FROM lista_interesse ORDER BY created_at ASC, id ASC');
+  res.json(rows);
+});
+
+app.delete('/admin/api/lista/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Pedido inválido.' });
+  const { rowCount } = await pool.query('DELETE FROM lista_interesse WHERE id=$1', [id]);
+  res.status(rowCount ? 200 : 404).json({ ok: !!rowCount });
+});
+
+app.get('/admin/api/lista.csv', async (_req, res) => {
+  const { rows } = await pool.query('SELECT * FROM lista_interesse ORDER BY created_at ASC, id ASC');
+  const esc = (v) => {
+    let s = String(v == null ? '' : v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // evita injeção de fórmula no Excel
+    return '"' + s.replace(/"/g, '""') + '"';
+  };
+  const head = ['Posição', 'Entrou em', 'Nome', 'Email', 'WhatsApp', 'Empresa', 'Cargo', 'Decisão que pesa', 'Origem', 'Campanha', 'Consentimento em', 'Confirmação por email enviada'];
+  const lines = [head.map(esc).join(';')].concat(
+    rows.map((d, i) =>
+      [
+        i + 1, new Date(d.created_at).toISOString(), d.nome, d.email, d.whats, d.empresa, d.cargo, d.decisao, d.origem, d.campanha,
+        new Date(d.consentimento_em).toISOString(), d.confirmacao_enviada_em ? new Date(d.confirmacao_enviada_em).toISOString() : '',
+      ].map(esc).join(';')
+    )
+  );
+  res.set('Content-Type', 'text/csv; charset=utf-8');
+  res.set('Content-Disposition', 'attachment; filename="lista-prioridade-maquina-de-decisoes.csv"');
   res.send('﻿' + lines.join('\r\n'));
 });
 
