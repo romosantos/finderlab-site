@@ -17,7 +17,7 @@ body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans
   background-image:radial-gradient(ellipse 900px 700px at 50% -10%,rgba(116,67,245,.28),transparent 65%)}
 a{color:inherit}
 .page{--accent:#7443F5;--accent2:#A88BFF;--muted:#AEA9C5;min-height:100vh;display:flex;flex-direction:column}
-.top{padding:32px 64px 0}
+.top{max-width:1160px;width:100%;margin:0 auto;padding:32px 64px 0}
 .top img{height:31px;width:auto}
 .main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,480px);gap:56px;align-items:start;max-width:1160px;width:100%;margin:0 auto;padding:40px 64px 48px}
 .pill{display:inline-flex;align-items:center;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:9px 16px;border-radius:8px}
@@ -26,7 +26,12 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
 .facts{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 0;padding:0;list-style:none}
 .facts li{border:1px solid rgba(124,84,245,.45);background:rgba(20,12,46,.55);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;color:#E4E0F4}
 .promise{margin:28px 0 0;max-width:520px;border-left:3px solid var(--accent2);background:rgba(116,67,245,.1);border-radius:8px;padding:14px 18px;font-size:15px;line-height:1.65;color:#E4E0F4}
-.avatar{display:block;margin-top:24px;height:288px;width:auto;object-fit:contain;filter:drop-shadow(0 0 4px rgba(168,139,255,.5)) drop-shadow(0 0 22px rgba(116,67,245,.65))}
+.main{align-content:start}
+.col-esq{display:flex;flex-direction:column;align-self:stretch}
+.col-dir{display:flex;flex-direction:column;align-self:stretch}
+.col-dir .card{flex:1}
+.col-esq .lead{margin-bottom:24px}
+.avatar{display:block;margin-top:auto;height:288px;width:auto;object-fit:contain;filter:drop-shadow(0 0 4px rgba(168,139,255,.5)) drop-shadow(0 0 22px rgba(116,67,245,.65))}
 
 .card{border:1px solid rgba(124,84,245,.6);background:#0C0A1A;border-radius:22px;padding:28px;box-shadow:0 0 70px rgba(116,67,245,.3),0 30px 110px rgba(116,67,245,.22),inset 0 0 30px rgba(116,67,245,.1)}
 .card h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em}
@@ -98,7 +103,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
   <div class="top"><a href="https://maquina.finderlab.com.br"><img src="/img/logo-finderlab.png" alt="Finder Lab · Agentic Architecture Product House"></a></div>
 
   <div class="main">
-    <section>
+    <section class="col-esq">
       <span class="pill">Lista de prioridade</span>
       <h1>Entre na lista da próxima turma da Máquina de Decisões</h1>
       <p class="lead">Uma imersão presencial de um dia, em São Paulo, para líderes e empresários repensarem as decisões do negócio a partir da IA. A turma terá só 20 vagas, para manter a qualidade da troca e do diagnóstico de cada um.</p>
@@ -112,7 +117,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
       <p class="promise">Data e local ainda estão sendo fechados. Quem entrar na lista agora será avisado primeiro, e as 20 vagas serão oferecidas primeiro a quem está nela.</p>
     </section>
 
-    <section>
+    <section class="col-dir">
       <div class="card">
         <form id="form" novalidate>
           <h2>Quero ser avisado primeiro</h2>
