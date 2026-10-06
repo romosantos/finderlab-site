@@ -198,6 +198,14 @@ const TWILIO_OWNER_WHATSAPP = process.env.TWILIO_OWNER_WHATSAPP || '';
 // business-initiated no WhatsApp — não dá pra mandar texto livre nesse caso).
 const TWILIO_PAYMENT_TEMPLATE_SID = process.env.TWILIO_PAYMENT_TEMPLATE_SID || '';
 const TWILIO_OWNER_TEMPLATE_SID = process.env.TWILIO_OWNER_TEMPLATE_SID || '';
+// Template da leitura do diagnóstico (categoria utility). A leitura é longa demais pra caber num
+// template, então ele leva só um aviso curto + o link da página pública /d/<token>:
+//   "Oi, {{1}}! Como combinado na nossa conversa, a leitura rápida do seu diagnóstico da Finder Lab
+//    está pronta: https://www.diagnostico.finderlab.com.br/d/{{2}} Se quiser conversar sobre ela,
+//    é só responder esta mensagem."
+// Enquanto a variável não estiver definida (template ainda não aprovado), nada é enviado e o lead
+// continua aparecendo como "enviar leitura por WhatsApp" no painel.
+const TWILIO_DIAGNOSTICO_TEMPLATE_SID = process.env.TWILIO_DIAGNOSTICO_TEMPLATE_SID || '';
 
 const twilioClient = TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN ? twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) : null;
 if (!twilioClient || !TWILIO_WHATSAPP_FROM) {
@@ -435,6 +443,25 @@ async function sendDiagnosisEmail(to, nome, leitura) {
   }
 }
 
+// Leitura por WhatsApp: template curto + link pra página pública /d/<token> (o template não
+// comporta o texto longo). Devolve true (enviou), false (falhou) ou null (envio automático
+// desligado: template ainda não configurado, então a equipe manda manualmente pelo painel).
+async function sendDiagnosisWhatsApp(id, whats, nome, leitura) {
+  if (!TWILIO_DIAGNOSTICO_TEMPLATE_SID || !twilioClient || !TWILIO_WHATSAPP_FROM) return null;
+  if (!whats || !leitura) return null;
+  try {
+    const novo = crypto.randomBytes(12).toString('base64url');
+    const { rows } = await pool.query('UPDATE diagnostico_leads SET token = COALESCE(token, $2) WHERE id=$1 RETURNING token', [id, novo]);
+    const primeiroNome = String(nome || '').trim().split(' ')[0] || 'tudo bem';
+    const ok = await sendWhatsApp(whats, TWILIO_DIAGNOSTICO_TEMPLATE_SID, { '1': primeiroNome, '2': rows[0].token });
+    if (ok) await pool.query('UPDATE diagnostico_leads SET leitura_whats_enviada_em = now() WHERE id=$1', [id]);
+    return ok;
+  } catch (err) {
+    console.error('Falha ao enviar leitura por WhatsApp', err && err.message ? err.message : err);
+    return false;
+  }
+}
+
 async function migrate() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS leads (
@@ -566,6 +593,9 @@ async function migrate() {
     ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS temperatura TEXT NOT NULL DEFAULT '';
     ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS nota_interna TEXT NOT NULL DEFAULT '';
     ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS porte TEXT NOT NULL DEFAULT '';
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS token TEXT;
+    ALTER TABLE diagnostico_leads ADD COLUMN IF NOT EXISTS leitura_whats_enviada_em TIMESTAMPTZ;
+    CREATE UNIQUE INDEX IF NOT EXISTS diagnostico_leads_token_uidx ON diagnostico_leads (token) WHERE token IS NOT NULL;
   `);
 }
 
@@ -832,13 +862,16 @@ async function saveDiagnostico(input, sessionId) {
        ${['nome','whats','email','instagram','linkedin','decisao','tipo_negocio','area','porte_time','faturamento','empresa','cargo','problema','canal_preferido','leitura','autoridade','urgencia','rota','nota_interna','porte'].map(keep).join(',\n       ')},
        mapa = diagnostico_leads.mapa || EXCLUDED.mapa,
        updated_at = now()
-     RETURNING id, email, whats, leitura, leitura_email_enviada_em, mapa, autoridade, urgencia, porte`,
+     RETURNING id, nome, email, whats, canal_preferido, leitura, leitura_email_enviada_em, leitura_whats_enviada_em, mapa, autoridade, urgencia, porte`,
     params
   );
   const r = rows[0];
   // faixa e temperatura sempre recalculadas a partir do mapa e da qualificação já acumulados
   await pool.query('UPDATE diagnostico_leads SET faixa=$2, temperatura=$3 WHERE id=$1', [r.id, calcFaixa(r.mapa), calcTemperatura(r)]);
-  return { ok: true, id: r.id, leitura: r.leitura, email: r.email, emailJaEnviado: !!r.leitura_email_enviada_em, leituraNova };
+  return {
+    ok: true, id: r.id, leitura: r.leitura, email: r.email, emailJaEnviado: !!r.leitura_email_enviada_em, leituraNova,
+    nome: r.nome, whats: r.whats, canal: r.canal_preferido, whatsJaEnviado: !!r.leitura_whats_enviada_em,
+  };
 }
 
 app.options('/leads', publicCors);
@@ -1182,6 +1215,13 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
         }
       } else if (result.emailJaEnviado) {
         out.email_enviado = true;
+      }
+      if (result.whatsJaEnviado) {
+        out.whatsapp_enviado = true;
+      } else if (result.canal === 'whatsapp' && result.whats && result.leitura) {
+        const w = await sendDiagnosisWhatsApp(result.id, result.whats, result.nome, result.leitura);
+        if (w === true) out.whatsapp_enviado = true;
+        else if (w === false) out.aviso_whatsapp = 'O envio por WhatsApp falhou. NÃO diga que enviou. Diga que a equipe manda a leitura por lá em breve (e confirme se o número está certo).';
       }
       if (result.leituraNova) {
         out.instrucao = 'Se você ainda NÃO entregou essa leitura por escrito na conversa, entregue agora, completa (a mesma que gravou), porque o chat é onde a pessoa recebe o valor e o email é só uma cópia; só depois, se fizer sentido, a ponte pra imersão. Se você JÁ entregou a leitura numa mensagem anterior desta conversa, NÃO a repita: só confirme o envio em uma ou duas frases.';
@@ -1868,6 +1908,46 @@ app.get(['/', '/index.html', '/inscricao', '/inscricao.html'], (req, res, next) 
 // Quem chega por diagnostico.finderlab.com.br cai numa página própria, focada só
 // no diagnóstico (sem hero de venda, preço ou FAQ do curso) — não na landing page
 // principal. Só a raiz muda; assets (logo, avatar, fontes) continuam compartilhados.
+// Página pública da leitura (link enviado por WhatsApp). Sem login: o token aleatório é a chave.
+// Mostra só a leitura que a pessoa já recebeu; qualificação, faixa e nota interna nunca saem daqui.
+app.get('/d/:token', async (req, res) => {
+  res.set({ 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' });
+  const token = String(req.params.token || '');
+  if (!/^[A-Za-z0-9_-]{10,40}$/.test(token)) return res.status(404).send('Not found');
+  let row;
+  try {
+    const r = await pool.query('SELECT nome, leitura FROM diagnostico_leads WHERE token=$1', [token]);
+    row = r.rows[0];
+  } catch (err) {
+    console.error('Falha ao carregar leitura pública', err && err.message ? err.message : err);
+    return res.status(500).send('Erro temporário. Tente de novo em instantes.');
+  }
+  if (!row || !row.leitura) return res.status(404).send('Not found');
+  const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const primeiroNome = String(row.nome || '').trim().split(' ')[0];
+  const paragrafos = String(row.leitura).split(/\n+/).filter(Boolean).map((p) => `<p>${esc(p)}</p>`).join('');
+  res.type('html').send(`<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Seu diagnóstico rápido · Finder Lab</title>
+<style>
+body{margin:0;background:#f6f3ff;color:#1a1a1a;font-family:Arial,Helvetica,sans-serif;line-height:1.55}
+main{max-width:600px;margin:0 auto;padding:32px 20px 48px}
+h1{font-size:22px;margin:0 0 6px}
+.sub{color:#555;margin:0 0 24px;font-size:15px}
+.card{background:#fff;border-left:4px solid #A88BFF;border-radius:10px;padding:8px 22px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card p{margin:14px 0}
+.cta{margin:28px 0 0;font-size:15px}
+.cta a{color:#7C5CFF;font-weight:bold}
+footer{margin-top:32px;color:#777;font-size:13px}
+</style></head><body><main>
+<h1>${primeiroNome ? 'Oi, ' + esc(primeiroNome) + '!' : 'Seu diagnóstico rápido'}</h1>
+<p class="sub">Esta é a leitura rápida que fizemos juntos na conversa com o Drigo, assistente de IA da Finder Lab.</p>
+<div class="card">${paragrafos}</div>
+<p class="cta">Quer conversar sobre ela? Responda a mensagem no WhatsApp ou chame em <a href="https://wa.me/551131643783">(11) 3164-3783</a>.</p>
+<footer>Finder Lab · leitura estruturada a partir da conversa, não é uma medição.</footer>
+</main></body></html>`);
+});
+
 app.get('/', (req, res, next) => {
   if (/diagnostico/i.test(req.hostname || '')) {
     return res.sendFile(path.join(__dirname, 'public', 'diagnostico.html'));

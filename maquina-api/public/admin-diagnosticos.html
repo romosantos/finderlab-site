@@ -117,7 +117,7 @@ button{font-family:inherit;cursor:pointer}
   function hasContext(d) { return !!(d.empresa || d.cargo || d.problema || d.tipo_negocio || d.area || d.porte_time || d.faturamento); }
   function hasWhats(d) { return !!(d.whats && d.whats.trim()); }
   function hasContato(d) { return hasWhats(d) || !!(d.email && d.email.trim()); }
-  function pendWhats(d) { return d.canal_preferido === 'whatsapp' && hasWhats(d); }
+  function pendWhats(d) { return d.canal_preferido === 'whatsapp' && hasWhats(d) && !d.leitura_whats_enviada_em; }
   function mapaKeys(d) { return DIMS.filter(function (x) { return d.mapa && d.mapa[x[0]]; }); }
 
   function load() {
@@ -206,6 +206,7 @@ button{font-family:inherit;cursor:pointer}
       if (d.canal_preferido) tags.appendChild(el('span', 'tag', 'prefere ' + d.canal_preferido));
       if (pendWhats(d)) tags.appendChild(el('span', 'tag', 'enviar leitura por WhatsApp'));
       if (d.leitura_email_enviada_em) tags.appendChild(el('span', 'tag', 'leitura enviada por email'));
+      if (d.leitura_whats_enviada_em) tags.appendChild(el('span', 'tag', 'leitura enviada por WhatsApp'));
       if (tags.childNodes.length) main.appendChild(tags);
       if (d.nota_interna) main.appendChild(el('div', 's nota', d.nota_interna));
       var mk = mapaKeys(d);
