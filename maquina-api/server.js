@@ -985,6 +985,52 @@ async function sendListaEmail(to, nome) {
   }
 }
 
+// Validação + gravação + confirmação por e-mail, compartilhada pelo formulário e pelo chat.
+// Devolve { ok: true, novo } ou { ok: false, errors }.
+async function saveLista(d, via) {
+  const nome = clean(d.nome, 120);
+  const email = clean(d.email, 160).toLowerCase();
+  const whats = clean(d.whats, 30);
+  const empresa = clean(d.empresa, 120);
+  const cargo = clean(d.cargo, 80);
+  const decisao = clean(d.decisao, 400);
+  const origem = clean(d.origem, 80);
+  const campanha = clean(d.campanha, 120);
+
+  const errors = {};
+  if (nome.length < 2) errors.nome = 'Informe seu nome.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errors.email = 'Informe um e-mail válido.';
+  const digitos = whats.replace(/\D/g, '');
+  if (digitos.length < 10 || digitos.length > 13) errors.whats = 'Informe seu WhatsApp com DDD.';
+  if (d.consentimento !== true) errors.consentimento = 'Precisamos da sua confirmação para avisar você.';
+  if (Object.keys(errors).length) return { ok: false, errors };
+
+  const { rows } = await pool.query(
+    `INSERT INTO lista_interesse (nome, email, whats, empresa, cargo, decisao, origem, campanha, consentimento_texto, ip_hash)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+     ON CONFLICT ((lower(email))) DO UPDATE SET
+       nome = EXCLUDED.nome,
+       whats = EXCLUDED.whats,
+       empresa = COALESCE(NULLIF(EXCLUDED.empresa, ''), lista_interesse.empresa),
+       cargo = COALESCE(NULLIF(EXCLUDED.cargo, ''), lista_interesse.cargo),
+       decisao = COALESCE(NULLIF(EXCLUDED.decisao, ''), lista_interesse.decisao),
+       consentimento_em = now(),
+       consentimento_texto = EXCLUDED.consentimento_texto,
+       updated_at = now()
+     RETURNING id, (xmax = 0) AS novo`,
+    [nome, email, whats, empresa, cargo, decisao, origem, campanha,
+      LISTA_CONSENTIMENTO + (via === 'chat' ? ' (aceite dado na conversa com o Drigo)' : ''), d.ipHash || '']
+  );
+
+  // Confirmação por e-mail só na primeira entrada (reenvio não repete). Best-effort e síncrona:
+  // a pessoa já está na lista de qualquer jeito.
+  if (rows[0].novo) {
+    const enviado = await sendListaEmail(email, nome);
+    if (enviado) await pool.query('UPDATE lista_interesse SET confirmacao_enviada_em = now() WHERE id=$1', [rows[0].id]);
+  }
+  return { ok: true, novo: rows[0].novo };
+}
+
 app.post('/lista/entrar', listaLimiter, async (req, res) => {
   try {
     const b = req.body || {};
@@ -996,45 +1042,11 @@ app.post('/lista/entrar', listaLimiter, async (req, res) => {
       return res.status(403).json({ error: 'Origem não permitida.' });
     }
 
-    const nome = clean(b.nome, 120);
-    const email = clean(b.email, 160).toLowerCase();
-    const whats = clean(b.whats, 30);
-    const empresa = clean(b.empresa, 120);
-    const cargo = clean(b.cargo, 80);
-    const decisao = clean(b.decisao, 400);
-    const origem = clean(b.utm_source, 80);
-    const campanha = clean(b.utm_campaign, 120);
-
-    const errors = {};
-    if (nome.length < 2) errors.nome = 'Informe seu nome.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errors.email = 'Informe um e-mail válido.';
-    const digitos = whats.replace(/\D/g, '');
-    if (digitos.length < 10 || digitos.length > 13) errors.whats = 'Informe seu WhatsApp com DDD.';
-    if (b.consentimento !== true) errors.consentimento = 'Precisamos da sua confirmação para avisar você.';
-    if (Object.keys(errors).length) return res.status(400).json({ error: 'Confira os campos.', errors });
-
-    const { rows } = await pool.query(
-      `INSERT INTO lista_interesse (nome, email, whats, empresa, cargo, decisao, origem, campanha, consentimento_texto, ip_hash)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-       ON CONFLICT ((lower(email))) DO UPDATE SET
-         nome = EXCLUDED.nome,
-         whats = EXCLUDED.whats,
-         empresa = COALESCE(NULLIF(EXCLUDED.empresa, ''), lista_interesse.empresa),
-         cargo = COALESCE(NULLIF(EXCLUDED.cargo, ''), lista_interesse.cargo),
-         decisao = COALESCE(NULLIF(EXCLUDED.decisao, ''), lista_interesse.decisao),
-         consentimento_em = now(),
-         consentimento_texto = EXCLUDED.consentimento_texto,
-         updated_at = now()
-       RETURNING id, (xmax = 0) AS novo`,
-      [nome, email, whats, empresa, cargo, decisao, origem, campanha, LISTA_CONSENTIMENTO, hashIp(req.ip)]
-    );
-
-    // Confirmação por e-mail só na primeira entrada (reenvio do formulário não repete o e-mail).
-    // Best-effort e síncrona antes de responder: a pessoa já está na lista de qualquer jeito.
-    if (rows[0].novo) {
-      const enviado = await sendListaEmail(email, nome);
-      if (enviado) await pool.query('UPDATE lista_interesse SET confirmacao_enviada_em = now() WHERE id=$1', [rows[0].id]);
-    }
+    const r = await saveLista({
+      nome: b.nome, email: b.email, whats: b.whats, empresa: b.empresa, cargo: b.cargo, decisao: b.decisao,
+      origem: b.utm_source, campanha: b.utm_campaign, consentimento: b.consentimento, ipHash: hashIp(req.ip),
+    }, 'form');
+    if (!r.ok) return res.status(400).json({ error: 'Confira os campos.', errors: r.errors });
     res.status(201).json({ ok: true });
   } catch (err) {
     console.error('POST /lista/entrar', err);
@@ -1336,7 +1348,42 @@ const CHAT_TOOLS = [
   },
 ];
 
+// Única ferramenta do modo lista (página /lista): cadastro de intenção, sem pagamento.
+const LISTA_TOOLS = [
+  {
+    name: 'registrar_interesse_lista',
+    description:
+      'Coloca a pessoa na lista de prioridade da próxima turma da Máquina de Decisões (cadastro de intenção, sem pagamento). Só chame depois de ter nome, email e WhatsApp com DDD informados pela pessoa na conversa, de ter repetido esses dados pra ela confirmar, e de ela ter dito explicitamente que sim (algo como "sim", "pode", "autorizo") à pergunta se pode receber contato por email e WhatsApp sobre a turma. empresa e cargo são opcionais (pergunte, mas não insista). Nunca invente, deduza nem preencha nenhum campo sozinho. Chame uma única vez por pessoa.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        nome: { type: 'string', description: 'Nome informado pela pessoa.' },
+        email: { type: 'string', description: 'Email informado pela pessoa.' },
+        whats: { type: 'string', description: 'WhatsApp com DDD informado pela pessoa.' },
+        empresa: { type: 'string', description: 'Empresa, se a pessoa informou. Vazio se não.' },
+        cargo: { type: 'string', description: 'Cargo ou função, se a pessoa informou. Vazio se não.' },
+        decisao: { type: 'string', description: 'Em uma frase, a decisão do negócio que mais pesa pra ela, se ela contou na conversa. Vazio se não.' },
+        consentimento: { type: 'boolean', description: 'true somente se a pessoa disse explicitamente que aceita receber contato por email e WhatsApp sobre a turma.' },
+      },
+      required: ['nome', 'email', 'whats', 'consentimento'],
+    },
+  },
+];
+
 async function runChatTool(name, toolInput, originUrl, ctx) {
+  if (name === 'registrar_interesse_lista') {
+    if (!ctx || !ctx.semFerramentas) return { ok: false, error: 'Ferramenta indisponível.' };
+    try {
+      const i = toolInput || {};
+      const r = await saveLista({ ...i, origem: ctx.origem || '', campanha: ctx.campanha || '', ipHash: ctx.ipHash || '' }, 'chat');
+      if (!r.ok) return { ok: false, erros: r.errors, instrucao: 'Faltou ou está inválido algum dado. Peça só o que falta, sem dizer que registrou.' };
+      ctx.listaRegistrada = true;
+      return { ok: true, ja_estava_na_lista: !r.novo, instrucao: 'Pessoa na lista. Confirme em uma ou duas frases, diga que ela recebe um e-mail de confirmação e que será avisada primeiro quando a turma abrir.' };
+    } catch (err) {
+      console.error('registrar_interesse_lista', err && err.message ? err.message : err);
+      return { ok: false, error: 'Falha ao registrar agora. NÃO diga que registrou. Peça pra tentar de novo pelo formulário da página.' };
+    }
+  }
   if (name === 'consultar_endereco_cep') return lookupCep(toolInput?.cep);
   if (name === 'registrar_inscricao') {
     const result = await saveLead(toolInput);
@@ -1451,7 +1498,7 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
   // Sem onEvent (ex.: chamada do WhatsApp), chama a API sem streaming, igual antes.
   async function callModel() {
     const params = { model: ANTHROPIC_MODEL, max_tokens: maxTokens || CHAT_MAX_TOKENS, system: systemBlocks, messages };
-    if (!(ctx && ctx.semFerramentas)) params.tools = CHAT_TOOLS;
+    params.tools = ctx && ctx.semFerramentas ? LISTA_TOOLS : CHAT_TOOLS;
     if (!onEvent) return anthropic.messages.create(params);
     const stream = anthropic.messages.stream(params);
     stream.on('text', makeThinkingFilter((delta) => onEvent('delta', delta)));
@@ -1500,7 +1547,7 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
     .join('\n')
     .trim();
 
-  return { reply: stripMarkdown(stripInternalReasoning(rawReply)), toolRounds };
+  return { reply: stripMarkdown(stripInternalReasoning(rawReply)), toolRounds, listaRegistrada: !!(ctx && ctx.listaRegistrada) };
 }
 
 app.options('/chat', publicCors);
@@ -1581,8 +1628,8 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
           else if (kind === 'reset') sseSend({ reset: true });
         }
       : null;
-    const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel } = await getAgentReply(
-      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : (isDiagnostico ? CHAT_DIAGNOSTIC_MAX_TOKENS : CHAT_MAX_TOKENS), { sessionId, semFerramentas: isLista }
+    const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel, listaRegistrada } = await getAgentReply(
+      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : (isDiagnostico ? CHAT_DIAGNOSTIC_MAX_TOKENS : CHAT_MAX_TOKENS), { sessionId, semFerramentas: isLista, ipHash: hashIp(req.ip), origem: clean(b.utm_source, 80), campanha: clean(b.utm_campaign, 120) }
     );
 
     const elapsedMs = Date.now() - chatStartedAt;
@@ -1603,10 +1650,10 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       .catch((err) => console.error('Falha ao gravar chat_logs', err));
 
     if (wantsStream) {
-      sseSend({ done: true, reply, showTermsAcceptance: showTermsAcceptance === true, termsAcceptanceLabel });
+      sseSend({ done: true, reply, showTermsAcceptance: showTermsAcceptance === true, termsAcceptanceLabel, listaRegistrada: listaRegistrada === true });
       if (!clientGone) res.end();
     } else if (!clientGone) {
-      res.json({ reply, showTermsAcceptance: showTermsAcceptance === true, termsAcceptanceLabel });
+      res.json({ reply, showTermsAcceptance: showTermsAcceptance === true, termsAcceptanceLabel, listaRegistrada: listaRegistrada === true });
     }
   } catch (err) {
     console.error('POST /chat', err && err.message ? err.message : err, `(${Date.now() - chatStartedAt}ms decorridos)`);

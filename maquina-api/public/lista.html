@@ -139,7 +139,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
         <div class="ok" id="ok" role="status">
           <h2 id="ok-title">Você está na lista.</h2>
           <p>Vamos te avisar por e-mail e WhatsApp assim que data e local estiverem definidos, antes de abrir para todo mundo. Mandamos uma confirmação para o seu e-mail agora (olhe também a caixa de spam).</p>
-          <p>Se quiser, tire uma dúvida com o Drigo enquanto isso.</p>
+          <p>Se ainda tiver alguma dúvida, é só continuar a conversa com o Drigo.</p>
         </div>
 
         <button type="button" class="askbtn" id="askbtn">Tem uma dúvida? Fale com o Drigo</button>
@@ -203,6 +203,12 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
     return e;
   }
 
+  function showOk(primeiro) {
+    $('ok-title').textContent = primeiro ? 'Você está na lista, ' + primeiro + '.' : 'Você está na lista.';
+    form.style.display = 'none';
+    $('ok').style.display = 'block';
+  }
+
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
     clearErrs();
@@ -230,10 +236,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
           submit.disabled = false; submit.textContent = 'Entrar na lista';
           return;
         }
-        var primeiro = $('nome').value.trim().split(' ')[0];
-        $('ok-title').textContent = primeiro ? 'Você está na lista, ' + primeiro + '.' : 'Você está na lista.';
-        form.style.display = 'none';
-        $('ok').style.display = 'block';
+        showOk($('nome').value.trim().split(' ')[0]);
       })
       .catch(function () {
         formerr.textContent = 'Sem conexão agora. Tenta de novo em instantes ou fala com a gente pelo WhatsApp (11) 3164-3783.';
@@ -307,7 +310,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
     fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, history: history, sessionId: chatSession, stream: true, modo: 'lista' }),
+      body: JSON.stringify({ message: text, history: history, sessionId: chatSession, stream: true, modo: 'lista', utm_source: params.get('utm_source') || '', utm_campaign: params.get('utm_campaign') || '' }),
       signal: ctrl.signal
     })
       .then(function (r) {
@@ -318,6 +321,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
             if (!r.ok || !data.reply) throw new Error((data && data.error) || 'falha');
             setLoading(false);
             addMsg('bot', data.reply);
+            if (data.listaRegistrada) showOk('');
           });
         }
         var reader = r.body.getReader(), decoder = new TextDecoder(), buffer = '', finalPayload = null;
@@ -345,6 +349,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
               if (!finalPayload) throw new Error('stream incompleto');
               ensureBubble();
               window.DrigoChatLinks.render(streamDiv, finalPayload.reply);
+              if (finalPayload.listaRegistrada) showOk('');
               return;
             }
             return pump();
