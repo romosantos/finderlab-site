@@ -52,6 +52,21 @@ button{font-family:inherit;cursor:pointer}
 .chart .col{flex:0 0 auto;width:8px;min-height:2px;background:var(--accent);border-radius:3px 3px 0 0;opacity:.85;cursor:default}
 .chart .col:hover{opacity:1;background:var(--accent2)}
 .empty{color:var(--muted);line-height:1.7;padding:8px 0}
+.online{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:28px;border:1px solid rgba(30,158,106,.5);background:rgba(30,158,106,.09);border-radius:16px;padding:16px 22px}
+.online .dot{width:12px;height:12px;border-radius:50%;background:#5CD8A6;box-shadow:0 0 0 0 rgba(92,216,166,.6);animation:pulso 1.8s infinite}
+.online.zero .dot{background:#6f6a85;box-shadow:none;animation:none}
+.online b{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.online .olabel{font-size:14px;color:#D2CEE6;font-weight:600}
+.online .opages{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.online .op{font-size:12px;font-weight:600;color:#D2CEE6;border:1px solid rgba(92,216,166,.4);border-radius:8px;padding:6px 11px}
+@keyframes pulso{0%{box-shadow:0 0 0 0 rgba(92,216,166,.55)}70%{box-shadow:0 0 0 10px rgba(92,216,166,0)}100%{box-shadow:0 0 0 0 rgba(92,216,166,0)}}
+@media(prefers-reduced-motion:reduce){.online .dot{animation:none}}
+.ptable{display:grid;grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(0,1fr));gap:10px 14px;align-items:center;font-size:14px}
+.ptable .h{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2)}
+.ptable .n{font-weight:600}
+.ptable .r{text-align:right}
+.ptable .m{color:var(--muted)}
+@media(max-width:560px){.ptable{font-size:13px;gap:10px 8px}}
 @media(max-width:1100px){.wrap{padding-left:40px;padding-right:40px}}
 @media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
 @media(max-width:560px){.wrap{padding:28px 20px 72px}.stat{padding:18px}.stat b{font-size:28px}}
@@ -61,13 +76,18 @@ button{font-family:inherit;cursor:pointer}
 <div class="wrap">
   <div class="pill">Área administrativa</div>
   <h1>Acessos ao site</h1>
-  <p class="sub">Quantas pessoas visitam a landing e a página de inscrição, de onde elas vêm, e quantas viram inscrição e pagamento.</p>
+  <p class="sub">Quantas pessoas visitam a landing, a inscrição, a lista de prioridade e o diagnóstico, de onde elas vêm, e quantas viram cadastro, inscrição e pagamento.</p>
   <div class="nav">
     <a href="/admin/acessos" class="on">Acessos</a>
     <a href="/admin/inscricoes">Inscrições</a>
     <a href="/admin/whatsapp">Conversas WhatsApp</a>
     <a href="/admin/diagnosticos">Diagnósticos</a>
     <a href="/admin/lista">Lista de prioridade</a>
+  </div>
+
+  <div class="online zero" id="online" aria-live="polite">
+    <span class="dot"></span><b id="nOnline">0</b><span class="olabel">online agora</span>
+    <div class="opages" id="opages"></div>
   </div>
 
   <div class="bar">
@@ -91,7 +111,7 @@ button{font-family:inherit;cursor:pointer}
   <div class="section grid2">
     <div>
       <h2>Funil de conversão</h2>
-      <p class="hint">Do visitante único até virar inscrição paga, no período selecionado.</p>
+      <p class="hint">Do visitante único da landing e da inscrição até virar inscrição paga, no período selecionado.</p>
       <div class="card"><div class="funnel" id="funnel"></div></div>
     </div>
     <div>
@@ -99,6 +119,12 @@ button{font-family:inherit;cursor:pointer}
       <p class="hint">Por UTM (campanhas de anúncio) ou pelo site de origem, quando identificável.</p>
       <div class="card"><div class="sources" id="sources"></div></div>
     </div>
+  </div>
+
+  <div class="section">
+    <h2>Por página</h2>
+    <p class="hint">Acessos e cadastros de cada página no período. Conversão = cadastros divididos pelos visitantes únicos da página.</p>
+    <div class="card"><div class="ptable" id="pages"></div></div>
   </div>
 </div>
 
@@ -164,7 +190,7 @@ button{font-family:inherit;cursor:pointer}
 
   function renderFunnel(d) {
     var box = $('funnel'); box.textContent = '';
-    var base = d.range.uniqueVisitors || 0;
+    var base = d.funnelUnique != null ? d.funnelUnique : (d.range.uniqueVisitors || 0);
     var steps = [
       ['Visitantes', base],
       ['Inscrições', d.range.leads],
@@ -228,6 +254,45 @@ button{font-family:inherit;cursor:pointer}
     });
   }
 
+  var PAGE_LABELS = { '/': 'Landing', '/inscricao': 'Inscrição', '/lista': 'Lista de prioridade', '/diagnostico': 'Diagnóstico' };
+  var CONV_LABELS = { '/inscricao': 'inscrições', '/lista': 'cadastros', '/diagnostico': 'diagnósticos' };
+
+  function renderPages(d) {
+    var box = $('pages'); box.textContent = '';
+    if (!d.pages || !d.pages.length) {
+      box.appendChild(el('div', 'empty', 'Sem acessos no período.'));
+      box.style.display = 'block';
+      return;
+    }
+    box.style.display = '';
+    ['Página', 'Acessos', 'Únicos', 'Cadastros', 'Conversão'].forEach(function (h, i) {
+      box.appendChild(el('div', 'h' + (i ? ' r' : ''), h));
+    });
+    d.pages.forEach(function (p) {
+      box.appendChild(el('div', 'n', PAGE_LABELS[p.path] || p.path));
+      box.appendChild(el('div', 'r', fmtInt(p.visits)));
+      box.appendChild(el('div', 'r', fmtInt(p.uniqueVisitors)));
+      if (p.conversions == null) {
+        box.appendChild(el('div', 'r m', '-'));
+        box.appendChild(el('div', 'r m', '-'));
+      } else {
+        box.appendChild(el('div', 'r', fmtInt(p.conversions) + ' ' + CONV_LABELS[p.path]));
+        box.appendChild(el('div', 'r', pct(p.conversions, p.uniqueVisitors) + '%'));
+      }
+    });
+  }
+
+  function loadOnline() {
+    return api('/admin/api/online').then(function (o) {
+      $('nOnline').textContent = fmtInt(o.total);
+      $('online').className = 'online' + (o.total ? '' : ' zero');
+      var box = $('opages'); box.textContent = '';
+      Object.keys(o.pages).forEach(function (k) {
+        if (o.pages[k] > 0) box.appendChild(el('span', 'op', (o.labels[k] || k) + ': ' + o.pages[k]));
+      });
+    }).catch(function () {});
+  }
+
   function load() {
     renderChips();
     return api('/admin/api/stats?days=' + days).then(function (d) {
@@ -235,13 +300,16 @@ button{font-family:inherit;cursor:pointer}
       renderFunnel(d);
       renderSources(d);
       renderChart(d);
+      renderPages(d);
     }).catch(function () {
       $('todayLine').textContent = 'Não foi possível carregar as estatísticas. Recarregue a página.';
     });
   }
 
   load();
+  loadOnline();
   setInterval(load, 30000);
+  setInterval(loadOnline, 10000);
 })();
 </script>
 </body>

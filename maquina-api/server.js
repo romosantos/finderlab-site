@@ -700,28 +700,42 @@ function extractHost(url) {
   }
 }
 
+// Id anônimo do visitante (cookie mdv). Cria e grava o cookie se ainda não existir.
+function getOrSetVisitorId(req, res) {
+  const cookieHeader = req.headers.cookie || '';
+  const match = cookieHeader.match(new RegExp('(?:^|;\\s*)' + VISITOR_COOKIE + '=([a-f0-9-]{36})'));
+  let visitorId = match ? match[1] : '';
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    res.setHeader(
+      'Set-Cookie',
+      VISITOR_COOKIE + '=' + visitorId + '; Max-Age=31536000; Path=/; HttpOnly; Secure; SameSite=Lax'
+    );
+  }
+  return visitorId;
+}
+
+// Qual página foi aberta: domínio do diagnóstico, lista de prioridade, inscrição ou landing.
+function pageKeyFromRequest(req) {
+  if (/diagnostico/i.test(req.hostname || '')) return '/diagnostico';
+  if (req.path === '/lista' || req.path === '/lista.html') return '/lista';
+  if (req.path === '/' || req.path === '/index.html') return '/';
+  return '/inscricao';
+}
+
 async function trackPageView(req, res) {
   try {
     const ua = req.headers['user-agent'] || '';
     if (BOT_UA_RE.test(ua)) return;
 
-    const cookieHeader = req.headers.cookie || '';
-    const match = cookieHeader.match(new RegExp('(?:^|;\\s*)' + VISITOR_COOKIE + '=([a-f0-9-]{36})'));
-    let visitorId = match ? match[1] : '';
-    if (!visitorId) {
-      visitorId = crypto.randomUUID();
-      res.setHeader(
-        'Set-Cookie',
-        VISITOR_COOKIE + '=' + visitorId + '; Max-Age=31536000; Path=/; HttpOnly; Secure; SameSite=Lax'
-      );
-    }
+    const visitorId = getOrSetVisitorId(req, res);
 
     const referrer = clean(req.headers.referer || req.headers.referrer, 500);
     const referrerHost = referrer ? extractHost(referrer) : '';
     const utmSource = clean(req.query.utm_source, 80);
     const utmMedium = clean(req.query.utm_medium, 80);
     const utmCampaign = clean(req.query.utm_campaign, 120);
-    const pagePath = req.path === '/' || req.path === '/index.html' ? '/' : '/inscricao';
+    const pagePath = pageKeyFromRequest(req);
 
     await pool.query(
       `INSERT INTO page_views (path, visitor_id, referrer, referrer_host, utm_source, utm_medium, utm_campaign, user_agent)
@@ -2052,13 +2066,24 @@ app.get('/admin/api/lista.csv', async (_req, res) => {
   res.send('﻿' + lines.join('\r\n'));
 });
 
+app.get('/admin/api/online', (_req, res) => {
+  const now = Date.now();
+  const pages = {};
+  Object.keys(ONLINE_PAGES).forEach((k) => { pages[k] = 0; });
+  let total = 0;
+  for (const v of onlineVisitors.values()) {
+    if (now - v.at <= ONLINE_TTL_MS) { total += 1; pages[v.page] += 1; }
+  }
+  res.json({ total, pages, labels: ONLINE_PAGES });
+});
+
 app.get('/admin/api/stats', async (req, res) => {
   try {
     const days = Math.min(180, Math.max(1, Number(req.query.days) || 30));
     const TZ = 'America/Sao_Paulo';
     const num = (v) => Number(v || 0);
 
-    const [totals, range, today, series, sources] = await Promise.all([
+    const [totals, range, today, series, sources, byPage, funnelQ, convQ] = await Promise.all([
       pool.query(`
         SELECT
           (SELECT COUNT(*) FROM page_views) AS visits,
@@ -2128,6 +2153,25 @@ app.get('/admin/api/stats', async (req, res) => {
         `,
         [days]
       ),
+      pool.query(
+        `SELECT path, COUNT(*) AS visits, COUNT(DISTINCT visitor_id) AS unique_visitors
+         FROM page_views WHERE created_at >= now() - make_interval(days => $1)
+         GROUP BY path ORDER BY visits DESC`,
+        [days]
+      ),
+      // Funil do curso: só visitantes da landing e da inscrição (lista e diagnóstico têm funil próprio)
+      pool.query(
+        `SELECT COUNT(DISTINCT visitor_id) AS u FROM page_views
+         WHERE path IN ('/', '/inscricao') AND created_at >= now() - make_interval(days => $1)`,
+        [days]
+      ),
+      pool.query(
+        `SELECT
+           (SELECT COUNT(*) FROM leads WHERE created_at >= now() - make_interval(days => $1)) AS inscricao,
+           (SELECT COUNT(*) FROM lista_interesse WHERE created_at >= now() - make_interval(days => $1)) AS lista,
+           (SELECT COUNT(*) FROM diagnostico_leads WHERE created_at >= now() - make_interval(days => $1)) AS diagnostico`,
+        [days]
+      ),
     ]);
 
     const t = totals.rows[0], r = range.rows[0], td = today.rows[0];
@@ -2141,6 +2185,15 @@ app.get('/admin/api/stats', async (req, res) => {
         date: row.day, visits: num(row.visits), uniqueVisitors: num(row.unique_visitors), leads: num(row.leads),
       })),
       sources: sources.rows.map((row) => ({ source: row.source || '', visits: num(row.visits), uniqueVisitors: num(row.unique_visitors) })),
+      funnelUnique: num(funnelQ.rows[0].u),
+      pages: byPage.rows.map((row) => ({
+        path: row.path,
+        visits: num(row.visits),
+        uniqueVisitors: num(row.unique_visitors),
+        conversions: row.path === '/inscricao' ? num(convQ.rows[0].inscricao)
+          : row.path === '/lista' ? num(convQ.rows[0].lista)
+          : row.path === '/diagnostico' ? num(convQ.rows[0].diagnostico) : null,
+      })),
     });
   } catch (err) {
     console.error('GET /admin/api/stats', err);
@@ -2187,8 +2240,36 @@ app.get('/admin/api/whatsapp/conversations/:phone', async (req, res) => {
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
+// ---------- "Online agora" (aba Acessos do admin) ----------
+// As páginas públicas mandam um aviso a cada 30 s enquanto a aba está aberta e visível
+// (public/online.js). Só guardamos em memória quem avisou no último minuto: não grava
+// nada no banco, e zera sozinho quando o servidor reinicia.
+const ONLINE_PAGES = { landing: 'Landing', inscricao: 'Inscrição', lista: 'Lista de prioridade', diagnostico: 'Diagnóstico' };
+const ONLINE_TTL_MS = 75 * 1000;
+const onlineVisitors = new Map(); // visitorId -> { page, at }
+
+const pingLimiter = rateLimit({ windowMs: 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false });
+
+app.post('/t/ping', pingLimiter, (req, res) => {
+  try {
+    const ua = req.headers['user-agent'] || '';
+    const page = req.body && typeof req.body.p === 'string' ? req.body.p : '';
+    if (!BOT_UA_RE.test(ua) && Object.prototype.hasOwnProperty.call(ONLINE_PAGES, page)) {
+      const visitorId = getOrSetVisitorId(req, res); // grava o cookie antes de responder
+      const now = Date.now();
+      onlineVisitors.set(visitorId, { page, at: now });
+      if (onlineVisitors.size > 2000) {
+        for (const [id, v] of onlineVisitors) if (now - v.at > ONLINE_TTL_MS) onlineVisitors.delete(id);
+      }
+    }
+  } catch (err) {
+    console.error('POST /t/ping', err && err.message ? err.message : err);
+  }
+  res.status(204).end();
+});
+
 // Conta o acesso (sem bloquear a resposta) antes de servir a página estática.
-app.get(['/', '/index.html', '/inscricao', '/inscricao.html'], (req, res, next) => {
+app.get(['/', '/index.html', '/inscricao', '/inscricao.html', '/lista', '/lista.html'], (req, res, next) => {
   trackPageView(req, res).catch(() => {});
   next();
 });
