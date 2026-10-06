@@ -21,7 +21,7 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
   .map((s) => s.trim())
   .filter(Boolean);
 // Usado como originUrl quando não existe req HTTP pra derivar um (fluxo do WhatsApp).
-const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://maquina.finderlab.com.br';
+const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.maquina.finderlab.com.br';
 
 // Modelo padrão. Se um modelo mais novo estiver disponível, defina ANTHROPIC_MODEL
 // no Railway em vez de mudar aqui. Lista atual em: https://docs.claude.com/en/docs/about-claude/models
