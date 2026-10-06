@@ -71,8 +71,17 @@ const STATUSES = ['novo', 'contatado', 'pago'];
 // ---------- agente de chat: persona + base de conhecimento ----------
 let SYSTEM_PROMPT = '';
 let REGISTRATION_TERMS = '';
+function semValoresParaLista(texto) {
+  const DROP = /^- (Investimento|Manutenção do agente após o curso|Cancelamento):|^O agente fica hospedado na infraestrutura|^\*\*"Está caro\."|^\*\*"O agente fica funcionando|Parcelamento para os pacotes|novos valores para 2 e 3|^Os itens 1 a 10 já foram respondidos/;
+  let out = String(texto).split('\n').filter((l) => !DROP.test(l)).join('\n');
+  out = out.replace(/, o mesmo processo que a Finder Lab cobra R\$ 5\.000 para fazer sob demanda/g, '');
+  out = out.replace(/ É o mesmo processo que a Finder Lab constrói para clientes que contratam isso à parte, por R\$ 5\.000\. O agente pode citar esse valor como referência do que o curso já inclui, nunca como desconto ou promoção\./g, '');
+  return out;
+}
+
 let DIAGNOSTIC_ADDENDUM = '';
 let LISTA_ADDENDUM = '';
+let LISTA_PROMPT_BASE = '';
 let chatReady = false;
 try {
   const instructions = fs.readFileSync(path.join(__dirname, 'knowledge', 'system-instructions.md'), 'utf8');
@@ -80,6 +89,15 @@ try {
   REGISTRATION_TERMS = extractRegistrationTerms(fs.readFileSync(path.join(__dirname, 'public', 'inscricao.html'), 'utf8'));
   SYSTEM_PROMPT = instructions + '\n\n---\n\n# BASE DE CONHECIMENTO (fonte de verdade, use só o que está aqui)\n\n' + knowledge +
     '\n\n---\n\n# TERMOS PUBLICADOS NA PÁGINA DE INSCRIÇÃO (texto completo e oficial)\n\n' + REGISTRATION_TERMS;
+  // Versão do prompt para a página /lista: sem preço, parcelamento, mensalidade, cancelamento nem
+  // os termos de inscrição. Não basta pedir no addendum que o Drigo não fale disso: se o texto
+  // está no que ele lê, vaza (já vazou o "R$ 5.000" do agente sob demanda). Aqui some do contexto.
+  LISTA_PROMPT_BASE = semValoresParaLista(
+    instructions + '\n\n---\n\n# BASE DE CONHECIMENTO (fonte de verdade, use só o que está aqui)\n\n' + knowledge
+  );
+  if (/R\$|mensalidade|manuten[çc][ãa]o do agente/i.test(LISTA_PROMPT_BASE)) {
+    console.error('AVISO: o prompt do modo lista ainda contém termos de valores. Revise semValoresParaLista().');
+  }
   chatReady = true;
 } catch (err) {
   console.error('Não foi possível carregar as instruções, a base de conhecimento ou os termos de inscrição. O agente de chat ficará desligado.', err.message);
@@ -1210,6 +1228,7 @@ function stripMarkdown(text) {
   out = out.replace(/^\s{0,3}#{1,6}\s+/gm, '');
   out = out.replace(/^\s*[-*•]\s+/gm, '');
   out = out.replace(/^\s*\d+[.)]\s+/gm, '');
+  out = out.replace(/\s*—\s*/g, ', '); // regra da casa: nunca travessão (o modelo ainda escapa às vezes)
   return out.trim();
 }
 
@@ -1606,11 +1625,11 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
     // Modo lista: pedido pela página /lista. Sem ferramentas (não há inscrição nem pagamento
     // nessa etapa), então nada do que o cliente mandar consegue disparar registro ou cobrança.
     const isLista = b.modo === 'lista' && !isDiagnostico;
-    if (isLista && !LISTA_ADDENDUM) {
+    if (isLista && (!LISTA_ADDENDUM || !LISTA_PROMPT_BASE)) {
       return res.status(503).json({ error: 'O assistente está indisponível no momento. Fala com a gente pelo WhatsApp (11) 3164-3783.' });
     }
     let systemPrompt = isLista
-      ? SYSTEM_PROMPT + '\n\n---\n\n# MODO LISTA DE PRIORIDADE (ativo nesta conversa)\n\n' + LISTA_ADDENDUM
+      ? LISTA_PROMPT_BASE + '\n\n---\n\n# MODO LISTA DE PRIORIDADE (ativo nesta conversa)\n\n' + LISTA_ADDENDUM
       : isDiagnostico && DIAGNOSTIC_ADDENDUM
       ? SYSTEM_PROMPT + '\n\n---\n\n# MODO DIAGNÓSTICO (ativo nesta conversa)\n\n' + DIAGNOSTIC_ADDENDUM
       : SYSTEM_PROMPT;
