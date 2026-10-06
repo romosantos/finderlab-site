@@ -72,12 +72,42 @@ const STATUSES = ['novo', 'contatado', 'pago'];
 let SYSTEM_PROMPT = '';
 let REGISTRATION_TERMS = '';
 function semValoresParaLista(texto) {
-  const DROP = /^- (Investimento|Manutenção do agente após o curso|Cancelamento):|^O agente fica hospedado na infraestrutura|^\*\*"Está caro\."|^\*\*"O agente fica funcionando|Parcelamento para os pacotes|novos valores para 2 e 3|^Os itens 1 a 10 já foram respondidos/;
+  const DROP = /^- Formulário de inscrição:|^- (Investimento|Manutenção do agente após o curso|Cancelamento):|^O agente fica hospedado na infraestrutura|^\*\*"Está caro\."|^\*\*"O agente fica funcionando|Parcelamento para os pacotes|novos valores para 2 e 3|^Os itens 1 a 10 já foram respondidos/;
   let out = String(texto).split('\n').filter((l) => !DROP.test(l)).join('\n');
   out = out.replace(/, o mesmo processo que a Finder Lab cobra R\$ 5\.000 para fazer sob demanda/g, '');
   out = out.replace(/ É o mesmo processo que a Finder Lab constrói para clientes que contratam isso à parte, por R\$ 5\.000\. O agente pode citar esse valor como referência do que o curso já inclui, nunca como desconto ou promoção\./g, '');
   return out;
 }
+
+// Remove do texto as seções cujo título começa com um dos prefixos (ex.: '# INSCRIÇÃO PELO CHAT'),
+// junto com as subseções, até o próximo título de mesmo nível ou acima. Só opera na cópia em
+// memória: os arquivos em knowledge/ continuam completos.
+function semSecoes(texto, prefixos) {
+  const linhas = String(texto).split('\n');
+  const out = [];
+  let nivelPulando = 0;
+  for (const l of linhas) {
+    const m = /^(#{1,6}) /.exec(l);
+    if (m) {
+      const nivel = m[1].length;
+      if (nivelPulando && nivel <= nivelPulando) nivelPulando = 0;
+      if (!nivelPulando && prefixos.some((p) => l.startsWith(p))) { nivelPulando = nivel; continue; }
+    }
+    if (!nivelPulando) out.push(l);
+  }
+  return out.join('\n');
+}
+
+// Seções que o modo lista não usa (inscrição, consentimento e termos de pagamento pelo chat).
+// Ficam guardadas nos arquivos e no SYSTEM_PROMPT cheio, para a turma aberta. Menos texto
+// para ler = primeira resposta mais rápida e menos chance de falar de valor ou de inscrição.
+const LISTA_SECOES_FORA_INSTRUCOES = [
+  '# CONDUÇÃO COMERCIAL ATÉ A INSCRIÇÃO',
+  '# INSCRIÇÃO PELO CHAT',
+  '# CONCORDÂNCIA NA ETAPA DE AUTORIZAÇÃO',
+  '# TERMOS NA PRÓPRIA CONVERSA',
+];
+const LISTA_SECOES_FORA_BASE = ['## 4.1 Termos de uso'];
 
 let DIAGNOSTIC_ADDENDUM = '';
 let LISTA_ADDENDUM = '';
@@ -93,8 +123,11 @@ try {
   // os termos de inscrição. Não basta pedir no addendum que o Drigo não fale disso: se o texto
   // está no que ele lê, vaza (já vazou o "R$ 5.000" do agente sob demanda). Aqui some do contexto.
   LISTA_PROMPT_BASE = semValoresParaLista(
-    instructions + '\n\n---\n\n# BASE DE CONHECIMENTO (fonte de verdade, use só o que está aqui)\n\n' + knowledge
+    semSecoes(instructions, LISTA_SECOES_FORA_INSTRUCOES).replace('Para inscrição use https://www.maquina.finderlab.com.br/inscricao; ', '') +
+      '\n\n---\n\n# BASE DE CONHECIMENTO (fonte de verdade, use só o que está aqui)\n\n' +
+      semSecoes(knowledge, LISTA_SECOES_FORA_BASE)
   );
+  console.log('Prompt do modo lista: ' + LISTA_PROMPT_BASE.length + ' caracteres (prompt cheio: ' + SYSTEM_PROMPT.length + ')');
   if (/R\$|mensalidade|manuten[çc][ãa]o do agente/i.test(LISTA_PROMPT_BASE)) {
     console.error('AVISO: o prompt do modo lista ainda contém termos de valores. Revise semValoresParaLista().');
   }
