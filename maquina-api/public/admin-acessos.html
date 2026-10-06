@@ -58,6 +58,12 @@ button{font-family:inherit;cursor:pointer}
 .online b{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1}
 .online .olabel{font-size:14px;color:#D2CEE6;font-weight:600}
 .online .opages{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.online .olist{flex-basis:100%;display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.online .olist:empty{display:none}
+.online .orow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) minmax(0,.8fr) 80px;gap:12px;font-size:13px;color:#D2CEE6;padding-top:8px;border-top:1px solid rgba(92,216,166,.2)}
+.online .orow .t{text-align:right;color:var(--muted)}
+.online .orow .m{color:var(--muted)}
+@media(max-width:560px){.online .orow{grid-template-columns:1fr 1fr}.online .orow .t{text-align:left}}
 .online .op{font-size:12px;font-weight:600;color:#D2CEE6;border:1px solid rgba(92,216,166,.4);border-radius:8px;padding:6px 11px}
 @keyframes pulso{0%{box-shadow:0 0 0 0 rgba(92,216,166,.55)}70%{box-shadow:0 0 0 10px rgba(92,216,166,0)}100%{box-shadow:0 0 0 0 rgba(92,216,166,0)}}
 @media(prefers-reduced-motion:reduce){.online .dot{animation:none}}
@@ -88,6 +94,7 @@ button{font-family:inherit;cursor:pointer}
   <div class="online zero" id="online" aria-live="polite">
     <span class="dot"></span><b id="nOnline">0</b><span class="olabel">online agora</span>
     <div class="opages" id="opages"></div>
+    <div class="olist" id="olist"></div>
   </div>
 
   <div class="bar">
@@ -289,6 +296,16 @@ button{font-family:inherit;cursor:pointer}
       var box = $('opages'); box.textContent = '';
       Object.keys(o.pages).forEach(function (k) {
         if (o.pages[k] > 0) box.appendChild(el('span', 'op', (o.labels[k] || k) + ': ' + o.pages[k]));
+      });
+      var list = $('olist'); list.textContent = '';
+      (o.visitors || []).forEach(function (v) {
+        var row = el('div', 'orow');
+        row.appendChild(el('div', null, o.labels[v.page] || v.page));
+        var origem = labelSource(v.source) + (v.campaign ? ' · ' + v.campaign : '');
+        row.appendChild(el('div', null, 'Origem: ' + origem));
+        row.appendChild(el('div', 'm', v.device));
+        row.appendChild(el('div', 't', v.seconds < 60 ? 'agora' : 'há ' + Math.floor(v.seconds / 60) + ' min'));
+        list.appendChild(row);
       });
     }).catch(function () {});
   }

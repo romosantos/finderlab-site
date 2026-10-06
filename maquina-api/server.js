@@ -2066,15 +2066,39 @@ app.get('/admin/api/lista.csv', async (_req, res) => {
   res.send('﻿' + lines.join('\r\n'));
 });
 
-app.get('/admin/api/online', (_req, res) => {
+app.get('/admin/api/online', async (_req, res) => {
   const now = Date.now();
   const pages = {};
   Object.keys(ONLINE_PAGES).forEach((k) => { pages[k] = 0; });
-  let total = 0;
-  for (const v of onlineVisitors.values()) {
-    if (now - v.at <= ONLINE_TTL_MS) { total += 1; pages[v.page] += 1; }
+  const ativos = [];
+  for (const [id, v] of onlineVisitors) {
+    if (now - v.at <= ONLINE_TTL_MS) { ativos.push([id, v]); pages[v.page] += 1; }
   }
-  res.json({ total, pages, labels: ONLINE_PAGES });
+  // Origem de cada pessoa online: vem do último acesso registrado dela (UTM ou site de origem).
+  const origem = new Map();
+  if (ativos.length) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT DISTINCT ON (visitor_id) visitor_id,
+                COALESCE(NULLIF(utm_source, ''), NULLIF(referrer_host, ''), '') AS source,
+                utm_campaign AS campaign
+         FROM page_views WHERE visitor_id = ANY($1)
+         ORDER BY visitor_id, created_at DESC`,
+        [ativos.map(([id]) => id)]
+      );
+      rows.forEach((r) => origem.set(r.visitor_id, r));
+    } catch (err) {
+      console.error('GET /admin/api/online (origem)', err && err.message ? err.message : err);
+    }
+  }
+  const visitors = ativos
+    .sort((a, b) => a[1].since - b[1].since)
+    .slice(0, 30)
+    .map(([id, v]) => {
+      const o = origem.get(id) || {};
+      return { page: v.page, device: v.device, source: o.source || '', campaign: o.campaign || '', seconds: Math.round((now - v.since) / 1000) };
+    });
+  res.json({ total: ativos.length, pages, labels: ONLINE_PAGES, visitors });
 });
 
 app.get('/admin/api/stats', async (req, res) => {
@@ -2257,7 +2281,14 @@ app.post('/t/ping', pingLimiter, (req, res) => {
     if (!BOT_UA_RE.test(ua) && Object.prototype.hasOwnProperty.call(ONLINE_PAGES, page)) {
       const visitorId = getOrSetVisitorId(req, res); // grava o cookie antes de responder
       const now = Date.now();
-      onlineVisitors.set(visitorId, { page, at: now });
+      const prev = onlineVisitors.get(visitorId);
+      const continua = prev && now - prev.at <= ONLINE_TTL_MS && prev.page === page;
+      onlineVisitors.set(visitorId, {
+        page,
+        at: now,
+        since: continua ? prev.since : now,
+        device: /Mobi|Android|iPhone|iPad/i.test(ua) ? 'celular' : 'computador',
+      });
       if (onlineVisitors.size > 2000) {
         for (const [id, v] of onlineVisitors) if (now - v.at > ONLINE_TTL_MS) onlineVisitors.delete(id);
       }
