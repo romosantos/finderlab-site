@@ -59,6 +59,8 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
 .ok p{margin:12px 0 0;color:#D2CEE6;font-size:15px;line-height:1.7}
 :focus-visible{outline:2px solid #A88BFF;outline-offset:3px}
 
+.chat-note{padding:8px 14px 10px;font-size:11.5px;line-height:1.5;color:var(--muted)}
+.chat-note button{background:none;border:0;padding:0;margin-left:4px;color:var(--accent2);font:inherit;text-decoration:underline;cursor:pointer}
 .askbtn{width:100%;margin-top:14px;min-height:48px;border-radius:12px;border:1.5px solid rgba(168,139,255,.55);background:transparent;color:var(--accent2);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .askbtn:hover{background:rgba(116,67,245,.14)}
 .chat{display:none;margin-top:14px;border:1px solid rgba(124,84,245,.5);background:#0C0A1A;border-radius:18px;overflow:hidden}
@@ -159,6 +161,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
             <textarea id="chat-input" autocomplete="off" placeholder="Escreve aqui..." aria-label="Sua mensagem" maxlength="600" rows="1"></textarea>
             <button type="submit" class="chat-send" id="chat-send" disabled aria-label="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
           </form>
+          <div class="chat-note" id="chat-note">Para retomar a conversa depois, guardo neste aparelho só seu primeiro nome e o assunto. <button type="button" id="mem-clear">Apagar</button></div>
         </div>
       </div>
     </section>
@@ -241,7 +244,11 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
           submit.disabled = false; submit.textContent = 'Entrar na lista';
           return;
         }
-        showOk($('nome').value.trim().split(' ')[0]);
+        var primeiroNome = $('nome').value.trim().split(' ')[0];
+        curMem.naLista = true;
+        if (primeiroNome) curMem.nome = primeiroNome.replace(/[^A-Za-zÀ-ÿ' -]/g, '').slice(0, 30);
+        memSave(curMem);
+        showOk(primeiroNome);
       })
       .catch(function () {
         formerr.textContent = 'Sem conexão agora. Tenta de novo em instantes ou fala com a gente pelo WhatsApp (11) 3164-3783.';
@@ -254,6 +261,58 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
   var chat = $('chat'), chatBody = $('chat-body'), chatForm = $('chat-form'), chatInput = $('chat-input'), chatSend = $('chat-send');
   var chatSession = 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   var chatLoading = false;
+
+  // ---------- memória de visita (só neste aparelho: primeiro nome, assunto, se já está na lista) ----------
+  var MEM_KEY = 'drigoListaMemoria1', memOff = false;
+  function memLoad() {
+    try {
+      var m = JSON.parse(localStorage.getItem(MEM_KEY) || 'null');
+      if (!m || m.v !== 1 || typeof m !== 'object') return null;
+      if (Date.now() - (m.at || 0) > 60 * 86400000) { localStorage.removeItem(MEM_KEY); return null; }
+      return { v: 1, nome: String(m.nome || '').trim().split(/\s+/)[0].replace(/[^A-Za-zÀ-ÿ'-]/g, '').slice(0, 30), resumo: String(m.resumo || '').replace(/[<>{}\[\]\\"]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 100), naLista: m.naLista === true };
+    } catch (e) { return null; }
+  }
+  function memSave(m) {
+    if (memOff) return;
+    try { m.v = 1; m.at = Date.now(); localStorage.setItem(MEM_KEY, JSON.stringify(m)); } catch (e) {}
+  }
+  var prevMem = memLoad();
+  if (prevMem && !prevMem.nome && !prevMem.resumo && !prevMem.naLista) prevMem = null;
+  var curMem = prevMem ? { v: 1, nome: prevMem.nome, resumo: prevMem.resumo, naLista: prevMem.naLista } : { v: 1, nome: '', resumo: '', naLista: false };
+
+  function saudacaoDeVolta(m) {
+    var nome = m.nome ? ', ' + m.nome : '';
+    if (m.naLista) return 'Oi' + nome + '! Bom te ver de novo. Você já está na lista e a gente avisa você primeiro quando a turma abrir. Quer tirar alguma dúvida sobre a imersão?';
+    if (m.resumo) return 'Oi' + nome + '! Da última vez a gente falava sobre ' + m.resumo + '. Quer retomar daí ou tem outra dúvida?';
+    return 'Oi, ' + m.nome + '! Bom te ver de novo. O que você quer saber sobre a imersão?';
+  }
+  if (prevMem) {
+    var primeira = chatBody.querySelector('.chat-msg.bot');
+    if (primeira) primeira.textContent = saudacaoDeVolta(prevMem);
+    $('askbtn').textContent = 'Continuar a conversa com o Drigo';
+  }
+  $('mem-clear').addEventListener('click', function () {
+    memOff = true;
+    try { localStorage.removeItem(MEM_KEY); } catch (e) {}
+    this.parentNode.textContent = 'Apagado. Este aparelho não guarda mais nada da conversa.';
+  });
+  function lembrar(registrada) {
+    if (memOff) return;
+    var msgs = Array.prototype.slice.call(chatBody.querySelectorAll('.chat-msg.user, .chat-msg.bot'));
+    var nUser = msgs.filter(function (el) { return el.classList.contains('user'); }).length;
+    if (registrada) { curMem.naLista = true; memSave(curMem); }
+    if (!registrada && [1, 3, 6].indexOf(nUser) === -1) return;
+    var hist = msgs.slice(-12).map(function (el) { return { role: el.classList.contains('user') ? 'user' : 'assistant', content: el.dataset.message || el.textContent }; });
+    fetch('/chat/memoria', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: hist }) })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || memOff) return;
+        if (d.nome) curMem.nome = d.nome;
+        if (d.resumo) curMem.resumo = d.resumo;
+        if (curMem.nome || curMem.resumo || curMem.naLista) memSave(curMem);
+      })
+      .catch(function () {});
+  }
 
   $('askbtn').addEventListener('click', function () {
     var open = chat.style.display === 'block';
@@ -315,7 +374,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
     fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, history: history, sessionId: chatSession, stream: true, modo: 'lista', utm_source: params.get('utm_source') || '', utm_campaign: params.get('utm_campaign') || '' }),
+      body: JSON.stringify({ message: text, history: history, sessionId: chatSession, stream: true, modo: 'lista', memoria: prevMem || undefined, utm_source: params.get('utm_source') || '', utm_campaign: params.get('utm_campaign') || '' }),
       signal: ctrl.signal
     })
       .then(function (r) {
@@ -327,6 +386,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
             setLoading(false);
             addMsg('bot', data.reply);
             if (data.listaRegistrada) showOk('');
+            lembrar(data.listaRegistrada === true);
           });
         }
         var reader = r.body.getReader(), decoder = new TextDecoder(), buffer = '', finalPayload = null;
@@ -355,6 +415,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
               ensureBubble();
               window.DrigoChatLinks.render(streamDiv, finalPayload.reply);
               if (finalPayload.listaRegistrada) showOk('');
+              lembrar(finalPayload.listaRegistrada === true);
               return;
             }
             return pump();
