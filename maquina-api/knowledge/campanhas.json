@@ -1,0 +1,13 @@
+{
+  "_como_usar": "Edite este arquivo para dizer ao Drigo o que cada campanha promete. A chave em 'campanhas' é o valor exato de utm_campaign (minúsculas). Só campanhas listadas aqui chegam ao Drigo; qualquer outro valor é ignorado. Depois de editar, faça commit e push para publicar.",
+  "fontes": {
+    "instagram": "Instagram. Costuma chegar pelo celular, em leitura rápida: vá direto ao assunto, tom leve, frases curtas.",
+    "facebook": "Facebook. Costuma chegar pelo celular, em leitura rápida: vá direto ao assunto, tom leve, frases curtas.",
+    "linkedin": "LinkedIn. Perfil profissional, provavelmente gestor ou empresário: vá ao impacto no negócio, tom mais executivo.",
+    "google": "Busca no Google. Chegou procurando uma solução: valorize uma resposta objetiva ao que ela procura.",
+    "youtube": "YouTube. Já consumiu conteúdo antes de chegar: pode ter curiosidade sobre o método, não precisa de apresentação básica.",
+    "whatsapp": "Link recebido por WhatsApp, provavelmente indicação de alguém: pode ser a primeira vez que vê a proposta, explique o essencial.",
+    "email": "E-mail ou newsletter. Já tem alguma relação com a Finder Lab: pode ser mais direto."
+  },
+  "campanhas": {}
+}

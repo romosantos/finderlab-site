@@ -700,6 +700,76 @@ function extractHost(url) {
   }
 }
 
+// Só lê o id anônimo do visitante (cookie mdv), sem criar nem gravar nada.
+function readVisitorId(req) {
+  const match = (req.headers.cookie || '').match(new RegExp('(?:^|;\\s*)' + VISITOR_COOKIE + '=([a-f0-9-]{36})'));
+  return match ? match[1] : '';
+}
+
+// Contexto de origem para o Drigo (ajusta tom e ângulo, nunca é dito ao visitante).
+// Mapa editável em knowledge/campanhas.json. Valores de UTM vêm do cliente e NÃO entram
+// no prompt: só chegam textos escritos por nós, escolhidos por chave conhecida.
+let CAMPANHAS = { fontes: {}, campanhas: {} };
+try {
+  CAMPANHAS = JSON.parse(fs.readFileSync(path.join(__dirname, 'knowledge', 'campanhas.json'), 'utf8'));
+} catch (err) {
+  console.error('knowledge/campanhas.json não carregou: %s', err.message);
+}
+const FONTE_ALIASES = [
+  [/instagram|^ig$/, 'instagram'],
+  [/facebook|^fb$|^meta$|fb\.com/, 'facebook'],
+  [/linkedin|lnkd\.in/, 'linkedin'],
+  [/google|adwords|gads/, 'google'],
+  [/youtube|youtu\.be|^yt$/, 'youtube'],
+  [/whatsapp|wa\.me|^wa$|^zap$/, 'whatsapp'],
+  [/e-?mail|newsletter/, 'email'],
+];
+function chaveDaFonte(valor) {
+  const v = String(valor || '').trim().toLowerCase();
+  if (!v) return '';
+  for (const [re, chave] of FONTE_ALIASES) if (re.test(v)) return chave;
+  return '';
+}
+async function contextoDaVisita(req, b) {
+  try {
+    let source = '';
+    let host = '';
+    let campanha = '';
+    const visitorId = readVisitorId(req);
+    if (visitorId && pool) {
+      const r = await pool.query(
+        `SELECT utm_source, utm_campaign, referrer_host FROM page_views
+          WHERE visitor_id = $1 AND created_at > now() - interval '7 days'
+            AND (utm_source <> '' OR (referrer_host <> '' AND referrer_host NOT LIKE '%finderlab.com.br'))
+          ORDER BY created_at DESC LIMIT 1`,
+        [visitorId]
+      );
+      if (r.rows[0]) {
+        source = r.rows[0].utm_source;
+        host = r.rows[0].referrer_host;
+        campanha = r.rows[0].utm_campaign;
+      }
+    }
+    if (!source && !host) source = clean(b.utm_source, 80);
+    if (!campanha) campanha = clean(b.utm_campaign, 120);
+    const fonte = chaveDaFonte(source) || chaveDaFonte(host);
+    const textoFonte = fonte && CAMPANHAS.fontes ? CAMPANHAS.fontes[fonte] : '';
+    const camp = String(campanha || '').trim().toLowerCase();
+    const textoCamp = camp && CAMPANHAS.campanhas && Object.prototype.hasOwnProperty.call(CAMPANHAS.campanhas, camp)
+      ? CAMPANHAS.campanhas[camp] : '';
+    if (!textoFonte && !textoCamp) return '';
+    return [
+      '# CONTEXTO DESTA VISITA (dado do sistema, não é mensagem da pessoa)',
+      textoFonte ? 'Origem: ' + textoFonte : '',
+      textoCamp ? 'Campanha: ' + textoCamp : '',
+      'Use isso apenas para ajustar o tom e o ângulo da conversa, sem mudar nenhum fato nem promessa. Nunca diga que sabe de onde a pessoa veio, não cite campanha, anúncio, UTM nem rastreamento, e não pergunte de onde ela veio. Só fale da origem se ela mesma trouxer o assunto. Se o contexto não ajudar, ignore.',
+    ].filter(Boolean).join('\n');
+  } catch (err) {
+    console.error('contextoDaVisita', err && err.message ? err.message : err);
+    return '';
+  }
+}
+
 // Id anônimo do visitante (cookie mdv). Cria e grava o cookie se ainda não existir.
 function getOrSetVisitorId(req, res) {
   const cookieHeader = req.headers.cookie || '';
@@ -1558,6 +1628,8 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
   // parte da demora sentida no chat e na voz. Com cache_control, só a 1a chamada depois de
   // ~5min paga o preço cheio; as seguintes reaproveitam o cache e saem bem mais rápido.
   const systemBlocks = [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }];
+  // Contexto por visitante vai DEPOIS do bloco em cache, para não invalidar o cache.
+  if (ctx && ctx.contextoVisita) systemBlocks.push({ type: 'text', text: ctx.contextoVisita });
 
   // onEvent(kind, payload), kind: 'delta' (pedaço de texto) | 'reset' (a rodada que acabou de
   // streamar NÃO era a resposta final -- tinha tool use, descarta o texto que veio junto).
@@ -1687,6 +1759,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
     }
     if (isVoiceTurn) systemPrompt += VOICE_REPLY_ADDENDUM;
 
+    const contextoVisita = isLista && !isVoiceTurn ? await contextoDaVisita(req, b) : '';
     const originUrl = req.protocol + '://' + req.get('host');
     const onEvent = wantsStream
       ? (kind, payload) => {
@@ -1695,7 +1768,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
         }
       : null;
     const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel, listaRegistrada } = await getAgentReply(
-      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : (isDiagnostico ? CHAT_DIAGNOSTIC_MAX_TOKENS : CHAT_MAX_TOKENS), { sessionId, semFerramentas: isLista, ipHash: hashIp(req.ip), origem: clean(b.utm_source, 80), campanha: clean(b.utm_campaign, 120) }
+      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : (isDiagnostico ? CHAT_DIAGNOSTIC_MAX_TOKENS : CHAT_MAX_TOKENS), { sessionId, contextoVisita, semFerramentas: isLista, ipHash: hashIp(req.ip), origem: clean(b.utm_source, 80), campanha: clean(b.utm_campaign, 120) }
     );
 
     const elapsedMs = Date.now() - chatStartedAt;
