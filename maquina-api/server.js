@@ -677,6 +677,26 @@ async function migrate() {
       updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     CREATE UNIQUE INDEX IF NOT EXISTS lista_interesse_email_uidx ON lista_interesse ((lower(email)));
+
+    -- Pedidos de contratação de serviços da Finder Lab (consultoria, agente sob medida, in company),
+    -- captados pelo Drigo antes de passar os contatos do Rodrigo.
+    CREATE TABLE IF NOT EXISTS contatos_servico (
+      id                  SERIAL PRIMARY KEY,
+      nome                TEXT NOT NULL,
+      email               TEXT NOT NULL,
+      whats               TEXT NOT NULL DEFAULT '',
+      empresa             TEXT NOT NULL DEFAULT '',
+      cargo               TEXT NOT NULL DEFAULT '',
+      necessidade         TEXT NOT NULL DEFAULT '',
+      session_id          TEXT NOT NULL DEFAULT '',
+      origem              TEXT NOT NULL DEFAULT '',
+      consentimento_texto TEXT NOT NULL DEFAULT '',
+      ip_hash             TEXT NOT NULL DEFAULT '',
+      notificado_em       TIMESTAMPTZ,
+      created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS contatos_servico_email_idx ON contatos_servico ((lower(email)), created_at DESC);
   `);
 }
 
@@ -1157,6 +1177,91 @@ async function sendListaEmail(to, nome) {
   }
 }
 
+// ---------- Contratação de serviços da Finder Lab: o Drigo capta quem é antes de passar os contatos ----------
+const SERVICO_NOTIFY_EMAIL = process.env.SERVICO_NOTIFY_EMAIL || 'rodrigo.moraes@finderlab.com.br';
+const SERVICO_CONSENTIMENTO = 'Aceitou, na conversa com o Drigo, ser contatada pelo Rodrigo (Finder Lab) por e-mail e WhatsApp sobre a contratação de serviços.';
+
+async function sendServicoEmail(c) {
+  if (!RESEND_API_KEY || !SERVICO_NOTIFY_EMAIL) return false;
+  const esc = (v) => String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const linhas = [
+    ['Nome', c.nome], ['E-mail', c.email], ['WhatsApp', c.whats], ['Empresa', c.empresa],
+    ['Cargo', c.cargo], ['O que quer resolver', c.necessidade],
+  ].filter(([, v]) => v);
+  const text = 'Novo pedido de contato sobre serviços da Finder Lab, captado pelo Drigo:\n\n'
+    + linhas.map(([k, v]) => `${k}: ${v}`).join('\n')
+    + '\n\nA pessoa aceitou ser contatada por e-mail e WhatsApp. Responder este e-mail fala direto com ela.';
+  const html = `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+    <p style="margin:0 0 16px"><b>Novo pedido de contato sobre serviços da Finder Lab</b>, captado pelo Drigo:</p>
+    <table style="border-collapse:collapse;width:100%">${linhas.map(([k, v]) => `<tr><td style="padding:6px 12px 6px 0;color:#555;vertical-align:top">${esc(k)}</td><td style="padding:6px 0">${esc(v)}</td></tr>`).join('')}</table>
+    <p style="margin:20px 0 0;color:#555">A pessoa aceitou ser contatada por e-mail e WhatsApp. Responder este e-mail fala direto com ela.</p>
+  </div>`;
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: EMAIL_FROM,
+        to: SERVICO_NOTIFY_EMAIL,
+        reply_to: c.email,
+        subject: `Contato sobre serviços: ${c.nome}${c.empresa ? ' (' + c.empresa + ')' : ''}`,
+        text,
+        html,
+      }),
+    });
+    if (!r.ok) {
+      console.error('Falha ao avisar o Rodrigo sobre contato de serviço', r.status, await r.text().catch(() => ''));
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Falha ao avisar o Rodrigo sobre contato de serviço', err && err.message ? err.message : err);
+    return false;
+  }
+}
+
+// Valida, grava e avisa o Rodrigo por e-mail. O mesmo e-mail em até 24h só atualiza o registro
+// (sem novo aviso), pra não duplicar se a conversa repetir a chamada.
+async function saveContatoServico(d, ctx) {
+  const nome = clean(d.nome, 120);
+  const email = clean(d.email, 160).toLowerCase();
+  const whats = clean(d.whats, 30);
+  const empresa = clean(d.empresa, 120);
+  const cargo = clean(d.cargo, 80);
+  const necessidade = clean(d.necessidade, 600);
+
+  const errors = {};
+  if (nome.length < 2) errors.nome = 'Falta o nome.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errors.email = 'E-mail inválido.';
+  const digitos = whats.replace(/\D/g, '');
+  if (digitos.length < 10 || digitos.length > 13) errors.whats = 'WhatsApp inválido, precisa do DDD.';
+  if (d.consentimento !== true) errors.consentimento = 'Falta o aceite explícito de contato.';
+  if (Object.keys(errors).length) return { ok: false, errors };
+
+  const dup = await pool.query(
+    `SELECT id FROM contatos_servico WHERE lower(email)=$1 AND created_at > now() - interval '24 hours' ORDER BY id DESC LIMIT 1`,
+    [email]
+  );
+  if (dup.rows.length) {
+    await pool.query(
+      `UPDATE contatos_servico SET nome=$2, whats=$3,
+         empresa=COALESCE(NULLIF($4,''), empresa), cargo=COALESCE(NULLIF($5,''), cargo),
+         necessidade=COALESCE(NULLIF($6,''), necessidade), updated_at=now() WHERE id=$1`,
+      [dup.rows[0].id, nome, whats, empresa, cargo, necessidade]
+    );
+    return { ok: true, novo: false };
+  }
+
+  const { rows } = await pool.query(
+    `INSERT INTO contatos_servico (nome, email, whats, empresa, cargo, necessidade, session_id, origem, consentimento_texto, ip_hash)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+    [nome, email, whats, empresa, cargo, necessidade, clean(ctx && ctx.sessionId, 80), clean(ctx && ctx.origem, 80), SERVICO_CONSENTIMENTO, (ctx && ctx.ipHash) || '']
+  );
+  const enviado = await sendServicoEmail({ nome, email, whats, empresa, cargo, necessidade });
+  if (enviado) await pool.query('UPDATE contatos_servico SET notificado_em=now() WHERE id=$1', [rows[0].id]);
+  return { ok: true, novo: true, avisado: enviado };
+}
+
 // Validação + gravação + confirmação por e-mail, compartilhada pelo formulário e pelo chat.
 // Devolve { ok: true, novo } ou { ok: false, errors }.
 async function saveLista(d, via) {
@@ -1484,6 +1589,24 @@ const CHAT_TOOLS = [
     },
   },
   {
+    name: 'registrar_contato_servico',
+    description:
+      'Registra o pedido de quem quer contratar a Finder Lab ou o Rodrigo como fornecedor (consultoria de IA, produto ou agente de IA sob medida, integração de IA, versão in company, grupo maior que 3 pessoas) e avisa o Rodrigo por e-mail. NÃO é a inscrição na imersão. Só chame depois de ter nome, email e WhatsApp com DDD informados pela pessoa nesta conversa, de ter repetido esses dados pra ela confirmar, e de ela ter dito explicitamente que sim à pergunta se o Rodrigo pode entrar em contato por email e WhatsApp. Nunca invente, deduza nem preencha campo sozinho. Chame uma única vez por pessoa. Se a pessoa não quiser deixar os dados, não chame: passe os contatos do Rodrigo.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        nome: { type: 'string', description: 'Nome informado pela pessoa.' },
+        email: { type: 'string', description: 'Email informado pela pessoa.' },
+        whats: { type: 'string', description: 'WhatsApp com DDD informado pela pessoa.' },
+        empresa: { type: 'string', description: 'Empresa, se a pessoa informou. Vazio se não.' },
+        cargo: { type: 'string', description: 'Cargo ou função, se a pessoa informou. Vazio se não.' },
+        necessidade: { type: 'string', description: 'Em uma ou duas frases, o que a pessoa quer resolver ou contratar, com as palavras dela. Vazio se ela não disse.' },
+        consentimento: { type: 'boolean', description: 'true somente se a pessoa disse explicitamente que o Rodrigo pode entrar em contato por email e WhatsApp.' },
+      },
+      required: ['nome', 'email', 'whats', 'consentimento'],
+    },
+  },
+  {
     name: 'gerar_pagamento_inscricao',
     description:
       'Registra a inscrição COM os dados de cobrança e devolve o link de pagamento do Asaas, pra pessoa terminar a inscrição inteira ali na conversa, sem precisar ir pro site. Só use esta ferramenta (em vez de registrar_inscricao) quando a própria pessoa tiver escolhido explicitamente terminar o cadastro e o pagamento ali com você, em vez de receber o link da página de inscrição. Colete cada campo separadamente, um de cada vez, nunca peça vários de uma vez. Antes de pedir o CPF/CNPJ, deixe claro que esse dado é só pra gerar o link de cobrança no Asaas, e que cartão e senha nunca são digitados no chat — isso acontece só na página segura do Asaas depois que o link é gerado. Repita todos os dados coletados num resumo e só chame a ferramenta depois de confirmação explícita ("sim", "confirmo", "pode gerar") de que os dados estão certos e de que a pessoa concorda com os termos de uso e privacidade (LGPD). Nunca invente, deduza ou preencha nenhum campo sozinho. Chame só uma vez por inscrição.',
@@ -1555,6 +1678,16 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
     } catch (err) {
       console.error('registrar_interesse_lista', err && err.message ? err.message : err);
       return { ok: false, error: 'Falha ao registrar agora. NÃO diga que registrou. Peça pra tentar de novo pelo formulário da página.' };
+    }
+  }
+  if (name === 'registrar_contato_servico') {
+    try {
+      const r = await saveContatoServico(toolInput || {}, ctx || {});
+      if (!r.ok) return { ok: false, erros: r.errors, instrucao: 'Faltou ou está inválido algum dado. Peça só o que falta, sem dizer que registrou.' };
+      return { ok: true, instrucao: 'Pedido registrado. Confirme em uma ou duas frases que o Rodrigo recebeu o pedido e vai entrar em contato, e só então passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br para quem preferir falar na hora. Não prometa prazo.' };
+    } catch (err) {
+      console.error('registrar_contato_servico', err && err.message ? err.message : err);
+      return { ok: false, error: 'Falha ao registrar agora. NÃO diga que registrou. Passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br do Rodrigo para a pessoa chamar direto.' };
     }
   }
   if (name === 'consultar_endereco_cep') return lookupCep(toolInput?.cep);
@@ -2181,6 +2314,11 @@ app.get('/admin/api/diagnosticos.csv', async (_req, res) => {
   res.set('Content-Type', 'text/csv; charset=utf-8');
   res.set('Content-Disposition', 'attachment; filename="diagnosticos-maquina-de-decisoes.csv"');
   res.send('﻿' + lines.join('\r\n'));
+});
+
+app.get('/admin/api/contatos', async (_req, res) => {
+  const { rows } = await pool.query('SELECT id, nome, email, whats, empresa, cargo, necessidade, origem, notificado_em, created_at FROM contatos_servico ORDER BY created_at DESC, id DESC');
+  res.json(rows);
 });
 
 app.get('/admin/lista', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-lista.html')));
