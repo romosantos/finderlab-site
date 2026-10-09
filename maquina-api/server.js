@@ -2321,6 +2321,13 @@ app.get('/admin/api/contatos', async (_req, res) => {
   res.json(rows);
 });
 
+app.delete('/admin/api/contatos/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Pedido inválido.' });
+  const { rowCount } = await pool.query('DELETE FROM contatos_servico WHERE id=$1', [id]);
+  res.status(rowCount ? 200 : 404).json({ ok: !!rowCount });
+});
+
 app.get('/admin/lista', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-lista.html')));
 
 app.get('/admin/api/lista', async (_req, res) => {
