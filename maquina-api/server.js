@@ -195,6 +195,38 @@ function calPickSuggestions(isos, max = 3) {
   return picks.sort();
 }
 
+
+// Dia, mês e hora de um instante, em Brasília.
+function calBrtParts(iso) {
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: CAL_TIMEZONE, day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date(iso));
+  const g = (t) => Number((parts.find((p) => p.type === t) || {}).value || 0);
+  return { day: g('day'), month: g('month'), hour: g('hour') === 24 ? 0 : g('hour'), minute: g('minute') };
+}
+
+// O modelo só enxerga o texto das mensagens anteriores, não o campo start devolvido pela consulta.
+// Por isso o horário escolhido pode chegar como ISO (com ou sem fuso) ou como "13/10 15h". Tudo é
+// resolvido contra os horários realmente livres e devolve o instante UTC exato, ou '' se nenhum bate.
+function calResolveSlot(input, livres) {
+  const raw = String(input || '').trim();
+  if (!raw) return '';
+  if (/(Z|[+-]\d{2}:?\d{2})$/i.test(raw)) {
+    const d = new Date(raw);
+    if (!isNaN(d.getTime()) && livres.includes(d.toISOString())) return d.toISOString();
+  }
+  let day, month, hour, minute = 0;
+  let m = raw.match(/\d{4}-(\d{2})-(\d{2})[T ](\d{1,2}):(\d{2})/);
+  if (m) { month = +m[1]; day = +m[2]; hour = +m[3]; minute = +m[4]; }
+  else if ((m = raw.match(/(\d{1,2})\s*[\/-]\s*(\d{1,2}).*?(\d{1,2})\s*(?:h|:)\s*(\d{2})?/i))) {
+    day = +m[1]; month = +m[2]; hour = +m[3]; minute = m[4] ? +m[4] : 0;
+  }
+  if (!day) return '';
+  const hit = livres.find((iso) => {
+    const q = calBrtParts(iso);
+    return q.day === day && q.month === month && q.hour === hour && q.minute === minute;
+  });
+  return hit || '';
+}
+
 // Cria a reserva. Se a Cal.com recusar (400) por causa de um campo opcional (notas ou idioma),
 // tenta de novo com menos campos.
 async function calBook({ start, nome, email, whats, empresa, necessidade }) {
@@ -243,11 +275,11 @@ const CAL_TOOLS = CAL_ENABLED ? [
   {
     name: 'agendar_reuniao',
     description:
-      'Marca na agenda do Rodrigo a conversa de 30 minutos com a pessoa e também registra o pedido de contato dela. Só chame depois de a pessoa escolher um dos horários devolvidos por consultar_horarios_reuniao, de ter informado nome, email e WhatsApp com DDD, e de ter dito explicitamente que o Rodrigo pode entrar em contato por email e WhatsApp. Nunca invente nem deduza campo. Chame uma única vez por pessoa. start deve ser exatamente o valor start do horário escolhido.',
+      'Marca na agenda do Rodrigo a conversa de 30 minutos com a pessoa e também registra o pedido de contato dela. Só chame depois de a pessoa escolher um dos horários devolvidos por consultar_horarios_reuniao, de ter informado nome, email e WhatsApp com DDD, e de ter dito explicitamente que o Rodrigo pode entrar em contato por email e WhatsApp. Nunca invente nem deduza campo. Chame uma única vez por pessoa. start é o dia/mês e a hora do horário escolhido, exatamente um dos que você ofereceu.',
     input_schema: {
       type: 'object',
       properties: {
-        start: { type: 'string', description: 'Campo start (UTC, formato ISO) do horário escolhido, exatamente como veio de consultar_horarios_reuniao.' },
+        start: { type: 'string', description: 'O horário escolhido pela pessoa, como foi oferecido: dia/mês e hora de Brasília, por exemplo "13/10 15h". Se você tiver o campo start (ISO) da consulta feita nesta mesma resposta, pode mandá-lo exato.' },
         nome: { type: 'string', description: 'Nome informado pela pessoa.' },
         email: { type: 'string', description: 'Email informado pela pessoa.' },
         whats: { type: 'string', description: 'WhatsApp com DDD informado pela pessoa.' },
@@ -1846,7 +1878,7 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
         ok: true,
         fuso: 'horário de Brasília',
         horarios: picks.map((iso) => ({ start: iso, rotulo: calLabel(iso) })),
-        instrucao: 'Ofereça esses horários em uma frase corrida, sem lista, deixando claro que são no horário de Brasília, e pergunte qual a pessoa prefere. Ao agendar, use o start exato do horário escolhido. Se nenhum servir, diga que o Rodrigo entra em contato e passe os contatos dele.',
+        instrucao: 'Ofereça esses horários em uma frase corrida, sem lista, deixando claro que são no horário de Brasília, e pergunte qual a pessoa prefere. Ao agendar, passe no campo start o dia/mês e a hora do horário escolhido (ex.: 13/10 15h). Se nenhum servir, diga que o Rodrigo entra em contato e passe os contatos dele.',
       };
     } catch (err) {
       console.error('consultar_horarios_reuniao', err && err.message ? err.message : err);
@@ -1857,15 +1889,13 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
     if (!CAL_ENABLED) return { ok: false, error: 'Agendamento indisponível. Passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br do Rodrigo.' };
     try {
       const i = toolInput || {};
-      const when = new Date(clean(i.start, 40));
-      if (isNaN(when.getTime())) return { ok: false, instrucao: 'O horário não veio válido. Chame consultar_horarios_reuniao de novo e use o start exato do horário escolhido.' };
-      const startIso = when.toISOString();
       // Valida e grava o contato primeiro (aceite, e-mail, WhatsApp). Mesmo que a reunião falhe, o pedido fica registrado.
       const c = await saveContatoServico(i, ctx || {});
       if (!c.ok) return { ok: false, erros: c.errors, instrucao: 'Faltou ou está inválido algum dado. Peça só o que falta, sem dizer que agendou.' };
       const livres = await calFetchSlots();
-      if (!livres.includes(startIso)) {
-        return { ok: false, horario_indisponivel: true, instrucao: 'Esse horário não está mais livre. NÃO diga que agendou. Chame consultar_horarios_reuniao e ofereça os novos horários.' };
+      const startIso = calResolveSlot(clean(i.start, 60), livres);
+      if (!startIso) {
+        return { ok: false, horario_indisponivel: true, instrucao: 'Não encontrei esse horário livre na agenda. NÃO diga que agendou. Chame consultar_horarios_reuniao e ofereça os horários atuais.' };
       }
       const b = await calBook({
         start: startIso, nome: clean(i.nome, 120), email: clean(i.email, 160).toLowerCase(),
