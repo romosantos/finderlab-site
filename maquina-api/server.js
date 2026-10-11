@@ -1924,6 +1924,9 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
     try {
       const r = await saveContatoServico(toolInput || {}, ctx || {});
       if (!r.ok) return { ok: false, erros: r.errors, instrucao: 'Faltou ou está inválido algum dado. Peça só o que falta, sem dizer que registrou.' };
+      if (CAL_ENABLED) {
+        return { ok: true, instrucao: 'Pedido registrado. Confirme em uma frase que o Rodrigo recebeu o pedido e, na mesma resposta, pergunte se a pessoa quer já marcar 30 minutos com ele. Se ela topar, chame consultar_horarios_reuniao e siga a seção de agendamento (não peça de novo nome, email, WhatsApp nem o aceite de contato, já foram dados). Só passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br se ela preferir não marcar agora. Não prometa prazo.' };
+      }
       return { ok: true, instrucao: 'Pedido registrado. Confirme em uma ou duas frases que o Rodrigo recebeu o pedido e vai entrar em contato, e só então passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br para quem preferir falar na hora. Não prometa prazo.' };
     } catch (err) {
       console.error('registrar_contato_servico', err && err.message ? err.message : err);
