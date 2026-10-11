@@ -109,6 +109,158 @@ const LISTA_SECOES_FORA_INSTRUCOES = [
 ];
 const LISTA_SECOES_FORA_BASE = ['## 4.1 Termos de uso'];
 
+// ---------- Agenda (Cal.com): o Drigo oferece e marca conversa com o Rodrigo ----------
+// Só liga quando as três variáveis existem. Sem elas, não há ferramentas nem texto de agendamento.
+const CAL_API_KEY = process.env.CAL_API_KEY || '';
+const CAL_USERNAME = process.env.CAL_USERNAME || '';
+const CAL_EVENT_SLUG = process.env.CAL_EVENT_SLUG || '';
+const CAL_ENABLED = !!(CAL_API_KEY && CAL_USERNAME && CAL_EVENT_SLUG);
+const CAL_TIMEZONE = 'America/Sao_Paulo';
+const CAL_BOOKINGS_VERSION = process.env.CAL_BOOKINGS_API_VERSION || '2026-02-25';
+const CAL_SLOTS_VERSION = process.env.CAL_SLOTS_API_VERSION || '2024-09-04';
+
+// A resposta de /v2/slots muda de formato conforme a versão da API: aceita data = { "2026-10-13": [ { start } ] },
+// data.slots = { dia: [ { time } ] } e listas de strings. Devolve instantes em UTC, ordenados e sem repetição.
+function parseCalSlots(j) {
+  const data = j && j.data;
+  if (!data || typeof data !== 'object') return [];
+  const byDate = data.slots && typeof data.slots === 'object' ? data.slots : data;
+  const out = [];
+  for (const v of Object.values(byDate)) {
+    if (!Array.isArray(v)) continue;
+    for (const it of v) {
+      const raw = typeof it === 'string' ? it : it && (it.start || it.time);
+      const d = raw ? new Date(raw) : null;
+      if (d && !isNaN(d.getTime())) out.push(d.toISOString());
+    }
+  }
+  return Array.from(new Set(out)).sort();
+}
+
+async function calFetchSlots(days = 14) {
+  const from = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  const to = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+  const attempts = [
+    { version: CAL_SLOTS_VERSION, qs: { username: CAL_USERNAME, eventTypeSlug: CAL_EVENT_SLUG, start: from, end: to, timeZone: CAL_TIMEZONE } },
+    { version: '2024-08-13', qs: { username: CAL_USERNAME, eventTypeSlug: CAL_EVENT_SLUG, startTime: from, endTime: to, timeZone: CAL_TIMEZONE } },
+  ];
+  let lastErr = '';
+  for (const a of attempts) {
+    try {
+      const r = await fetch('https://api.cal.com/v2/slots?' + new URLSearchParams(a.qs).toString(), {
+        headers: { 'cal-api-version': a.version, Authorization: `Bearer ${CAL_API_KEY}` },
+      });
+      if (!r.ok) { lastErr = `${r.status} ${(await r.text().catch(() => '')).slice(0, 200)}`; continue; }
+      return parseCalSlots(await r.json());
+    } catch (err) {
+      lastErr = err && err.message ? err.message : String(err);
+    }
+  }
+  throw new Error('Cal.com slots: ' + lastErr);
+}
+
+const calHourBRT = (iso) => {
+  const h = Number(new Intl.DateTimeFormat('en-GB', { timeZone: CAL_TIMEZONE, hour: '2-digit', hour12: false }).format(new Date(iso)));
+  return h === 24 ? 0 : h;
+};
+
+// "terça, 13/10, às 10h"
+function calLabel(iso) {
+  const parts = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: CAL_TIMEZONE, weekday: 'long', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(new Date(iso));
+  const g = (t) => (parts.find((p) => p.type === t) || {}).value || '';
+  const mm = g('minute');
+  return `${g('weekday').replace('-feira', '')}, ${g('day')}/${g('month')}, às ${calHourBRT(iso)}h${mm === '00' ? '' : mm}`;
+}
+
+// Até 3 horários em dias diferentes, alternando manhã e tarde, para a pessoa escolher sem ver a agenda inteira.
+function calPickSuggestions(isos, max = 3) {
+  const byDay = new Map();
+  for (const iso of isos) {
+    const day = new Intl.DateTimeFormat('en-CA', { timeZone: CAL_TIMEZONE }).format(new Date(iso));
+    if (!byDay.has(day)) byDay.set(day, []);
+    byDay.get(day).push(iso);
+  }
+  const targets = [10, 14, 16];
+  const picks = [];
+  let i = 0;
+  for (const list of byDay.values()) {
+    if (picks.length >= max) break;
+    const t = targets[i % targets.length];
+    i += 1;
+    list.sort((a, b) => Math.abs(calHourBRT(a) - t) - Math.abs(calHourBRT(b) - t) || a.localeCompare(b));
+    picks.push(list[0]);
+  }
+  return picks.sort();
+}
+
+// Cria a reserva. Se a Cal.com recusar (400) por causa de um campo opcional (notas ou idioma),
+// tenta de novo com menos campos.
+async function calBook({ start, nome, email, whats, empresa, necessidade }) {
+  const attendee = { name: nome, email, timeZone: CAL_TIMEZONE };
+  const metadata = {
+    origem: 'Drigo (chat)',
+    whatsapp: String(whats || '').slice(0, 500),
+    empresa: String(empresa || '').slice(0, 500),
+    necessidade: String(necessidade || '').slice(0, 500),
+  };
+  const notes = `WhatsApp: ${whats}${empresa ? ' | Empresa: ' + empresa : ''}${necessidade ? ' | Quer resolver: ' + necessidade : ''}`.slice(0, 500);
+  const base = { start, eventTypeSlug: CAL_EVENT_SLUG, username: CAL_USERNAME, metadata };
+  const bodies = [
+    { ...base, attendee: { ...attendee, language: 'pt' }, bookingFieldsResponses: { notes } },
+    { ...base, attendee: { ...attendee, language: 'pt' } },
+    { ...base, attendee },
+  ];
+  for (const body of bodies) {
+    const r = await fetch('https://api.cal.com/v2/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'cal-api-version': CAL_BOOKINGS_VERSION, Authorization: `Bearer ${CAL_API_KEY}` },
+      body: JSON.stringify(body),
+    });
+    const txt = await r.text().catch(() => '');
+    let j = null;
+    try { j = JSON.parse(txt); } catch (_) { /* resposta não era JSON */ }
+    if (r.ok && j && j.data) {
+      return { ok: true, uid: j.data.uid || '', status: j.data.status || '', start: j.data.start || start };
+    }
+    console.error('Cal.com booking falhou', r.status, txt.slice(0, 300));
+    if (r.status !== 400) break;
+  }
+  return { ok: false };
+}
+
+
+// Ferramentas de agenda: só existem quando CAL_ENABLED. O spread fica antes da última ferramenta do array,
+// que carrega o cache_control do prompt caching.
+const CAL_TOOLS = CAL_ENABLED ? [
+  {
+    name: 'consultar_horarios_reuniao',
+    description:
+      'Consulta a agenda do Rodrigo e devolve até 3 horários livres (em dias diferentes, fuso de Brasília) para uma conversa de 30 minutos. Use só quando as regras de agendamento do prompt mandarem oferecer a reunião. Não recebe parâmetros. Ofereça os horários à pessoa em uma frase corrida e use depois o campo start exato do horário que ela escolher.',
+    input_schema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'agendar_reuniao',
+    description:
+      'Marca na agenda do Rodrigo a conversa de 30 minutos com a pessoa e também registra o pedido de contato dela. Só chame depois de a pessoa escolher um dos horários devolvidos por consultar_horarios_reuniao, de ter informado nome, email e WhatsApp com DDD, e de ter dito explicitamente que o Rodrigo pode entrar em contato por email e WhatsApp. Nunca invente nem deduza campo. Chame uma única vez por pessoa. start deve ser exatamente o valor start do horário escolhido.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        start: { type: 'string', description: 'Campo start (UTC, formato ISO) do horário escolhido, exatamente como veio de consultar_horarios_reuniao.' },
+        nome: { type: 'string', description: 'Nome informado pela pessoa.' },
+        email: { type: 'string', description: 'Email informado pela pessoa.' },
+        whats: { type: 'string', description: 'WhatsApp com DDD informado pela pessoa.' },
+        empresa: { type: 'string', description: 'Empresa, se a pessoa informou. Vazio se não.' },
+        necessidade: { type: 'string', description: 'Em uma ou duas frases, o que a pessoa quer resolver ou contratar, com as palavras dela. Vazio se ela não disse.' },
+        consentimento: { type: 'boolean', description: 'true somente se a pessoa disse explicitamente que o Rodrigo pode entrar em contato por email e WhatsApp.' },
+      },
+      required: ['start', 'nome', 'email', 'whats', 'consentimento'],
+    },
+  },
+] : [];
+
+
 let DIAGNOSTIC_ADDENDUM = '';
 let LISTA_ADDENDUM = '';
 let LISTA_PROMPT_BASE = '';
@@ -119,6 +271,9 @@ try {
   REGISTRATION_TERMS = extractRegistrationTerms(fs.readFileSync(path.join(__dirname, 'public', 'inscricao.html'), 'utf8'));
   SYSTEM_PROMPT = instructions + '\n\n---\n\n# BASE DE CONHECIMENTO (fonte de verdade, use só o que está aqui)\n\n' + knowledge +
     '\n\n---\n\n# TERMOS PUBLICADOS NA PÁGINA DE INSCRIÇÃO (texto completo e oficial)\n\n' + REGISTRATION_TERMS;
+  if (CAL_ENABLED) {
+    SYSTEM_PROMPT += '\n\n---\n\n' + fs.readFileSync(path.join(__dirname, 'knowledge', 'agendamento.md'), 'utf8');
+  }
   // Versão do prompt para a página /lista: sem preço, parcelamento, mensalidade, cancelamento nem
   // os termos de inscrição. Não basta pedir no addendum que o Drigo não fale disso: se o texto
   // está no que ele lê, vaza (já vazou o "R$ 5.000" do agente sob demanda). Aqui some do contexto.
@@ -697,6 +852,7 @@ async function migrate() {
       updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     CREATE INDEX IF NOT EXISTS contatos_servico_email_idx ON contatos_servico ((lower(email)), created_at DESC);
+    ALTER TABLE contatos_servico ADD COLUMN IF NOT EXISTS reuniao_uid TEXT, ADD COLUMN IF NOT EXISTS reuniao_inicio TIMESTAMPTZ, ADD COLUMN IF NOT EXISTS reuniao_status TEXT;
   `);
 }
 
@@ -1249,7 +1405,7 @@ async function saveContatoServico(d, ctx) {
          necessidade=COALESCE(NULLIF($6,''), necessidade), updated_at=now() WHERE id=$1`,
       [dup.rows[0].id, nome, whats, empresa, cargo, necessidade]
     );
-    return { ok: true, novo: false };
+    return { ok: true, novo: false, id: dup.rows[0].id };
   }
 
   const { rows } = await pool.query(
@@ -1259,7 +1415,7 @@ async function saveContatoServico(d, ctx) {
   );
   const enviado = await sendServicoEmail({ nome, email, whats, empresa, cargo, necessidade });
   if (enviado) await pool.query('UPDATE contatos_servico SET notificado_em=now() WHERE id=$1', [rows[0].id]);
-  return { ok: true, novo: true, avisado: enviado };
+  return { ok: true, novo: true, avisado: enviado, id: rows[0].id };
 }
 
 // Validação + gravação + confirmação por e-mail, compartilhada pelo formulário e pelo chat.
@@ -1588,6 +1744,7 @@ const CHAT_TOOLS = [
       required: [],
     },
   },
+  ...CAL_TOOLS,
   {
     name: 'registrar_contato_servico',
     description:
@@ -1678,6 +1835,59 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
     } catch (err) {
       console.error('registrar_interesse_lista', err && err.message ? err.message : err);
       return { ok: false, error: 'Falha ao registrar agora. NÃO diga que registrou. Peça pra tentar de novo pelo formulário da página.' };
+    }
+  }
+  if (name === 'consultar_horarios_reuniao') {
+    if (!CAL_ENABLED) return { ok: false, error: 'Agendamento indisponível. Passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br do Rodrigo.' };
+    try {
+      const picks = calPickSuggestions(await calFetchSlots(), 3);
+      if (!picks.length) return { ok: true, horarios: [], instrucao: 'Não há horários livres nas próximas semanas. Diga isso com naturalidade e garanta que o Rodrigo entra em contato; passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br.' };
+      return {
+        ok: true,
+        fuso: 'horário de Brasília',
+        horarios: picks.map((iso) => ({ start: iso, rotulo: calLabel(iso) })),
+        instrucao: 'Ofereça esses horários em uma frase corrida, sem lista, deixando claro que são no horário de Brasília, e pergunte qual a pessoa prefere. Ao agendar, use o start exato do horário escolhido. Se nenhum servir, diga que o Rodrigo entra em contato e passe os contatos dele.',
+      };
+    } catch (err) {
+      console.error('consultar_horarios_reuniao', err && err.message ? err.message : err);
+      return { ok: false, error: 'Não consegui consultar a agenda agora. NÃO invente horário. Diga que o Rodrigo entra em contato e passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br.' };
+    }
+  }
+  if (name === 'agendar_reuniao') {
+    if (!CAL_ENABLED) return { ok: false, error: 'Agendamento indisponível. Passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br do Rodrigo.' };
+    try {
+      const i = toolInput || {};
+      const when = new Date(clean(i.start, 40));
+      if (isNaN(when.getTime())) return { ok: false, instrucao: 'O horário não veio válido. Chame consultar_horarios_reuniao de novo e use o start exato do horário escolhido.' };
+      const startIso = when.toISOString();
+      // Valida e grava o contato primeiro (aceite, e-mail, WhatsApp). Mesmo que a reunião falhe, o pedido fica registrado.
+      const c = await saveContatoServico(i, ctx || {});
+      if (!c.ok) return { ok: false, erros: c.errors, instrucao: 'Faltou ou está inválido algum dado. Peça só o que falta, sem dizer que agendou.' };
+      const livres = await calFetchSlots();
+      if (!livres.includes(startIso)) {
+        return { ok: false, horario_indisponivel: true, instrucao: 'Esse horário não está mais livre. NÃO diga que agendou. Chame consultar_horarios_reuniao e ofereça os novos horários.' };
+      }
+      const b = await calBook({
+        start: startIso, nome: clean(i.nome, 120), email: clean(i.email, 160).toLowerCase(),
+        whats: clean(i.whats, 30), empresa: clean(i.empresa, 120), necessidade: clean(i.necessidade, 600),
+      });
+      if (!b.ok) {
+        return { ok: false, pedido_registrado: true, instrucao: 'Não consegui marcar agora. NÃO diga que agendou. O pedido de contato já está registrado: diga que o Rodrigo entra em contato e passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br.' };
+      }
+      await pool.query('UPDATE contatos_servico SET reuniao_uid=$2, reuniao_inicio=$3, reuniao_status=$4, updated_at=now() WHERE id=$1', [c.id, b.uid, startIso, b.status]);
+      const confirmada = b.status === 'accepted';
+      return {
+        ok: true,
+        confirmada,
+        status: b.status,
+        quando: calLabel(startIso) + ' (horário de Brasília)',
+        instrucao: confirmada
+          ? 'Reunião marcada. Diga o dia e o horário em uma ou duas frases e que a pessoa recebe o convite por email. Não prometa link nem local, o convite traz.'
+          : 'O pedido de horário foi enviado e o Rodrigo confirma. Diga o dia e o horário pedidos e que a pessoa recebe a confirmação por email. Não diga que já está confirmado.',
+      };
+    } catch (err) {
+      console.error('agendar_reuniao', err && err.message ? err.message : err);
+      return { ok: false, error: 'Não consegui agendar agora. NÃO diga que agendou. Diga que o Rodrigo entra em contato e passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br.' };
     }
   }
   if (name === 'registrar_contato_servico') {
@@ -2317,7 +2527,7 @@ app.get('/admin/api/diagnosticos.csv', async (_req, res) => {
 });
 
 app.get('/admin/api/contatos', async (_req, res) => {
-  const { rows } = await pool.query('SELECT id, nome, email, whats, empresa, cargo, necessidade, origem, notificado_em, created_at FROM contatos_servico ORDER BY created_at DESC, id DESC');
+  const { rows } = await pool.query('SELECT id, nome, email, whats, empresa, cargo, necessidade, origem, reuniao_uid, reuniao_inicio, reuniao_status, notificado_em, created_at FROM contatos_servico ORDER BY created_at DESC, id DESC');
   res.json(rows);
 });
 
