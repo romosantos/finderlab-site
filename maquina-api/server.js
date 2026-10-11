@@ -117,6 +117,8 @@ const CAL_EVENT_SLUG = process.env.CAL_EVENT_SLUG || '';
 const CAL_ENABLED = !!(CAL_API_KEY && CAL_USERNAME && CAL_EVENT_SLUG);
 const CAL_TIMEZONE = 'America/Sao_Paulo';
 const CAL_BOOKINGS_VERSION = process.env.CAL_BOOKINGS_API_VERSION || '2026-02-25';
+// Local da reunião mandado explicitamente na reserva (a API não usa o local salvo no evento). Vazio = não mandar.
+const CAL_LOCATION_INTEGRATION = process.env.CAL_LOCATION_INTEGRATION === undefined ? 'google-meet' : process.env.CAL_LOCATION_INTEGRATION;
 const CAL_SLOTS_VERSION = process.env.CAL_SLOTS_API_VERSION || '2024-09-04';
 
 // A resposta de /v2/slots muda de formato conforme a versão da API: aceita data = { "2026-10-13": [ { start } ] },
@@ -239,11 +241,15 @@ async function calBook({ start, nome, email, whats, empresa, necessidade }) {
   };
   const notes = `WhatsApp: ${whats}${empresa ? ' | Empresa: ' + empresa : ''}${necessidade ? ' | Quer resolver: ' + necessidade : ''}`.slice(0, 500);
   const base = { start, eventTypeSlug: CAL_EVENT_SLUG, username: CAL_USERNAME, metadata };
-  const bodies = [
+  const variants = [
     { ...base, attendee: { ...attendee, language: 'pt' }, bookingFieldsResponses: { notes } },
     { ...base, attendee: { ...attendee, language: 'pt' } },
     { ...base, attendee },
   ];
+  // Com o local primeiro; se a Cal.com recusar com 400, repete sem ele para não perder a reserva.
+  const bodies = CAL_LOCATION_INTEGRATION
+    ? variants.map((v) => ({ ...v, location: { type: 'integration', integration: CAL_LOCATION_INTEGRATION } })).concat(variants)
+    : variants;
   for (const body of bodies) {
     const r = await fetch('https://api.cal.com/v2/bookings', {
       method: 'POST',
@@ -1892,6 +1898,16 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
       // Valida e grava o contato primeiro (aceite, e-mail, WhatsApp). Mesmo que a reunião falhe, o pedido fica registrado.
       const c = await saveContatoServico(i, ctx || {});
       if (!c.ok) return { ok: false, erros: c.errors, instrucao: 'Faltou ou está inválido algum dado. Peça só o que falta, sem dizer que agendou.' };
+      // Se esta pessoa já tem reunião marcada (a resposta de confirmação pode vir em duas mensagens), não reserva de novo.
+      const ja = await pool.query('SELECT reuniao_uid, reuniao_inicio, reuniao_status FROM contatos_servico WHERE id=$1', [c.id]);
+      if (ja.rows[0] && ja.rows[0].reuniao_uid && new Date(ja.rows[0].reuniao_inicio) > new Date()) {
+        return {
+          ok: true,
+          ja_marcada: true,
+          quando: calLabel(new Date(ja.rows[0].reuniao_inicio).toISOString()) + ' (horário de Brasília)',
+          instrucao: 'Essa pessoa já tem reunião marcada neste horário. Confirme o dia e o horário em uma frase e que o convite chega por email. Não marque de novo. Se ela quiser trocar, diga que o Rodrigo ajusta o horário pelo contato dela.',
+        };
+      }
       const livres = await calFetchSlots();
       const startIso = calResolveSlot(clean(i.start, 60), livres);
       if (!startIso) {
