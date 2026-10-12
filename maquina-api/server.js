@@ -478,6 +478,66 @@ const ASAAS_WEBHOOK_TOKEN = process.env.ASAAS_WEBHOOK_TOKEN || '';
 const COURSE_PRICE = Number(process.env.COURSE_PRICE) || 2000;
 const COURSE_MAX_INSTALLMENTS = Number(process.env.COURSE_MAX_INSTALLMENTS) || 10;
 
+// Turmas fechadas (ex.: associados): knowledge/turmas.json. Cada turma tem o próprio preço,
+// parcelamento, data, local e um código de acesso (?c=) no link. O preço da turma só vale
+// para quem foi marcado como dessa turma pelo servidor (a partir do link), nunca por dado vindo do cliente
+// ou do modelo. Sem preço definido (null), nada é cobrado nem informado.
+let TURMAS = {};
+try {
+  const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'knowledge', 'turmas.json'), 'utf8'));
+  for (const [slug, t] of Object.entries(raw || {})) {
+    if (!/^[a-z0-9-]{2,40}$/.test(slug) || !t || typeof t !== 'object') continue;
+    TURMAS[slug] = {
+      slug,
+      nome: String(t.nome_exibicao || 'Turma fechada'),
+      publico: String(t.publico || ''),
+      preco: Number.isFinite(Number(t.preco)) && Number(t.preco) > 0 && t.preco !== null ? Number(t.preco) : null,
+      precoOriginal: Number(t.preco_original) > 0 ? Number(t.preco_original) : null,
+      parcelasMax: Math.min(12, Math.max(1, Math.round(Number(t.parcelas_max)) || COURSE_MAX_INSTALLMENTS)),
+      data: t.data ? String(t.data) : '',
+      local: t.local ? String(t.local) : '',
+      vagas: Number(t.vagas) > 0 ? Math.round(Number(t.vagas)) : null,
+      acesso: t.acesso ? String(t.acesso) : '',
+    };
+  }
+  console.log('Turmas carregadas: ' + (Object.keys(TURMAS).join(', ') || 'nenhuma'));
+} catch (err) {
+  console.error('knowledge/turmas.json não carregado. Páginas de turma ficam desligadas.', err.message);
+}
+let TURMA_ADDENDUM = '';
+try {
+  TURMA_ADDENDUM = fs.readFileSync(path.join(__dirname, 'knowledge', 'modo-turma.md'), 'utf8');
+} catch (err) {
+  console.error('knowledge/modo-turma.md não encontrado. Chat das turmas ficará desligado.', err.message);
+}
+function turmaPorSlug(slug) {
+  const k = String(slug || '').toLowerCase();
+  return Object.prototype.hasOwnProperty.call(TURMAS, k) ? TURMAS[k] : null;
+}
+function turmaAcessoOk(t, c) {
+  if (!t) return false;
+  if (!t.acesso) return true;
+  return typeof c === 'string' && c.length > 0 && safeEqual(c, t.acesso);
+}
+function brl(n) {
+  return 'R$ ' + Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+function turmaFatos(t) {
+  const L = ['# DADOS DESTA TURMA (fonte única; valem mais que qualquer valor ou data da base de conhecimento)', ''];
+  L.push('Turma: ' + t.nome + (t.publico ? ' (' + t.publico + ')' : '') + '.');
+  if (t.preco) {
+    L.push('Valor por pessoa nesta turma: ' + brl(t.preco) + (t.precoOriginal && t.precoOriginal > t.preco ? ' (o valor normal da imersão é ' + brl(t.precoOriginal) + ', então é uma condição especial para esta turma)' : '') + '. Não existe outro valor, pacote, cupom ou desconto adicional.');
+    L.push('Pagamento: Pix à vista, ou cartão de crédito em até ' + t.parcelasMax + 'x (o parcelamento é do cartão, na página segura do Asaas).');
+    L.push('O valor está definido: pode seguir o fluxo completo até o link de pagamento com gerar_pagamento_inscricao.');
+  } else {
+    L.push('Valor desta turma: AINDA NÃO DEFINIDO. Não cite nenhum valor. Faça só a pré-inscrição com registrar_inscricao e diga que o Rodrigo envia o valor e as condições especiais para associados.');
+  }
+  L.push('Data: ' + (t.data || 'ainda sendo fechada pelo Rodrigo (não invente; a pessoa será avisada)') + '.');
+  L.push('Local: ' + (t.local || 'ainda sendo fechado pelo Rodrigo (não invente; a pessoa será avisada)') + '.');
+  if (t.vagas) L.push('Vagas: ' + t.vagas + ' no total. Não diga quantas restam.');
+  return L.join('\n');
+}
+
 if (!ASAAS_API_KEY) {
   console.error('ASAAS_API_KEY não definida. O pagamento via Asaas ficará desligado.');
 }
@@ -540,6 +600,14 @@ function buildAsaasCustomerData(lead) {
 }
 
 async function createAsaasCheckout(lead, originUrl, billingType) {
+  // Lead de turma fechada: preço, parcelas e páginas de retorno da própria turma.
+  const turma = lead.turma ? turmaPorSlug(lead.turma) : null;
+  const valor = turma ? turma.preco : COURSE_PRICE;
+  const parcelas = turma ? turma.parcelasMax : COURSE_MAX_INSTALLMENTS;
+  const retorno = turma ? originUrl + '/turma/' + turma.slug : originUrl + '/inscricao.html';
+  // a página da turma só abre com o código de acesso, então ele vai junto na volta do pagamento
+  const retornoQs = (estado) => '?' + (turma && turma.acesso ? 'c=' + encodeURIComponent(turma.acesso) + '&' : '') + 'pagamento=' + estado;
+  if (!(valor > 0)) throw new Error('Turma sem preço definido');
   // Se a pessoa já disse a forma de pagamento (pix ou cartão), gera o checkout já
   // restrito a ela, pra página do Asaas abrir direto na forma escolhida em vez de
   // mostrar a escolha. Pix não parcela, então junto com billingType='PIX' o checkout
@@ -554,17 +622,17 @@ async function createAsaasCheckout(lead, originUrl, billingType) {
     items: [
       {
         name: 'Máquina de Decisões',
-        description: 'Inscrição no curso Máquina de Decisões',
+        description: 'Inscrição no curso Máquina de Decisões' + (turma ? ' · ' + turma.nome : ''),
         quantity: 1,
-        value: COURSE_PRICE,
+        value: valor,
       },
     ],
-    installment: { maxInstallmentCount: COURSE_MAX_INSTALLMENTS },
+    installment: { maxInstallmentCount: parcelas },
     customerData: buildAsaasCustomerData(lead),
     callback: {
-      successUrl: originUrl + '/inscricao.html?pagamento=ok',
-      cancelUrl: originUrl + '/inscricao.html?pagamento=cancelado',
-      expiredUrl: originUrl + '/inscricao.html?pagamento=expirado',
+      successUrl: retorno + retornoQs('ok'),
+      cancelUrl: retorno + retornoQs('cancelado'),
+      expiredUrl: retorno + retornoQs('expirado'),
       autoRedirect: true,
     },
   };
@@ -741,6 +809,7 @@ async function migrate() {
     -- Colunas de CPF/CNPJ e endereço foram adicionadas depois: em produção a tabela já
     -- existe sem elas, então o CREATE TABLE acima não as cria. ALTER ... IF NOT EXISTS
     -- garante que o banco existente seja atualizado também, sem quebrar nada.
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS turma       TEXT NOT NULL DEFAULT '';
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS cpf_cnpj    TEXT NOT NULL DEFAULT '';
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS cep         TEXT NOT NULL DEFAULT '';
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS endereco    TEXT NOT NULL DEFAULT '';
@@ -1039,6 +1108,7 @@ function getOrSetVisitorId(req, res) {
 // Qual página foi aberta: domínio do diagnóstico, lista de prioridade, inscrição ou landing.
 function pageKeyFromRequest(req) {
   if (/diagnostico/i.test(req.hostname || '')) return '/diagnostico';
+  if (/^\/turma\//.test(req.path)) return '/turma';
   if (req.path === '/lista' || req.path === '/lista.html') return '/lista';
   if (req.path === '/' || req.path === '/index.html') return '/';
   return '/inscricao';
@@ -1120,8 +1190,10 @@ const leadLimiter = rateLimit({
 // do site) quanto pela ferramenta registrar_inscricao que o agente de chat pode
 // chamar no meio da conversa, pra não duplicar a mesma lógica (nem o disparo do
 // WhatsApp) em dois lugares.
-async function saveLead(input) {
+async function saveLead(input, opts) {
   const b = input || {};
+  // turma vem só do servidor (opts), nunca do corpo da requisição nem do modelo
+  const turma = opts && opts.turma && turmaPorSlug(opts.turma) ? turmaPorSlug(opts.turma).slug : '';
   const nome = clean(b.nome, 160);
   const email = clean(b.email, 200).toLowerCase();
   const whats = clean(b.whats, 30);
@@ -1149,8 +1221,8 @@ async function saveLead(input) {
 
   // mesma pessoa reenviando: atualiza os dados e preserva o andamento
   const { rows } = await pool.query(
-    `INSERT INTO leads (nome, email, whats, empresa, cargo, cpf_cnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+    `INSERT INTO leads (nome, email, whats, empresa, cargo, cpf_cnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
      ON CONFLICT (lower(email)) DO UPDATE
        SET nome=EXCLUDED.nome, whats=EXCLUDED.whats, empresa=EXCLUDED.empresa,
            cargo=EXCLUDED.cargo,
@@ -1162,9 +1234,11 @@ async function saveLead(input) {
            bairro=CASE WHEN EXCLUDED.bairro <> '' THEN EXCLUDED.bairro ELSE leads.bairro END,
            cidade=CASE WHEN EXCLUDED.cidade <> '' THEN EXCLUDED.cidade ELSE leads.cidade END,
            estado=CASE WHEN EXCLUDED.estado <> '' THEN EXCLUDED.estado ELSE leads.estado END,
-           consent=EXCLUDED.consent, updated_at=now()
+           consent=EXCLUDED.consent,
+           turma=CASE WHEN EXCLUDED.turma <> '' THEN EXCLUDED.turma ELSE leads.turma END,
+           updated_at=now()
      RETURNING id`,
-    [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent]
+    [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma]
   );
   notifyLeadWhatsApp({ id: rows[0].id, nome, email, whats, empresa, cargo });
   return { ok: true, id: rows[0].id };
@@ -1564,13 +1638,19 @@ async function createCheckoutForLead(leadId, originUrl, billingType) {
     return { ok: true, url: existing.rows[0].checkout_url };
   }
 
+  const turmaLead = lead.turma ? turmaPorSlug(lead.turma) : null;
+  if (lead.turma && (!turmaLead || !turmaLead.preco)) {
+    return { ok: false, status: 409, error: 'O valor desta turma ainda não foi definido pelo Rodrigo. A inscrição está registrada e ele envia o valor e o link de pagamento.' };
+  }
+  const valorCobrado = turmaLead ? turmaLead.preco : COURSE_PRICE;
+
   const checkout = await createAsaasCheckout(lead, originUrl, billingType);
   const url = checkout.link || ('https://asaas.com/checkoutSession/show?id=' + checkout.id);
 
   const payment = await pool.query(
     `INSERT INTO payments (lead_id, asaas_checkout_id, status, value, checkout_url)
      VALUES ($1,$2,$3,$4,$5) RETURNING id`,
-    [leadId, checkout.id, checkout.status || 'PENDING', COURSE_PRICE, url]
+    [leadId, checkout.id, checkout.status || 'PENDING', valorCobrado, url]
   );
 
   await notifyPaymentWhatsApp(lead, payment.rows[0].id, url);
@@ -1951,7 +2031,7 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
   }
   if (name === 'consultar_endereco_cep') return lookupCep(toolInput?.cep);
   if (name === 'registrar_inscricao') {
-    const result = await saveLead(toolInput);
+    const result = await saveLead(toolInput, { turma: ctx && ctx.turma });
     return result.ok
       ? { sucesso: true, id: result.id }
       : { sucesso: false, erro: result.error, campos_invalidos: result.errors || null };
@@ -1990,7 +2070,11 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
     return { sucesso: false, erro: result.error, campos_invalidos: result.errors || null };
   }
   if (name === 'gerar_pagamento_inscricao') {
-    const saved = await saveLead(toolInput);
+    const turmaCtx = ctx && ctx.turma ? turmaPorSlug(ctx.turma) : null;
+    if (turmaCtx && !turmaCtx.preco) {
+      return { sucesso: false, erro: 'O valor desta turma ainda não está definido. NÃO gere pagamento e NÃO cite valor. Use registrar_inscricao para deixar a pré-inscrição e diga que o Rodrigo envia o valor e o link de pagamento.' };
+    }
+    const saved = await saveLead(toolInput, { turma: ctx && ctx.turma });
     if (!saved.ok) {
       return { sucesso: false, erro: saved.error, campos_invalidos: saved.errors || null };
     }
@@ -2214,11 +2298,24 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
     const isVoiceTurn = b.voice === true;
     // Modo lista: pedido pela página /lista. Sem ferramentas (não há inscrição nem pagamento
     // nessa etapa), então nada do que o cliente mandar consegue disparar registro ou cobrança.
-    const isLista = b.modo === 'lista' && !isDiagnostico;
+    const isLista = b.modo === 'lista' && !isDiagnostico && !b.turma;
+    // Modo turma: página /turma/:slug. Precisa de turma existente e do código de acesso do link.
+    let turma = null;
+    if (b.turma && !isDiagnostico) {
+      turma = turmaPorSlug(clean(b.turma, 40));
+      if (!turma || !turmaAcessoOk(turma, clean(b.c, 80))) {
+        return res.status(403).json({ error: 'Este link é exclusivo e não está mais válido. Fala com o Rodrigo pelo WhatsApp (11) 3164-3783.' });
+      }
+      if (!TURMA_ADDENDUM) {
+        return res.status(503).json({ error: 'O assistente está indisponível no momento. Fala com a gente pelo WhatsApp (11) 3164-3783.' });
+      }
+    }
     if (isLista && (!LISTA_ADDENDUM || !LISTA_PROMPT_BASE)) {
       return res.status(503).json({ error: 'O assistente está indisponível no momento. Fala com a gente pelo WhatsApp (11) 3164-3783.' });
     }
-    let systemPrompt = isLista
+    let systemPrompt = turma
+      ? SYSTEM_PROMPT + '\n\n---\n\n' + TURMA_ADDENDUM + '\n\n---\n\n' + turmaFatos(turma)
+      : isLista
       ? LISTA_PROMPT_BASE + '\n\n---\n\n# MODO LISTA DE PRIORIDADE (ativo nesta conversa)\n\n' + LISTA_ADDENDUM
       : isDiagnostico && DIAGNOSTIC_ADDENDUM
       ? SYSTEM_PROMPT + '\n\n---\n\n# MODO DIAGNÓSTICO (ativo nesta conversa)\n\n' + DIAGNOSTIC_ADDENDUM
@@ -2239,7 +2336,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
         }
       : null;
     const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel, listaRegistrada } = await getAgentReply(
-      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : (isDiagnostico ? CHAT_DIAGNOSTIC_MAX_TOKENS : CHAT_MAX_TOKENS), { sessionId, contextoVisita, semFerramentas: isLista, ipHash: hashIp(req.ip), origem: clean(b.utm_source, 80), campanha: clean(b.utm_campaign, 120) }
+      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : (isDiagnostico ? CHAT_DIAGNOSTIC_MAX_TOKENS : CHAT_MAX_TOKENS), { sessionId, contextoVisita, semFerramentas: isLista, turma: turma ? turma.slug : '', ipHash: hashIp(req.ip), origem: clean(b.utm_source, 80), campanha: clean(b.utm_campaign, 120) }
     );
 
     const elapsedMs = Date.now() - chatStartedAt;
@@ -2526,12 +2623,12 @@ app.get('/admin/api/leads.csv', async (_req, res) => {
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // evita injeção de fórmula no Excel
     return '"' + s.replace(/"/g, '""') + '"';
   };
-  const head = ['Data', 'Nome', 'Email', 'WhatsApp', 'CPF/CNPJ', 'CEP', 'Endereço', 'Número', 'Complemento', 'Bairro', 'Cidade', 'Estado', 'Empresa', 'Cargo', 'Status'];
+  const head = ['Data', 'Nome', 'Email', 'WhatsApp', 'CPF/CNPJ', 'CEP', 'Endereço', 'Número', 'Complemento', 'Bairro', 'Cidade', 'Estado', 'Empresa', 'Cargo', 'Turma', 'Status'];
   const lines = [head.map(esc).join(';')].concat(
     rows.map((l) =>
       [
         new Date(l.created_at).toISOString(), l.nome, l.email, l.whats, l.cpf_cnpj, l.cep, l.endereco, l.numero,
-        l.complemento, l.bairro, l.cidade, l.estado, l.empresa, l.cargo, l.status,
+        l.complemento, l.bairro, l.cidade, l.estado, l.empresa, l.cargo, l.turma, l.status,
       ].map(esc).join(';')
     )
   );
@@ -2824,7 +2921,7 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 // As páginas públicas mandam um aviso a cada 30 s enquanto a aba está aberta e visível
 // (public/online.js). Só guardamos em memória quem avisou no último minuto: não grava
 // nada no banco, e zera sozinho quando o servidor reinicia.
-const ONLINE_PAGES = { landing: 'Landing', inscricao: 'Inscrição', lista: 'Lista de prioridade', diagnostico: 'Diagnóstico' };
+const ONLINE_PAGES = { landing: 'Landing', inscricao: 'Inscrição', lista: 'Lista de prioridade', diagnostico: 'Diagnóstico', turma: 'Turma fechada' };
 const ONLINE_TTL_MS = 75 * 1000;
 const onlineVisitors = new Map(); // visitorId -> { page, at }
 
@@ -2906,6 +3003,25 @@ footer{margin-top:32px;color:#777;font-size:13px}
 <p class="cta">Quer conversar sobre ela? Responda a mensagem no WhatsApp ou chame em <a href="https://wa.me/551131643783">(11) 3164-3783</a>.</p>
 <footer>Finder Lab · leitura estruturada a partir da conversa, não é uma medição.</footer>
 </main></body></html>`);
+});
+
+// ---------- Turmas fechadas (/turma/:slug?c=código) ----------
+const TURMA_FECHADA_HTML = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Link exclusivo · Finder Lab</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#05040C;color:#F1EEFB;font-family:Arial,Helvetica,sans-serif;padding:24px}main{max-width:460px;text-align:center;line-height:1.6}h1{font-size:22px;margin:0 0 12px}p{color:#AEA9C5;margin:0 0 10px}a{color:#A88BFF}</style></head><body><main><h1>Este link é exclusivo</h1><p>Ele não está mais válido ou foi digitado incompleto. Use o link completo que você recebeu.</p><p>Se precisar, fale com o Rodrigo pelo WhatsApp <a href="https://wa.me/551131643783">(11) 3164-3783</a>.</p></main></body></html>`;
+app.get('/turma/:slug', (req, res) => {
+  res.set({ 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' });
+  const t = turmaPorSlug(req.params.slug);
+  if (!t || !turmaAcessoOk(t, typeof req.query.c === 'string' ? req.query.c : '')) {
+    return res.status(404).type('html').send(TURMA_FECHADA_HTML);
+  }
+  trackPageView(req, res).catch(() => {});
+  res.sendFile(path.join(__dirname, 'public', 'turma.html'));
+});
+// Dados públicos da turma para a página (só o que já aparece na tela; nada de código de acesso).
+app.get('/turma/:slug/info', (req, res) => {
+  res.set({ 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' });
+  const t = turmaPorSlug(req.params.slug);
+  if (!t || !turmaAcessoOk(t, typeof req.query.c === 'string' ? req.query.c : '')) return res.status(404).json({ error: 'Link exclusivo.' });
+  res.json({ nome: t.nome, data: t.data, local: t.local, vagas: t.vagas, preco: t.preco, precoOriginal: t.precoOriginal, parcelasMax: t.parcelasMax });
 });
 
 app.get('/', (req, res, next) => {

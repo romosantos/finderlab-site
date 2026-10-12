@@ -128,7 +128,8 @@ button{font-family:inherit;cursor:pointer}
   function shown() {
     var t = q.trim().toLowerCase();
     return leads.filter(function (l) {
-      if (filter !== 'all' && l.status !== filter) return false;
+      if (filter.indexOf('t:') === 0) { if (l.turma !== filter.slice(2)) return false; }
+      else if (filter !== 'all' && l.status !== filter) return false;
       if (!t) return true;
       return [l.nome, l.email, l.empresa, l.whats, l.cargo].join(' ').toLowerCase().indexOf(t) !== -1;
     });
@@ -142,7 +143,10 @@ button{font-family:inherit;cursor:pointer}
     $('nPago').textContent = c('pago');
 
     var chips = $('chips'); chips.textContent = '';
-    FILTERS.forEach(function (f) {
+    var turmas = {};
+    leads.forEach(function (l) { if (l.turma) turmas[l.turma] = true; });
+    var allFilters = FILTERS.concat(Object.keys(turmas).sort().map(function (t) { return ['t:' + t, 'Turma ' + t]; }));
+    allFilters.forEach(function (f) {
       var b = el('button', 'chip' + (filter === f[0] ? ' on' : ''), f[1]);
       b.onclick = function () { filter = f[0]; render(); };
       chips.appendChild(b);
@@ -159,7 +163,7 @@ button{font-family:inherit;cursor:pointer}
 
       var a = el('div');
       a.appendChild(el('div', 'n', l.nome));
-      var bits = [l.cargo, l.empresa].filter(Boolean);
+      var bits = [l.turma ? 'Turma ' + l.turma : '', l.cargo, l.empresa].filter(Boolean);
       a.appendChild(el('div', 's', bits.length ? bits.join(' · ') : 'Empresa e cargo não informados'));
       row.appendChild(a);
 
