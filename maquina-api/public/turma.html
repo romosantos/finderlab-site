@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Turma para associados · Máquina de Decisões · Finder Lab</title>
-<meta name="description" content="Inscrição exclusiva para a turma de associados da Máquina de Decisões. O Drigo, assistente de IA da Finder Lab, cuida das dúvidas e da sua inscrição.">
+<title>Máquina de Decisões · Turma para associados · Finder Lab</title>
+<meta name="description" content="Imersão presencial de um dia, em São Paulo, em que você constrói o seu próprio agente de IA. O Drigo, agente da Finder Lab, cuida das suas dúvidas e da sua inscrição.">
 <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,63 +14,57 @@
 <link rel="stylesheet" href="/chat-links.css?v=20260930agree">
 <style>
 *{box-sizing:border-box}
+html{scroll-behavior:smooth}
 body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
-  background-image:radial-gradient(ellipse 900px 700px at 50% -10%,rgba(116,67,245,.28),transparent 65%)}
+  background-image:radial-gradient(ellipse 1000px 760px at 70% -8%,rgba(116,67,245,.30),transparent 65%)}
 a{color:inherit}
-.page{--accent:#7443F5;--accent2:#A88BFF;--muted:#AEA9C5;min-height:100vh;display:flex;flex-direction:column}
-.top{max-width:1160px;width:100%;margin:0 auto;padding:32px 64px 0}
-.top img{height:31px;width:auto}
-.main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,480px);gap:56px;align-items:start;max-width:1160px;width:100%;margin:0 auto;padding:40px 64px 48px}
-.pill{display:inline-flex;align-items:center;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:9px 16px;border-radius:8px}
-h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing:-.03em;line-height:1.15;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
-.lead{margin:18px 0 0;color:var(--muted);font-size:16px;line-height:1.75;max-width:520px}
-.facts{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 0;padding:0;list-style:none}
-.facts li{border:1px solid rgba(124,84,245,.45);background:rgba(20,12,46,.55);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;color:#E4E0F4}
-.promise{margin:28px 0 0;max-width:520px;border-left:3px solid var(--accent2);background:rgba(116,67,245,.1);border-radius:8px;padding:14px 18px;font-size:15px;line-height:1.65;color:#E4E0F4}
-.main{align-content:start}
-.col-esq{display:flex;flex-direction:column;align-self:stretch}
-.col-dir{display:flex;flex-direction:column;align-self:stretch}
-.col-dir .card{flex:1}
-.col-esq .lead{margin-bottom:24px}
-.avatar{display:block;margin-top:auto;height:288px;width:auto;object-fit:contain;filter:drop-shadow(0 0 4px rgba(168,139,255,.5)) drop-shadow(0 0 22px rgba(116,67,245,.65))}
-
-.card{border:1px solid rgba(124,84,245,.6);background:#0C0A1A;border-radius:22px;padding:28px;box-shadow:0 0 70px rgba(116,67,245,.3),0 30px 110px rgba(116,67,245,.22),inset 0 0 30px rgba(116,67,245,.1)}
-.card h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em}
-.card .hint{margin:6px 0 22px;color:var(--muted);font-size:14px;line-height:1.6}
-.field{margin-bottom:16px}
-.field label{display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#D2CEE6}
-.field label small{font-weight:400;color:var(--muted)}
-.field input,.field textarea{width:100%;padding:13px 14px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-family:inherit;font-size:16px;line-height:1.4}
-.field textarea{resize:vertical;min-height:84px}
-.field input::placeholder,.field textarea::placeholder{color:#8F8AA8}
-.field.err input,.field.err textarea{border-color:#FF7A7A}
-.msg{display:none;margin-top:6px;font-size:12px;color:#FFB0B0}
-.field.err .msg{display:block}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
-.consent{display:flex;gap:10px;align-items:flex-start;margin:6px 0 4px;font-size:13px;line-height:1.55;color:#D2CEE6}
-.consent input{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--accent)}
-.consent.err{color:#FFB0B0}
-.submit{width:100%;margin-top:18px;min-height:52px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(116,67,245,.5)}
-.submit:disabled{opacity:.55;cursor:default}
-.formerr{display:none;margin-top:14px;padding:12px 14px;border-radius:10px;background:rgba(255,110,110,.12);border:1px solid rgba(255,110,110,.3);color:#FFC2C2;font-size:14px;line-height:1.5}
-.note{margin:14px 0 0;color:var(--muted);font-size:12.5px;line-height:1.6;text-align:center}
-.ok{display:none;text-align:left}
-.ok h2{font-size:22px}
-.ok p{margin:12px 0 0;color:#D2CEE6;font-size:15px;line-height:1.7}
+img{display:block;max-width:100%}
+:root{--accent:#7443F5;--accent2:#A88BFF;--muted:#AEA9C5;--line:rgba(124,84,245,.45);--card:#0C0A1A}
+.wrap{max-width:1160px;margin:0 auto;padding:0 56px}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:9px 16px;border-radius:8px}
+.hl{color:var(--accent2)}
+h1,h2,h3{margin:0;letter-spacing:-.03em;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
+h2{font-size:clamp(28px,3.6vw,46px);line-height:1.08;font-weight:700}
+h3{font-size:18px;line-height:1.3;font-weight:700;letter-spacing:-.02em;text-shadow:none}
+p{margin:0}
+.lead{font-size:17px;line-height:1.75;color:#B9B4CE}
+.lead strong,.txt strong{color:#F1EEFB;font-weight:600}
+.txt{font-size:15px;line-height:1.7;color:#B9B4CE}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 30px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:inherit;font-size:15px;font-weight:700;letter-spacing:.03em;cursor:pointer;text-decoration:none;box-shadow:0 8px 32px rgba(116,67,245,.5);transition:transform .2s ease,box-shadow .2s ease}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 44px rgba(116,67,245,.6)}
 :focus-visible{outline:2px solid #A88BFF;outline-offset:3px}
 
-.chat-note{padding:8px 14px 10px;font-size:11.5px;line-height:1.5;color:var(--muted)}
-.chat-note button{background:none;border:0;padding:0;margin-left:4px;color:var(--accent2);font:inherit;text-decoration:underline;cursor:pointer}
-.askbtn{width:100%;margin-top:14px;min-height:48px;border-radius:12px;border:1.5px solid rgba(168,139,255,.55);background:transparent;color:var(--accent2);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
-.askbtn:hover{background:rgba(116,67,245,.14)}
-.chat{display:none;margin-top:14px;border:1px solid rgba(124,84,245,.5);background:#0C0A1A;border-radius:18px;overflow:hidden}
-.chat-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(116,67,245,.1)}
+/* topo */
+.top{padding:28px 0 0}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.top img{height:31px;width:auto}
+.top a.t-link{font-size:13px;font-weight:600;color:var(--accent2);text-decoration:none;border:1px solid rgba(168,139,255,.45);padding:9px 16px;border-radius:9px}
+
+/* hero */
+.hero{padding:44px 0 72px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,480px);gap:56px;align-items:start}
+.hero h1{margin-top:22px;font-size:clamp(34px,4.7vw,60px);line-height:1.04;font-weight:800}
+.hero .lead{margin-top:22px;max-width:560px}
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 0;padding:0;list-style:none}
+.facts li{border:1px solid var(--line);background:rgba(20,12,46,.55);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;color:#E4E0F4}
+.cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:18px;margin-top:30px}
+.cta-row .small{font-size:13px;color:var(--muted);max-width:260px;line-height:1.5}
+.hero-drigo{display:flex;align-items:flex-end;gap:18px;margin-top:38px}
+.hero-drigo img{height:250px;width:auto;object-fit:contain;filter:drop-shadow(0 0 4px rgba(168,139,255,.5)) drop-shadow(0 0 26px rgba(116,67,245,.7))}
+.bubble{position:relative;max-width:300px;border:1px solid var(--line);background:rgba(20,12,46,.7);border-radius:16px 16px 16px 4px;padding:14px 16px;font-size:14px;line-height:1.6;color:#E4E0F4;margin-bottom:60px}
+.bubble b{display:block;margin-bottom:4px;color:var(--accent2);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+
+/* chat */
+.chat-col{position:sticky;top:20px}
+.card{border:1px solid rgba(124,84,245,.6);background:var(--card);border-radius:22px;box-shadow:0 0 70px rgba(116,67,245,.3),0 30px 110px rgba(116,67,245,.22),inset 0 0 30px rgba(116,67,245,.1);overflow:hidden}
+.chat{display:flex;flex-direction:column}
+.chat-head{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(116,67,245,.12)}
 .drigo-avatar{flex-shrink:0;border-radius:50%;object-fit:contain;padding:4px;border:1px solid rgba(168,139,255,.5);background:linear-gradient(135deg,var(--accent),var(--accent2))}
-.chat-head b{display:block;font-size:14px}
-.chat-head span{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
-.chat-body{height:320px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
-.chat-msg{max-width:90%;padding:10px 13px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-head b{display:block;font-size:15px}
+.chat-head span.sub{display:flex;align-items:center;gap:6px;margin-top:2px;font-size:12px;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:#4ADE80;box-shadow:0 0 8px #4ADE80}
+.chat-body{height:430px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{max-width:90%;padding:11px 14px;border-radius:14px;font-size:14.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .chat-msg.bot{align-self:flex-start;background:rgba(255,255,255,.06);color:#EDEAF7;border:1px solid rgba(255,255,255,.08)}
 .chat-msg.user{align-self:flex-end;background:var(--accent);color:#fff}
 .chat-msg.err{align-self:flex-start;background:rgba(255,110,110,.12);color:#FFC2C2;border:1px solid rgba(255,110,110,.3)}
@@ -79,73 +73,406 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
 .chat-dots span:nth-child(2){animation-delay:.15s}
 .chat-dots span:nth-child(3){animation-delay:.3s}
 @keyframes chatDot{0%,100%{opacity:.3}50%{opacity:1}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 14px}
+.chips button{border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.1);color:#DCD3FF;font-family:inherit;font-size:13px;font-weight:500;padding:9px 13px;border-radius:999px;cursor:pointer;transition:background .2s}
+.chips button:hover{background:rgba(116,67,245,.3)}
 .chat-form{display:flex;align-items:flex-end;gap:8px;padding:12px;border-top:1px solid rgba(255,255,255,.08)}
 .chat-form textarea{flex:1;min-width:0;min-height:48px;max-height:120px;padding:12px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-family:inherit;font-size:16px;line-height:1.4;resize:none}
+.chat-form textarea::placeholder{color:#8F8AA8}
 .chat-send{width:48px;height:48px;flex-shrink:0;border-radius:50%;border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .chat-send:disabled{opacity:.45;cursor:default}
+.chat-note{padding:2px 16px 14px;font-size:11.5px;line-height:1.5;color:var(--muted)}
 
-.foot{padding:20px 64px 32px;text-align:center}
-.foot{font-size:13px;color:var(--muted)}
-@media(max-width:900px){
-  .top{padding:24px 24px 0}
-  .main{grid-template-columns:1fr;gap:32px;padding:28px 24px 40px}
-  .avatar{display:none}
-  .foot{padding-left:24px;padding-right:24px}
-}
-@media(max-width:560px){
-  .top{padding:20px 16px 0}
-  .main{padding:20px 16px 32px}
-  .card{padding:22px 18px;border-radius:18px}
-  .two{grid-template-columns:1fr;gap:0}
-}
+/* seções */
+.sec{padding:96px 0;border-top:1px solid rgba(255,255,255,.07)}
+.sec.alt{background:#080714}
+.sec-head{max-width:760px;margin-bottom:46px}
+.sec-head h2{margin-top:18px}
+.sec-head .lead{margin-top:18px}
 
-.card.chatcard{padding:0;overflow:hidden;display:flex;flex-direction:column}
-.chatcard .chat{display:flex;flex-direction:column;margin:0;border:0;border-radius:0;flex:1;background:transparent}
-.chatcard .chat-body{height:auto;flex:1;min-height:380px;max-height:56vh}
-.banner{display:none;margin:0 0 14px;padding:12px 14px;border-radius:10px;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.14);color:#E4E0F4;font-size:14px;line-height:1.55}
-.hint-inline{padding:10px 16px 0;color:var(--muted);font-size:12.5px;line-height:1.5}
+/* agente-demo */
+.versus{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.vcard{border:1px solid var(--line);background:rgba(20,12,46,.5);border-radius:18px;padding:32px;box-shadow:inset 0 0 24px rgba(116,67,245,.14)}
+.vcard.strong{border-color:rgba(168,139,255,.85);box-shadow:inset 0 0 30px rgba(116,67,245,.3),0 0 40px rgba(116,67,245,.22)}
+.vcard .tag{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2)}
+.vcard h3{margin-top:12px;font-size:22px}
+.vcard ul{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:12px}
+.vcard li{position:relative;padding-left:24px;font-size:15px;line-height:1.55;color:#C9C4DC}
+.vcard li::before{content:"";position:absolute;left:0;top:8px;width:10px;height:10px;border-radius:3px;background:var(--accent2)}
+
+/* entregáveis */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.box{border:1px solid rgba(124,84,245,.4);background:rgba(20,12,46,.45);border-radius:16px;padding:26px;transition:border-color .2s}
+.box:hover{border-color:rgba(140,100,255,.9)}
+.box .n{font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:14px}
+.box .txt{margin-top:10px;font-size:14.5px}
+.box.big{grid-column:span 3;display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center;border-color:rgba(168,139,255,.85);background:linear-gradient(135deg,rgba(116,67,245,.28),rgba(20,12,46,.6))}
+.box.big img{height:150px;width:auto}
+.box.big h3{font-size:24px}
+
+/* dia */
+.timeline{display:grid;gap:0;border-left:2px solid rgba(168,139,255,.4);margin-left:8px}
+.tl{position:relative;padding:0 0 28px 30px}
+.tl::before{content:"";position:absolute;left:-8px;top:4px;width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px rgba(116,67,245,.9)}
+.tl .h{font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--accent2)}
+.tl .tt{margin-top:4px;font-size:18px;font-weight:700;letter-spacing:-.02em}
+.tl .txt{margin-top:6px;max-width:640px}
+.tl.key::before{background:#fff;box-shadow:0 0 18px #A88BFF}
+.dia-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:start}
+.blocks{display:grid;gap:12px}
+.blocks div{border:1px solid rgba(124,84,245,.3);background:rgba(20,12,46,.4);border-radius:12px;padding:16px 18px;font-size:14.5px;line-height:1.55;color:#C9C4DC}
+.blocks b{color:#F1EEFB;display:block;margin-bottom:2px}
+
+/* para quem */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.yes,.no{border-radius:18px;padding:30px;border:1px solid var(--line);background:rgba(20,12,46,.45)}
+.no{border-color:rgba(255,255,255,.12);background:#0C0A1A}
+.yes h3,.no h3{font-size:19px}
+.yes ul,.no ul{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:11px}
+.yes li,.no li{position:relative;padding-left:22px;font-size:14.5px;line-height:1.55;color:#C9C4DC}
+.yes li::before{content:"";position:absolute;left:0;top:8px;width:9px;height:9px;border-radius:50%;background:var(--accent2)}
+.no li::before{content:"";position:absolute;left:0;top:11px;width:9px;height:2px;background:#8F8AA8}
+
+/* rodrigo */
+.rod{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:56px;align-items:center}
+.rod img{width:100%;border-radius:20px;border:1px solid var(--line);box-shadow:0 0 60px rgba(116,67,245,.3)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px}
+.stat{border:1px solid rgba(124,84,245,.45);background:rgba(20,12,46,.55);border-radius:12px;padding:16px 12px;text-align:center}
+.stat b{display:block;font-size:24px;letter-spacing:-.02em}
+.stat span{display:block;margin-top:4px;font-size:11.5px;color:var(--muted);line-height:1.4}
+.cases{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px}
+.case{border:1px solid rgba(124,84,245,.4);background:rgba(20,12,46,.4);border-radius:16px;padding:26px}
+.case .tag{font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2)}
+.case h3{margin-top:10px}
+.case .txt{margin-top:10px;font-size:14.5px}
+
+/* oferta */
+.offer{border:1px solid rgba(168,139,255,.8);background:linear-gradient(160deg,rgba(116,67,245,.3),rgba(12,10,26,.95) 60%);border-radius:24px;padding:48px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:44px;align-items:center;box-shadow:0 0 90px rgba(116,67,245,.3)}
+.offer h2{margin-top:16px}
+.offer ul{margin:22px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+.offer li{position:relative;padding-left:24px;font-size:15px;line-height:1.5;color:#D8D3EC}
+.offer li::before{content:"";position:absolute;left:0;top:7px;width:10px;height:10px;border-radius:3px;background:var(--accent2)}
+.price{border:1px solid var(--line);background:rgba(5,4,12,.6);border-radius:18px;padding:26px;text-align:center}
+.price .lbl{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2)}
+.price .val{margin-top:12px;font-size:36px;font-weight:800;letter-spacing:-.03em}
+.price .val.small{font-size:20px;line-height:1.3;letter-spacing:-.02em}
+.price .old{margin-top:6px;font-size:13px;color:var(--muted)}
+.price .btn{width:100%;margin-top:22px}
+.price .note{margin-top:14px;font-size:12.5px;line-height:1.55;color:var(--muted)}
+
+/* faq */
+.faq{max-width:820px;display:grid;gap:12px}
+.faq details{border:1px solid rgba(124,84,245,.4);background:rgba(20,12,46,.4);border-radius:14px;padding:0 22px}
+.faq summary{list-style:none;cursor:pointer;padding:20px 0;font-size:16px;font-weight:600;display:flex;justify-content:space-between;gap:16px;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-size:22px;color:var(--accent2);flex-shrink:0}
+.faq details[open] summary::after{content:"\2212"}
+.faq details p{padding:0 0 20px;font-size:15px;line-height:1.7;color:#B9B4CE}
+
+/* final */
+.final{padding:110px 0;text-align:center;border-top:1px solid rgba(255,255,255,.07);background:radial-gradient(ellipse 800px 400px at 50% 100%,rgba(116,67,245,.28),transparent 70%)}
+.final h2{max-width:820px;margin:0 auto;font-size:clamp(30px,4.4vw,56px)}
+.final .lead{max-width:560px;margin:20px auto 0}
+.final .btn{margin-top:32px}
+.foot{padding:26px 24px 90px;text-align:center;font-size:13px;color:var(--muted)}
+
+/* botão flutuante (celular) */
+.fab{display:none;position:fixed;left:16px;right:16px;bottom:16px;z-index:20;min-height:54px;border-radius:14px}
+
+.banner{display:none}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.box{transition:none}}
+@media(max-width:980px){
+  .wrap{padding:0 24px}
+  .hero-grid{grid-template-columns:1fr;gap:36px}
+  .chat-col{position:static}
+  .hero-drigo{display:none}
+  .grid3{grid-template-columns:1fr 1fr}
+  .box.big{grid-column:span 2}
+  .dia-grid,.rod,.offer{grid-template-columns:1fr;gap:34px}
+  .rod img{max-width:380px}
+  .offer{padding:32px 24px}
+}
+@media(max-width:640px){
+  .wrap{padding:0 16px}
+  .sec{padding:64px 0}
+  .hero{padding:28px 0 48px}
+  .versus,.two,.cases{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr}
+  .box.big{grid-column:span 1;grid-template-columns:1fr}
+  .box.big img{height:110px}
+  .stats{grid-template-columns:1fr 1fr}
+  .chat-body{height:380px}
+  .fab{display:flex}
+  .cta-row .btn{width:100%}
+  .top a.t-link{display:none}
+}
 </style>
 </head>
 <body>
-<div class="page">
-  <div class="top"><img src="/img/logo-finderlab.png" alt="Finder Lab · Agentic Architecture Product House"></div>
 
-  <div class="main">
-    <section class="col-esq">
+<header class="top">
+  <div class="wrap">
+    <img src="/img/logo-finderlab.png" alt="Finder Lab · Agentic Architecture Product House">
+    <a class="t-link" href="#drigo" data-open-chat>Falar com o Drigo</a>
+  </div>
+</header>
+
+<main>
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
       <span class="pill" id="pill">Turma para associados</span>
-      <h1>Máquina de Decisões: inscrição exclusiva para associados</h1>
-      <p class="lead">Uma imersão presencial de um dia, em São Paulo, para líderes e empresários repensarem as decisões do negócio a partir da IA. Quem cuida da sua inscrição, das dúvidas e do pagamento é o Drigo, o agente de IA da Finder Lab. Pode conversar com ele agora.</p>
-      <img class="avatar" src="/img/drigo-avatar.png" alt="">
+      <h1>Você sai da imersão com o <span class="hl">seu próprio agente de IA</span> funcionando.</h1>
+      <p class="lead">Em um dia, em São Paulo, você constrói com o Rodrigo Moraes um agente virtual para uma decisão real do seu negócio. <strong>E quem cuida da sua inscrição é um agente: o Drigo.</strong> Converse com ele agora e veja o que você vai aprender a criar.</p>
       <ul class="facts" id="facts">
         <li>Presencial</li>
         <li>1 dia · 6 horas</li>
         <li>São Paulo</li>
+        <li>20 vagas</li>
       </ul>
-      <p class="promise" id="promise">Turma fechada, com condição especial para quem recebeu este link. Pergunte ao Drigo qualquer coisa e, se fizer sentido para você, ele conclui a inscrição na própria conversa.</p>
-    </section>
+      <div class="cta-row">
+        <a class="btn" href="#drigo" data-open-chat>Conversar com o Drigo</a>
+        <span class="small">Ele tira suas dúvidas e faz a sua inscrição na própria conversa.</span>
+      </div>
+      <div class="hero-drigo">
+        <img src="/img/drigo-avatar.png" alt="Drigo, agente de IA da Finder Lab">
+        <div class="bubble"><b>Drigo</b>Eu sou um agente de IA do Rodrigo. Atendo, respondo e inscrevo 24 horas por dia. No fim da imersão, você sai com um assim para o seu negócio.</div>
+      </div>
+    </div>
 
-    <section class="col-dir">
-      <div class="card chatcard">
+    <div class="chat-col" id="drigo">
+      <div class="card">
         <div class="chat" id="chat">
           <div class="chat-head">
-            <img class="drigo-avatar" src="/img/drigo-avatar-cabeca.png" width="36" height="36" alt="">
-            <div><b>Drigo</b><span>Assistente de IA da Finder Lab · responsável por esta turma</span></div>
+            <img class="drigo-avatar" src="/img/drigo-avatar-cabeca.png" width="40" height="40" alt="">
+            <div><b>Drigo</b><span class="sub"><i class="dot"></i>Agente de IA · responsável por esta turma</span></div>
           </div>
           <div class="chat-body" id="chat-body" aria-live="polite">
-            <div class="chat-msg bot">Oi, tudo bem? Eu sou o Drigo, assistente de IA do Rodrigo, e cuido das inscrições e das dúvidas desta turma para associados. Posso te contar como é o dia, tirar suas dúvidas ou já cuidar da sua inscrição. Por onde você quer começar?</div>
+            <div class="chat-msg bot">Oi, tudo bem? Eu sou o Drigo, agente de IA do Rodrigo, e cuido desta turma para associados: respondo as dúvidas e faço a inscrição aqui mesmo. Por onde você quer começar?</div>
+          </div>
+          <div class="chips" id="chips">
+            <button type="button">Como é o dia?</button>
+            <button type="button">O que eu vou construir?</button>
+            <button type="button">Isso serve para o meu negócio?</button>
+            <button type="button">Quero me inscrever</button>
           </div>
           <form class="chat-form" id="chat-form">
             <textarea id="chat-input" autocomplete="off" placeholder="Escreve aqui..." aria-label="Sua mensagem" maxlength="600" rows="1"></textarea>
             <button type="submit" class="chat-send" id="chat-send" disabled aria-label="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
           </form>
-          <div class="chat-note">Sou um agente de IA. Dúvidas que eu não resolver, o Rodrigo resolve pelo WhatsApp (11) 3164-3783.</div>
+          <div class="chat-note">Sou um agente de IA. O que eu não resolver, o Rodrigo resolve pelo WhatsApp (11) 3164-3783.</div>
         </div>
       </div>
-    </section>
+    </div>
   </div>
+</section>
 
-  <div class="foot">um projeto da Finder Lab</div>
-</div>
+<!-- O DRIGO COMO PROVA -->
+<section class="sec alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="pill">Você já está vendo o resultado</span>
+      <h2>O Drigo foi construído com o método que você vai aplicar no seu negócio.</h2>
+      <p class="lead">Esta página não tem formulário. A conversa é o atendimento: o Drigo entende quem você é, responde com base no que o Rodrigo ensina, registra a inscrição e gera o pagamento. É um agente de verdade, trabalhando. Na imersão, você constrói o seu.</p>
+    </div>
+    <div class="versus">
+      <div class="vcard">
+        <span class="tag">O Drigo, agora</span>
+        <h3>Atende esta turma por você, sem pausa</h3>
+        <ul>
+          <li>Responde dúvidas sobre conteúdo, formato, valor e logística</li>
+          <li>Entende o seu negócio antes de recomendar qualquer coisa</li>
+          <li>Registra a inscrição e gera o link de pagamento</li>
+          <li>Passa para o Rodrigo o que só uma pessoa resolve</li>
+        </ul>
+      </div>
+      <div class="vcard strong">
+        <span class="tag">O seu agente, no fim do dia</span>
+        <h3>Trabalha por você numa decisão do seu negócio</h3>
+        <ul>
+          <li>Construído sobre uma decisão real da sua empresa, a mesma que você mapeia no diagnóstico da manhã</li>
+          <li>Com o contexto, as regras e a linguagem do seu negócio</li>
+          <li>Funcionando ao final da imersão, e não uma demonstração</li>
+          <li>Seu para usar como webapp ou também no WhatsApp</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- O QUE VOCÊ LEVA -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="pill">O que você leva</span>
+      <h2>Um agente seu, mais o método para criar o próximo.</h2>
+    </div>
+    <div class="grid3">
+      <div class="box big">
+        <img src="/img/drigo-avatar-cabeca.png" alt="">
+        <div>
+          <div class="n">A ENTREGA PRINCIPAL</div>
+          <h3>Seu agente virtual de IA, construído por você, com o Rodrigo ao lado</h3>
+          <p class="txt">Das 14h às 16h você constrói o seu agente sobre uma decisão real do seu negócio. É o mesmo processo que a Finder Lab cobra R$ 5.000 para fazer sob demanda para uma empresa. Na imersão, a construção está incluída.</p>
+        </div>
+      </div>
+      <div class="box"><div class="n">01</div><h3>Diagnóstico do seu negócio</h3><p class="txt">Qual decisão sua pode melhorar com IA. Você sai com o mapeamento feito, as fontes de contexto identificadas e o próximo passo claro.</p></div>
+      <div class="box"><div class="n">02</div><h3>O framework Máquina de Decisões</h3><p class="txt">Dado, contexto, diagnóstico, previsão, recomendação e ação, aplicado à sua empresa. Você passa a saber o que pedir, o que delegar e o que mudar.</p></div>
+      <div class="box"><div class="n">03</div><h3>Networking de verdade</h3><p class="txt">Uma turma de 20 empresários e líderes, com coffee break e almoço juntos para conversar sobre os negócios de cada um.</p></div>
+      <div class="box"><div class="n">04</div><h3>Material de apoio em PDF</h3><p class="txt">Para você revisar o raciocínio e reaplicar o método em outras decisões.</p></div>
+      <div class="box"><div class="n">05</div><h3>Grupo de acompanhamento</h3><p class="txt">Depois da imersão, você segue com acesso ao grupo no WhatsApp para tirar dúvidas e trocar com a turma.</p></div>
+      <div class="box"><div class="n">06</div><h3>Nota fiscal</h3><p class="txt">A inscrição emite nota fiscal.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- O DIA -->
+<section class="sec alt">
+  <div class="wrap dia-grid">
+    <div>
+      <span class="pill">Como é o dia</span>
+      <h2 style="margin-top:18px">Seis horas para sair com algo funcionando.</h2>
+      <p class="lead" style="margin-top:18px">Presencial, em um sábado, em São Paulo. Sem gravação e sem módulos semanais: você passa o dia dentro do seu próprio negócio, com método.</p>
+      <div class="blocks" style="margin-top:28px">
+        <div><b>A empresa como máquina de decisões</b>O framework que muda como você olha para o negócio e onde a IA realmente encaixa.</div>
+        <div><b>Contexto é tudo</b>Por que a mesma IA responde tão diferente de uma empresa para outra, e como estruturar o conhecimento do seu negócio.</div>
+        <div><b>Do ChatGPT ao agente</b>A diferença entre uma IA que responde e uma IA que age.</div>
+        <div><b>Casos reais e diagnóstico</b>Como foram construídos sistemas reais, e qual decisão do seu negócio atacar primeiro.</div>
+      </div>
+    </div>
+    <div class="timeline">
+      <div class="tl"><div class="h">8h30</div><div class="tt">Chegada e coffee break</div></div>
+      <div class="tl"><div class="h">9h00</div><div class="tt">Início da imersão</div><p class="txt">Framework, contexto, do chatbot ao agente, casos reais e o diagnóstico individual do seu negócio.</p></div>
+      <div class="tl"><div class="h">10h30 às 10h50</div><div class="tt">Intervalo com coffee break</div></div>
+      <div class="tl"><div class="h">12h30 às 14h00</div><div class="tt">Almoço com bate-papo</div><p class="txt">Networking com a turma.</p></div>
+      <div class="tl key"><div class="h">14h00 às 16h00</div><div class="tt">Você constrói o seu agente</div><p class="txt">Com o Rodrigo ao lado, aplicado à decisão real do seu negócio. Você sai com ele funcionando.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PARA QUEM -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="pill">Para quem é</span>
+      <h2>Para quem decide, e quer decidir melhor e antes.</h2>
+    </div>
+    <div class="two">
+      <div class="yes">
+        <h3>É para você se</h3>
+        <ul>
+          <li>É empresário, diretor ou líder e influencia de verdade as decisões do negócio</li>
+          <li>Quer entender a lógica da IA e saber o que perguntar, o que delegar e o que mudar</li>
+          <li>Quer deixar de depender de terceiros para saber o que a IA pode ou não fazer pela empresa</li>
+          <li>Tem uma decisão que se repete no negócio e que hoje depende de juntar as peças na mão</li>
+        </ul>
+        <p class="txt" style="margin-top:18px">Serve para empresa de qualquer tamanho. As menores costumam implementar mais rápido o que aprendem.</p>
+      </div>
+      <div class="no">
+        <h3>Não é para você se</h3>
+        <ul>
+          <li>Procura curso técnico de programação, machine learning ou ciência de dados</li>
+          <li>Quer só dicas de produtividade pessoal com IA</li>
+          <li>Quer aprender ferramenta por ferramenta no dia a dia</li>
+        </ul>
+        <p class="txt" style="margin-top:18px">Você não sai dominando uma plataforma. Sai sabendo qual decisão do seu negócio vale atacar primeiro e com um agente criado para ela.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RODRIGO + CASOS -->
+<section class="sec alt">
+  <div class="wrap">
+    <div class="rod">
+      <img src="/img/instrutor-photo.png" alt="Rodrigo Moraes" loading="lazy">
+      <div>
+        <span class="pill">Quem conduz</span>
+        <h2 style="margin-top:18px">Rodrigo Moraes</h2>
+        <p class="lead" style="margin-top:18px">Empresário, engenheiro de software e fundador da Finder Lab. Não chegou à IA pela tecnologia: chegou pela gestão, pelos processos e pelas decisões que precisam ser tomadas quando ninguém te dá o manual. Hoje constrói produtos de IA que estão em produção e ensina líderes a fazer o mesmo.</p>
+        <div class="stats">
+          <div class="stat"><b>21</b><span>anos em tecnologia</span></div>
+          <div class="stat"><b>+500</b><span>pessoas treinadas em IA</span></div>
+          <div class="stat"><b>22</b><span>livros publicados</span></div>
+          <div class="stat"><b>+10</b><span>anos de palco</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="cases">
+      <div class="case">
+        <span class="tag">Sistema real</span>
+        <h3>Gestão de projetos que avisa quem precisa saber</h3>
+        <p class="txt">Um cliente abandonou o Trello e o Asana, que viravam ruído ou silêncio. O Rodrigo construiu um sistema em que cada projeto já nasce com tarefas e prazos calculados, e que todo dia de madrugada checa atrasos, informação faltando e sobrecarga, e avisa a pessoa certa. Com um agente de IA embutido que lê documentos e propõe as ações.</p>
+      </div>
+      <div class="case">
+        <span class="tag">Sistema real</span>
+        <h3>Inventário nacional de ativos, em 70 dias</h3>
+        <p class="txt">Para uma marca do setor de bebidas, um app que funciona offline, confirma o auditor por GPS e usa IA para validar a foto de cada ativo, com um painel em tempo real da cobertura por região. Do início à entrega em 70 dias.</p>
+      </div>
+    </div>
+    <p class="txt" style="margin-top:22px;max-width:760px">Nos dois, o ganho não veio de colocar uma IA em cima de um processo que já existia. Veio de repensar o processo inteiro com a IA no desenho desde o início. É a lógica que você leva para o seu negócio.</p>
+  </div>
+</section>
+
+<!-- OFERTA -->
+<section class="sec">
+  <div class="wrap">
+    <div class="offer">
+      <div>
+        <span class="pill">Turma para associados</span>
+        <h2>Uma turma fechada, com condição especial.</h2>
+        <ul>
+          <li>Imersão presencial de um dia com o Rodrigo Moraes</li>
+          <li>Seu agente de IA construído e funcionando ao final</li>
+          <li>Diagnóstico individual, framework, material em PDF e grupo de acompanhamento</li>
+          <li>Coffee break, almoço e networking com a turma</li>
+          <li>Apenas 20 vagas, para manter a qualidade da troca</li>
+        </ul>
+      </div>
+      <div class="price">
+        <div class="lbl" id="price-lbl">Condição para associados</div>
+        <div class="val small" id="price-val">O Drigo apresenta o valor na conversa</div>
+        <div class="old" id="price-old"></div>
+        <a class="btn" href="#drigo" data-open-chat>Quero me inscrever</a>
+        <p class="note" id="price-note">A inscrição é feita com o Drigo, aqui na página. O pagamento acontece no ambiente seguro do Asaas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="sec alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="pill">Dúvidas frequentes</span>
+      <h2>O que costumam perguntar.</h2>
+      <p class="lead">Se a sua dúvida não está aqui, pergunte ao Drigo.</p>
+    </div>
+    <div class="faq">
+      <details><summary>Preciso entender de tecnologia ou programar?</summary><p>Não. A imersão é sobre lógica de negócio e decisão. Você aprende o que entender das ferramentas, o que terceirizar, o que montar sozinho e como saber se um fornecedor está ajudando ou enrolando.</p></details>
+      <details><summary>O agente que eu construo é de verdade?</summary><p>Sim. Ele é construído sobre uma decisão real do seu negócio, com o contexto da sua empresa, e sai funcionando da imersão. Não é uma demonstração.</p></details>
+      <details><summary>O agente fica funcionando depois da imersão? Tem custo?</summary><p>A construção está inclusa na inscrição. O agente fica hospedado na infraestrutura da Finder Lab e você escolhe se quer só como webapp, ou webapp mais WhatsApp. Para mantê-lo no ar depois do evento existe uma mensalidade de manutenção à parte, entre R$ 700 e R$ 1.000, conforme a configuração escolhida. O Rodrigo confirma o valor exato do seu caso.</p></details>
+      <details><summary>Minha empresa é pequena. Faz sentido?</summary><p>Faz. Empresas menores decidem rápido e costumam implementar o que aprendem já na segunda-feira.</p></details>
+      <details><summary>Já uso o ChatGPT. Qual é a diferença?</summary><p>Usar IA para acelerar tarefas é diferente de repensar decisões. O foco aqui é a decisão do negócio que ainda depende de alguém juntar as peças na mão, e um agente que passa a cuidar dela.</p></details>
+      <details><summary>E se eu precisar cancelar?</summary><p>Com pelo menos 10 dias de antecedência, o valor é reembolsado. Com menos de 10 dias, a vaga é transferida para a próxima turma disponível. Os casos são tratados direto com o Rodrigo.</p></details>
+      <details><summary>Quem me atende na inscrição é uma pessoa?</summary><p>É o Drigo, um agente de IA que trabalha para o Rodrigo. Se você preferir falar com uma pessoa, é só chamar o Rodrigo no WhatsApp (11) 3164-3783 ou em rodrigo.moraes@finderlab.com.br.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL -->
+<section class="final">
+  <div class="wrap">
+    <h2>A próxima vantagem não será ter IA. Será ter um <span class="hl">agente trabalhando</span> nas decisões do seu negócio.</h2>
+    <p class="lead">Converse com o Drigo, tire suas dúvidas e garanta a sua vaga.</p>
+    <a class="btn" href="#drigo" data-open-chat>Falar com o Drigo</a>
+  </div>
+</section>
+</main>
+
+<div class="foot">um projeto da Finder Lab</div>
+<a class="btn fab" href="#drigo" data-open-chat>Falar com o Drigo</a>
 
 <script src="/online.js" data-page="turma" defer></script>
 <script src="/chat-links.js?v=20260930agree"></script>
@@ -164,29 +491,38 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
       if (!d) return;
       if (d.nome) $('pill').textContent = d.nome;
       var facts = $('facts'); facts.textContent = '';
-      ['Presencial', '1 dia · 6 horas', 'São Paulo'].forEach(function (t) { var li = document.createElement('li'); li.textContent = t; facts.appendChild(li); });
-      var extra = [];
-      extra.push(d.data ? d.data : 'Data a confirmar');
-      if (d.local) extra.push(d.local);
-      if (d.vagas) extra.push(d.vagas + ' vagas');
-      if (d.preco) extra.push('Condição especial: ' + brl(d.preco));
-      extra.forEach(function (t) { var li = document.createElement('li'); li.textContent = t; facts.appendChild(li); });
+      var itens = ['Presencial', '1 dia · 6 horas', 'São Paulo'];
+      itens.push(d.data ? d.data : 'Data a confirmar');
+      if (d.local) itens.push(d.local);
+      if (d.vagas) itens.push(d.vagas + ' vagas');
+      itens.forEach(function (t) { var li = document.createElement('li'); li.textContent = t; facts.appendChild(li); });
+      if (d.preco) {
+        $('price-lbl').textContent = 'Condição para associados';
+        $('price-val').className = 'val';
+        $('price-val').textContent = brl(d.preco);
+        var extra = [];
+        if (d.precoOriginal && d.precoOriginal > d.preco) extra.push('valor normal ' + brl(d.precoOriginal));
+        if (d.parcelasMax > 1) extra.push('cartão em até ' + d.parcelasMax + 'x ou Pix à vista');
+        $('price-old').textContent = extra.join(' · ');
+      }
     })
     .catch(function () {});
 
-  // ---------- retorno do pagamento ----------
-  var chat = $('chat'), chatBody = $('chat-body'), chatForm = $('chat-form'), chatInput = $('chat-input'), chatSend = $('chat-send');
+  // ---------- chat do Drigo ----------
+  var chatBody = $('chat-body'), chatForm = $('chat-form'), chatInput = $('chat-input'), chatSend = $('chat-send'), chips = $('chips');
   var chatSession = 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   var chatLoading = false;
 
+  Array.prototype.forEach.call(document.querySelectorAll('[data-open-chat]'), function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var alvo = $('drigo');
+      if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(function () { try { chatInput.focus({ preventScroll: true }); } catch (x) {} }, 450);
+    });
+  });
+
   function scrollChat() { chatBody.scrollTop = chatBody.scrollHeight; }
-  function addMsg(who, text, showTermsAcceptance, termsAcceptanceLabel) {
-    var div = document.createElement('div');
-    div.className = 'chat-msg ' + who;
-    window.DrigoChatLinks.render(div, text);
-    chatBody.appendChild(div);
-    if (who === 'bot' && showTermsAcceptance === true) attachTerms(div, termsAcceptanceLabel);
-  }
   function attachTerms(div, label) {
     window.DrigoChatLinks.addTermsAcceptance(div, function () {
       if (chatLoading) return false;
@@ -196,9 +532,16 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
       return true;
     }, label);
   }
+  function addMsg(who, text, showTermsAcceptance, termsAcceptanceLabel) {
+    var div = document.createElement('div');
+    div.className = 'chat-msg ' + who;
+    window.DrigoChatLinks.render(div, text);
+    chatBody.appendChild(div);
+    if (who === 'bot' && showTermsAcceptance === true) attachTerms(div, termsAcceptanceLabel);
+  }
 
   var pg = params.get('pagamento');
-  if (pg === 'ok') addMsg('bot', 'Recebi o retorno do seu pagamento. Assim que o Asaas confirmar, você recebe a confirmação por e-mail e pelo WhatsApp. Se tiver qualquer dúvida sobre o que acontece agora, é só perguntar.');
+  if (pg === 'ok') { addMsg('bot', 'Recebi o retorno do seu pagamento. Assim que o Asaas confirmar, você recebe a confirmação por e-mail e pelo WhatsApp. Se tiver qualquer dúvida sobre o que acontece agora, é só perguntar.'); chips.style.display = 'none'; }
   else if (pg === 'cancelado') addMsg('bot', 'Vi que o pagamento não foi concluído. Sem problema: quer que eu gere o link de novo, ou ficou alguma dúvida?');
   else if (pg === 'expirado') addMsg('bot', 'O link de pagamento expirou. Quer que eu gere outro?');
 
@@ -223,11 +566,20 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
   chatInput.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); chatForm.requestSubmit(); }
   });
+  Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+    b.addEventListener('click', function () {
+      if (chatLoading) return;
+      chatInput.value = b.textContent;
+      updateSend();
+      chatForm.requestSubmit();
+    });
+  });
 
   chatForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var text = chatInput.value.trim();
     if (!text || chatLoading) return;
+    chips.style.display = 'none';
     var history = Array.prototype.slice.call(chatBody.querySelectorAll('.chat-msg.user, .chat-msg.bot'))
       .slice(-16)
       .map(function (el) { return { role: el.classList.contains('user') ? 'user' : 'assistant', content: el.dataset.message || el.textContent }; });
@@ -295,7 +647,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
         }
         return pump();
       })
-      .catch(function (err) {
+      .catch(function () {
         clearTimeout(timeoutId);
         setLoading(false);
         if (streamDiv) { streamDiv.remove(); streamDiv = null; }
