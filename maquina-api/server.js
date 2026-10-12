@@ -1108,7 +1108,7 @@ function getOrSetVisitorId(req, res) {
 // Qual página foi aberta: domínio do diagnóstico, lista de prioridade, inscrição ou landing.
 function pageKeyFromRequest(req) {
   if (/diagnostico/i.test(req.hostname || '')) return '/diagnostico';
-  if (/^\/turma\//.test(req.path)) return '/turma';
+  if (/^\/turma\//.test(req.path) || req.path === '/imersao') return '/turma';
   if (req.path === '/lista' || req.path === '/lista.html') return '/lista';
   if (req.path === '/' || req.path === '/index.html') return '/';
   return '/inscricao';
@@ -3007,6 +3007,17 @@ footer{margin-top:32px;color:#777;font-size:13px}
 
 // ---------- Turmas fechadas (/turma/:slug?c=código) ----------
 const TURMA_FECHADA_HTML = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Link exclusivo · Finder Lab</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#05040C;color:#F1EEFB;font-family:Arial,Helvetica,sans-serif;padding:24px}main{max-width:460px;text-align:center;line-height:1.6}h1{font-size:22px;margin:0 0 12px}p{color:#AEA9C5;margin:0 0 10px}a{color:#A88BFF}</style></head><body><main><h1>Este link é exclusivo</h1><p>Ele não está mais válido ou foi digitado incompleto. Use o link completo que você recebeu.</p><p>Se precisar, fale com o Rodrigo pelo WhatsApp <a href="https://wa.me/551131643783">(11) 3164-3783</a>.</p></main></body></html>`;
+// Endereço curto e limpo de cada turma (sem código no link). Hoje só a turma de associados.
+const TURMA_ATALHOS = { imersao: 'associados' };
+app.get('/imersao', (req, res) => {
+  res.set({ 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' });
+  const t = turmaPorSlug(TURMA_ATALHOS.imersao);
+  if (!t || !turmaAcessoOk(t, typeof req.query.c === 'string' ? req.query.c : '')) {
+    return res.status(404).type('html').send(TURMA_FECHADA_HTML);
+  }
+  trackPageView(req, res).catch(() => {});
+  res.sendFile(path.join(__dirname, 'public', 'turma.html'));
+});
 app.get('/turma/:slug', (req, res) => {
   res.set({ 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' });
   const t = turmaPorSlug(req.params.slug);

@@ -153,7 +153,7 @@ h1{margin:20px 0 0;font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var params = new URLSearchParams(location.search);
-  var slug = (location.pathname.match(/^\/turma\/([a-z0-9-]+)/) || [])[1] || '';
+  var slug = location.pathname.replace(/\/+$/, '') === '/imersao' ? 'associados' : ((location.pathname.match(/^\/turma\/([a-z0-9-]+)/) || [])[1] || '');
   var acesso = params.get('c') || '';
 
   // ---------- dados da turma (data, local, condição) ----------
