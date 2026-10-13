@@ -2,12 +2,21 @@
   "associados": {
     "nome_exibicao": "Turma para associados",
     "publico": "associados convidados",
-    "preco": null,
     "preco_original": 2000,
     "parcelas_max": 10,
     "data": null,
     "local": null,
     "vagas": 20,
-    "acesso": ""
+    "acesso": "",
+    "precos": {
+      "1": 998,
+      "2": 1600,
+      "3": 2200
+    },
+    "precos_originais": {
+      "1": 2000,
+      "2": 3500,
+      "3": 5000
+    }
   }
 }

@@ -158,6 +158,11 @@ p{margin:0}
 .price .val.small{font-size:20px;line-height:1.3;letter-spacing:-.02em}
 .price .old{margin-top:6px;font-size:13px;color:var(--muted)}
 .price .btn{width:100%;margin-top:22px}
+.tiers{display:grid;gap:10px;margin-top:18px;text-align:left}
+.tier{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border:1px solid var(--line);background:rgba(20,12,46,.55);border-radius:12px;padding:13px 16px}
+.tier b{font-size:22px;letter-spacing:-.02em}
+.tier span{font-size:14px;color:#D2CEE6}
+.tier s{display:block;font-size:12px;color:var(--muted);text-align:right}
 .price .note{margin-top:14px;font-size:12.5px;line-height:1.55;color:var(--muted)}
 
 /* faq */
@@ -227,7 +232,7 @@ p{margin:0}
       <p class="lead">Em um dia, em São Paulo, você constrói com o Rodrigo Moraes um agente virtual para uma decisão real do seu negócio. <strong>E quem cuida da sua inscrição é um agente: o Drigo.</strong> Converse com ele agora e veja o que você vai aprender a criar.</p>
       <ul class="facts" id="facts">
         <li>Presencial</li>
-        <li>1 dia · 6 horas</li>
+        <li>1 dia · 9h às 17h</li>
         <li>São Paulo</li>
         <li>20 vagas</li>
       </ul>
@@ -314,7 +319,7 @@ p{margin:0}
         <div>
           <div class="n">A ENTREGA PRINCIPAL</div>
           <h3>Seu agente virtual de IA, construído por você, com o Rodrigo ao lado</h3>
-          <p class="txt">Das 14h às 16h você constrói o seu agente sobre uma decisão real do seu negócio. É o mesmo processo que a Finder Lab cobra R$ 5.000 para fazer sob demanda para uma empresa. Na imersão, a construção está incluída.</p>
+          <p class="txt">À tarde você constrói o seu agente sobre uma decisão real do seu negócio. A Finder Lab cobra de R$ 5 mil a R$ 25 mil para construir um agente personalizado. Na imersão, a construção está incluída.</p>
         </div>
       </div>
       <div class="box"><div class="n">01</div><h3>Diagnóstico do seu negócio</h3><p class="txt">Qual decisão sua pode melhorar com IA. Você sai com o mapeamento feito, as fontes de contexto identificadas e o próximo passo claro.</p></div>
@@ -332,8 +337,8 @@ p{margin:0}
   <div class="wrap dia-grid">
     <div>
       <span class="pill">Como é o dia</span>
-      <h2 style="margin-top:18px">Seis horas para sair com algo funcionando.</h2>
-      <p class="lead" style="margin-top:18px">Presencial, em um sábado, em São Paulo. Sem gravação e sem módulos semanais: você passa o dia dentro do seu próprio negócio, com método.</p>
+      <h2 style="margin-top:18px">Um dia inteiro para sair com algo funcionando.</h2>
+      <p class="lead" style="margin-top:18px">Presencial, em São Paulo, das 9h às 17h. Sem gravação e sem módulos semanais: você passa o dia dentro do seu próprio negócio, com método.</p>
       <div class="blocks" style="margin-top:28px">
         <div><b>A empresa como máquina de decisões</b>O framework que muda como você olha para o negócio e onde a IA realmente encaixa.</div>
         <div><b>Contexto é tudo</b>Por que a mesma IA responde tão diferente de uma empresa para outra, e como estruturar o conhecimento do seu negócio.</div>
@@ -342,11 +347,11 @@ p{margin:0}
       </div>
     </div>
     <div class="timeline">
-      <div class="tl"><div class="h">8h30</div><div class="tt">Chegada e coffee break</div></div>
       <div class="tl"><div class="h">9h00</div><div class="tt">Início da imersão</div><p class="txt">Framework, contexto, do chatbot ao agente, casos reais e o diagnóstico individual do seu negócio.</p></div>
       <div class="tl"><div class="h">10h30 às 10h50</div><div class="tt">Intervalo com coffee break</div></div>
       <div class="tl"><div class="h">12h30 às 14h00</div><div class="tt">Almoço com bate-papo</div><p class="txt">Networking com a turma.</p></div>
-      <div class="tl key"><div class="h">14h00 às 16h00</div><div class="tt">Você constrói o seu agente</div><p class="txt">Com o Rodrigo ao lado, aplicado à decisão real do seu negócio. Você sai com ele funcionando.</p></div>
+      <div class="tl key"><div class="h">À tarde</div><div class="tt">Você constrói o seu agente</div><p class="txt">Com o Rodrigo ao lado, aplicado à decisão real do seu negócio. Você sai com ele funcionando.</p></div>
+      <div class="tl"><div class="h">17h00</div><div class="tt">Encerramento</div></div>
     </div>
   </div>
 </section>
@@ -433,6 +438,7 @@ p{margin:0}
       <div class="price">
         <div class="lbl" id="price-lbl">Condição para associados</div>
         <div class="val small" id="price-val">O Drigo apresenta o valor na conversa</div>
+        <div class="tiers" id="price-tiers"></div>
         <div class="old" id="price-old"></div>
         <a class="btn" href="#drigo" data-open-chat>Quero me inscrever</a>
         <p class="note" id="price-note">A inscrição é feita com o Drigo, aqui na página. O pagamento acontece no ambiente seguro do Asaas.</p>
@@ -452,7 +458,6 @@ p{margin:0}
     <div class="faq">
       <details><summary>Preciso entender de tecnologia ou programar?</summary><p>Não. A imersão é sobre lógica de negócio e decisão. Você aprende o que entender das ferramentas, o que terceirizar, o que montar sozinho e como saber se um fornecedor está ajudando ou enrolando.</p></details>
       <details><summary>O agente que eu construo é de verdade?</summary><p>Sim. Ele é construído sobre uma decisão real do seu negócio, com o contexto da sua empresa, e sai funcionando da imersão. Não é uma demonstração.</p></details>
-      <details><summary>O agente fica funcionando depois da imersão? Tem custo?</summary><p>A construção está inclusa na inscrição. O agente fica hospedado na infraestrutura da Finder Lab e você escolhe se quer só como webapp, ou webapp mais WhatsApp. Para mantê-lo no ar depois do evento existe uma mensalidade de manutenção à parte, entre R$ 700 e R$ 1.000, conforme a configuração escolhida. O Rodrigo confirma o valor exato do seu caso.</p></details>
       <details><summary>Minha empresa é pequena. Faz sentido?</summary><p>Faz. Empresas menores decidem rápido e costumam implementar o que aprendem já na segunda-feira.</p></details>
       <details><summary>Já uso o ChatGPT. Qual é a diferença?</summary><p>Usar IA para acelerar tarefas é diferente de repensar decisões. O foco aqui é a decisão do negócio que ainda depende de alguém juntar as peças na mão, e um agente que passa a cuidar dela.</p></details>
       <details><summary>E se eu precisar cancelar?</summary><p>Com pelo menos 10 dias de antecedência, o valor é reembolsado. Com menos de 10 dias, a vaga é transferida para a próxima turma disponível. Os casos são tratados direto com o Rodrigo.</p></details>
@@ -491,18 +496,29 @@ p{margin:0}
       if (!d) return;
       if (d.nome) $('pill').textContent = d.nome;
       var facts = $('facts'); facts.textContent = '';
-      var itens = ['Presencial', '1 dia · 6 horas', 'São Paulo'];
+      var itens = ['Presencial', '1 dia · 9h às 17h', 'São Paulo'];
       itens.push(d.data ? d.data : 'Data a confirmar');
       if (d.local) itens.push(d.local);
       if (d.vagas) itens.push(d.vagas + ' vagas');
       itens.forEach(function (t) { var li = document.createElement('li'); li.textContent = t; facts.appendChild(li); });
-      if (d.preco) {
+      var pr = d.precos || {}, po = d.precosOriginais || {};
+      if (pr['1']) {
         $('price-lbl').textContent = 'Condição para associados';
-        $('price-val').className = 'val';
-        $('price-val').textContent = brl(d.preco);
+        $('price-val').style.display = 'none';
+        var box = $('price-tiers'); box.textContent = '';
+        ['1', '2', '3'].forEach(function (k) {
+          if (!pr[k]) return;
+          var row = document.createElement('div'); row.className = 'tier';
+          var l = document.createElement('span'); l.textContent = k === '1' ? '1 pessoa' : k + ' pessoas';
+          var r = document.createElement('div'); r.style.textAlign = 'right';
+          var v = document.createElement('b'); v.textContent = brl(pr[k]);
+          r.appendChild(v);
+          if (po[k] && po[k] > pr[k]) { var o = document.createElement('s'); o.textContent = 'de ' + brl(po[k]); r.appendChild(o); }
+          row.appendChild(l); row.appendChild(r); box.appendChild(row);
+        });
         var extra = [];
-        if (d.precoOriginal && d.precoOriginal > d.preco) extra.push('valor normal ' + brl(d.precoOriginal));
-        if (d.parcelasMax > 1) extra.push('cartão em até ' + d.parcelasMax + 'x ou Pix à vista');
+        if (d.parcelasMax > 1) extra.push('Cartão em até ' + d.parcelasMax + 'x ou Pix à vista');
+        extra.push('Total por empresa, conforme o número de pessoas');
         $('price-old').textContent = extra.join(' · ');
       }
     })

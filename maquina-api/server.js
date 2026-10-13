@@ -483,6 +483,16 @@ const COURSE_MAX_INSTALLMENTS = Number(process.env.COURSE_MAX_INSTALLMENTS) || 1
 // para quem foi marcado como dessa turma pelo servidor (a partir do link), nunca por dado vindo do cliente
 // ou do modelo. Sem preço definido (null), nada é cobrado nem informado.
 let TURMAS = {};
+function mapaPrecos(m) {
+  const out = {};
+  if (m && typeof m === 'object') {
+    for (const k of ['1', '2', '3']) {
+      const v = Number(m[k]);
+      if (m[k] !== null && m[k] !== undefined && Number.isFinite(v) && v > 0) out[k] = v;
+    }
+  }
+  return out;
+}
 try {
   const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'knowledge', 'turmas.json'), 'utf8'));
   for (const [slug, t] of Object.entries(raw || {})) {
@@ -491,14 +501,17 @@ try {
       slug,
       nome: String(t.nome_exibicao || 'Turma fechada'),
       publico: String(t.publico || ''),
-      preco: Number.isFinite(Number(t.preco)) && Number(t.preco) > 0 && t.preco !== null ? Number(t.preco) : null,
-      precoOriginal: Number(t.preco_original) > 0 ? Number(t.preco_original) : null,
+      // valor total por quantidade de pessoas da mesma empresa (1 a 3); ausente = nada é cobrado nem informado
+      precos: mapaPrecos(t.precos),
+      precosOriginais: mapaPrecos(t.precos_originais),
       parcelasMax: Math.min(12, Math.max(1, Math.round(Number(t.parcelas_max)) || COURSE_MAX_INSTALLMENTS)),
       data: t.data ? String(t.data) : '',
       local: t.local ? String(t.local) : '',
       vagas: Number(t.vagas) > 0 ? Math.round(Number(t.vagas)) : null,
       acesso: t.acesso ? String(t.acesso) : '',
     };
+    TURMAS[slug].preco = TURMAS[slug].precos['1'] || null;
+    TURMAS[slug].precoOriginal = TURMAS[slug].precosOriginais['1'] || null;
   }
   console.log('Turmas carregadas: ' + (Object.keys(TURMAS).join(', ') || 'nenhuma'));
 } catch (err) {
@@ -514,6 +527,11 @@ function turmaPorSlug(slug) {
   const k = String(slug || '').toLowerCase();
   return Object.prototype.hasOwnProperty.call(TURMAS, k) ? TURMAS[k] : null;
 }
+function precoPara(t, pessoas) {
+  const n = pessoas === undefined || pessoas === null || pessoas === '' ? 1 : Math.round(Number(pessoas));
+  if (!(n >= 1 && n <= 3)) return null;
+  return t && t.precos && t.precos[String(n)] ? t.precos[String(n)] : null;
+}
 function turmaAcessoOk(t, c) {
   if (!t) return false;
   if (!t.acesso) return true;
@@ -526,9 +544,10 @@ function turmaFatos(t) {
   const L = ['# DADOS DESTA TURMA (fonte única; valem mais que qualquer valor ou data da base de conhecimento)', ''];
   L.push('Turma: ' + t.nome + (t.publico ? ' (' + t.publico + ')' : '') + '.');
   if (t.preco) {
-    L.push('Valor por pessoa nesta turma: ' + brl(t.preco) + (t.precoOriginal && t.precoOriginal > t.preco ? ' (o valor normal da imersão é ' + brl(t.precoOriginal) + ', então é uma condição especial para esta turma)' : '') + '. Não existe outro valor, pacote, cupom ou desconto adicional.');
+    const linhas = ['1', '2', '3'].filter((k) => t.precos[k]).map((k) => k + (k === '1' ? ' pessoa' : ' pessoas') + ': ' + brl(t.precos[k]) + (t.precosOriginais[k] ? ' (valor normal ' + brl(t.precosOriginais[k]) + ')' : ''));
+    L.push('Valores desta turma, total por empresa conforme o número de pessoas que a mesma pessoa inscreve: ' + linhas.join('; ') + '. É uma condição especial para esta turma. Não existe outro valor, pacote, cupom ou desconto adicional. Para mais de ' + Object.keys(t.precos).length + ' pessoas da mesma empresa, quem trata é o Rodrigo.');
     L.push('Pagamento: Pix à vista, ou cartão de crédito em até ' + t.parcelasMax + 'x (o parcelamento é do cartão, na página segura do Asaas).');
-    L.push('O valor está definido: pode seguir o fluxo completo até o link de pagamento com gerar_pagamento_inscricao.');
+    L.push('O valor está definido: pode seguir o fluxo completo até o link de pagamento com gerar_pagamento_inscricao, informando em quantidade_pessoas quantas pessoas a inscrição cobre.');
   } else {
     L.push('Valor desta turma: AINDA NÃO DEFINIDO. Não cite nenhum valor. Faça só a pré-inscrição com registrar_inscricao e diga que o Rodrigo envia o valor e as condições especiais para associados.');
   }
@@ -602,7 +621,8 @@ function buildAsaasCustomerData(lead) {
 async function createAsaasCheckout(lead, originUrl, billingType) {
   // Lead de turma fechada: preço, parcelas e páginas de retorno da própria turma.
   const turma = lead.turma ? turmaPorSlug(lead.turma) : null;
-  const valor = turma ? turma.preco : COURSE_PRICE;
+  const pessoas = turma ? Math.min(3, Math.max(1, Number(lead.pessoas) || 1)) : 1;
+  const valor = turma ? precoPara(turma, pessoas) : COURSE_PRICE;
   const parcelas = turma ? turma.parcelasMax : COURSE_MAX_INSTALLMENTS;
   const retorno = turma ? originUrl + '/turma/' + turma.slug : originUrl + '/inscricao.html';
   // a página da turma só abre com o código de acesso, então ele vai junto na volta do pagamento
@@ -622,7 +642,7 @@ async function createAsaasCheckout(lead, originUrl, billingType) {
     items: [
       {
         name: 'Máquina de Decisões',
-        description: 'Inscrição no curso Máquina de Decisões' + (turma ? ' · ' + turma.nome : ''),
+        description: 'Inscrição no curso Máquina de Decisões' + (turma ? ' · ' + turma.nome + ' · ' + pessoas + (pessoas === 1 ? ' pessoa' : ' pessoas') : ''),
         quantity: 1,
         value: valor,
       },
@@ -810,6 +830,8 @@ async function migrate() {
     -- existe sem elas, então o CREATE TABLE acima não as cria. ALTER ... IF NOT EXISTS
     -- garante que o banco existente seja atualizado também, sem quebrar nada.
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS turma       TEXT NOT NULL DEFAULT '';
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS pessoas     SMALLINT NOT NULL DEFAULT 1;
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS participantes TEXT NOT NULL DEFAULT '';
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS cpf_cnpj    TEXT NOT NULL DEFAULT '';
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS cep         TEXT NOT NULL DEFAULT '';
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS endereco    TEXT NOT NULL DEFAULT '';
@@ -1194,6 +1216,8 @@ async function saveLead(input, opts) {
   const b = input || {};
   // turma vem só do servidor (opts), nunca do corpo da requisição nem do modelo
   const turma = opts && opts.turma && turmaPorSlug(opts.turma) ? turmaPorSlug(opts.turma).slug : '';
+  const pessoas = turma ? Math.min(3, Math.max(1, Math.round(Number(opts.pessoas)) || 1)) : 1;
+  const participantes = turma ? clean(opts.participantes, 600) : '';
   const nome = clean(b.nome, 160);
   const email = clean(b.email, 200).toLowerCase();
   const whats = clean(b.whats, 30);
@@ -1221,8 +1245,8 @@ async function saveLead(input, opts) {
 
   // mesma pessoa reenviando: atualiza os dados e preserva o andamento
   const { rows } = await pool.query(
-    `INSERT INTO leads (nome, email, whats, empresa, cargo, cpf_cnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+    `INSERT INTO leads (nome, email, whats, empresa, cargo, cpf_cnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
      ON CONFLICT (lower(email)) DO UPDATE
        SET nome=EXCLUDED.nome, whats=EXCLUDED.whats, empresa=EXCLUDED.empresa,
            cargo=EXCLUDED.cargo,
@@ -1236,9 +1260,11 @@ async function saveLead(input, opts) {
            estado=CASE WHEN EXCLUDED.estado <> '' THEN EXCLUDED.estado ELSE leads.estado END,
            consent=EXCLUDED.consent,
            turma=CASE WHEN EXCLUDED.turma <> '' THEN EXCLUDED.turma ELSE leads.turma END,
+           pessoas=CASE WHEN EXCLUDED.turma <> '' THEN EXCLUDED.pessoas ELSE leads.pessoas END,
+           participantes=CASE WHEN EXCLUDED.turma <> '' THEN EXCLUDED.participantes ELSE leads.participantes END,
            updated_at=now()
      RETURNING id`,
-    [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma]
+    [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes]
   );
   notifyLeadWhatsApp({ id: rows[0].id, nome, email, whats, empresa, cargo });
   return { ok: true, id: rows[0].id };
@@ -1627,22 +1653,23 @@ async function createCheckoutForLead(leadId, originUrl, billingType) {
   }
 
   // já existe um checkout aberto pra essa inscrição? reaproveita em vez de criar outro
+  const turmaLead = lead.turma ? turmaPorSlug(lead.turma) : null;
+  if (lead.turma && (!turmaLead || !precoPara(turmaLead, lead.pessoas))) {
+    return { ok: false, status: 409, error: 'O valor desta turma para esse número de pessoas não está definido. A inscrição está registrada e o Rodrigo envia o valor e o link de pagamento.' };
+  }
+  const valorCobrado = turmaLead ? precoPara(turmaLead, lead.pessoas) : COURSE_PRICE;
+
   const existing = await pool.query(
     `SELECT id, checkout_url FROM payments
      WHERE lead_id=$1 AND status NOT IN ('EXPIRED', 'CANCELLED', 'REFUNDED')
+       AND ($2::numeric IS NULL OR value = $2::numeric)
      ORDER BY created_at DESC LIMIT 1`,
-    [leadId]
+    [leadId, turmaLead ? valorCobrado : null]
   );
   if (existing.rows[0] && existing.rows[0].checkout_url) {
     await notifyPaymentWhatsApp(lead, existing.rows[0].id, existing.rows[0].checkout_url);
     return { ok: true, url: existing.rows[0].checkout_url };
   }
-
-  const turmaLead = lead.turma ? turmaPorSlug(lead.turma) : null;
-  if (lead.turma && (!turmaLead || !turmaLead.preco)) {
-    return { ok: false, status: 409, error: 'O valor desta turma ainda não foi definido pelo Rodrigo. A inscrição está registrada e ele envia o valor e o link de pagamento.' };
-  }
-  const valorCobrado = turmaLead ? turmaLead.preco : COURSE_PRICE;
 
   const checkout = await createAsaasCheckout(lead, originUrl, billingType);
   const url = checkout.link || ('https://asaas.com/checkoutSession/show?id=' + checkout.id);
@@ -1811,6 +1838,8 @@ const CHAT_TOOLS = [
         whats: { type: 'string', description: 'WhatsApp com DDD, exatamente como a pessoa informou.' },
         empresa: { type: 'string', description: 'Empresa da pessoa, se ela informou. String vazia se não informou.' },
         cargo: { type: 'string', description: 'Cargo da pessoa, se ela informou. String vazia se não informou.' },
+        quantidade_pessoas: { type: 'integer', minimum: 1, maximum: 3, description: 'Só na turma fechada (página de turma): quantas pessoas da mesma empresa esta inscrição cobre (1, 2 ou 3), conforme a pessoa disse. Padrão 1. Ignorado fora da turma fechada.' },
+        outros_participantes: { type: 'string', description: 'Só na turma fechada: nome completo (e e-mail ou WhatsApp, se a pessoa tiver) das outras pessoas cobertas por esta inscrição. String vazia se for só uma pessoa.' },
         consent: {
           type: 'boolean',
           description:
@@ -1907,6 +1936,8 @@ const CHAT_TOOLS = [
           description:
             'Forma de pagamento que a pessoa disse preferir: "pix" ou "cartao". String vazia se ela não tiver preferência ou não tiver dito — nesse caso o link de pagamento mostra as duas opções pra ela escolher lá.',
         },
+        quantidade_pessoas: { type: 'integer', minimum: 1, maximum: 3, description: 'Só na turma fechada (página de turma): quantas pessoas da mesma empresa esta inscrição cobre (1, 2 ou 3), conforme a pessoa disse. Padrão 1. Ignorado fora da turma fechada.' },
+        outros_participantes: { type: 'string', description: 'Só na turma fechada: nome completo (e e-mail ou WhatsApp, se a pessoa tiver) das outras pessoas cobertas por esta inscrição. String vazia se for só uma pessoa.' },
         consent: {
           type: 'boolean',
           description:
@@ -2031,7 +2062,7 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
   }
   if (name === 'consultar_endereco_cep') return lookupCep(toolInput?.cep);
   if (name === 'registrar_inscricao') {
-    const result = await saveLead(toolInput, { turma: ctx && ctx.turma });
+    const result = await saveLead(toolInput, { turma: ctx && ctx.turma, pessoas: toolInput && toolInput.quantidade_pessoas, participantes: toolInput && toolInput.outros_participantes });
     return result.ok
       ? { sucesso: true, id: result.id }
       : { sucesso: false, erro: result.error, campos_invalidos: result.errors || null };
@@ -2074,7 +2105,10 @@ async function runChatTool(name, toolInput, originUrl, ctx) {
     if (turmaCtx && !turmaCtx.preco) {
       return { sucesso: false, erro: 'O valor desta turma ainda não está definido. NÃO gere pagamento e NÃO cite valor. Use registrar_inscricao para deixar a pré-inscrição e diga que o Rodrigo envia o valor e o link de pagamento.' };
     }
-    const saved = await saveLead(toolInput, { turma: ctx && ctx.turma });
+    if (turmaCtx && !precoPara(turmaCtx, toolInput && toolInput.quantidade_pessoas)) {
+      return { sucesso: false, erro: 'Para esse número de pessoas não há valor definido nesta turma. NÃO gere pagamento. Diga que o Rodrigo trata essa condição e passe o WhatsApp (11) 3164-3783 e o e-mail rodrigo.moraes@finderlab.com.br.' };
+    }
+    const saved = await saveLead(toolInput, { turma: ctx && ctx.turma, pessoas: toolInput && toolInput.quantidade_pessoas, participantes: toolInput && toolInput.outros_participantes });
     if (!saved.ok) {
       return { sucesso: false, erro: saved.error, campos_invalidos: saved.errors || null };
     }
@@ -2623,12 +2657,12 @@ app.get('/admin/api/leads.csv', async (_req, res) => {
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // evita injeção de fórmula no Excel
     return '"' + s.replace(/"/g, '""') + '"';
   };
-  const head = ['Data', 'Nome', 'Email', 'WhatsApp', 'CPF/CNPJ', 'CEP', 'Endereço', 'Número', 'Complemento', 'Bairro', 'Cidade', 'Estado', 'Empresa', 'Cargo', 'Turma', 'Status'];
+  const head = ['Data', 'Nome', 'Email', 'WhatsApp', 'CPF/CNPJ', 'CEP', 'Endereço', 'Número', 'Complemento', 'Bairro', 'Cidade', 'Estado', 'Empresa', 'Cargo', 'Turma', 'Pessoas', 'Participantes', 'Status'];
   const lines = [head.map(esc).join(';')].concat(
     rows.map((l) =>
       [
         new Date(l.created_at).toISOString(), l.nome, l.email, l.whats, l.cpf_cnpj, l.cep, l.endereco, l.numero,
-        l.complemento, l.bairro, l.cidade, l.estado, l.empresa, l.cargo, l.turma, l.status,
+        l.complemento, l.bairro, l.cidade, l.estado, l.empresa, l.cargo, l.turma, l.turma ? l.pessoas : '', l.participantes, l.status,
       ].map(esc).join(';')
     )
   );
@@ -3032,7 +3066,7 @@ app.get('/turma/:slug/info', (req, res) => {
   res.set({ 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' });
   const t = turmaPorSlug(req.params.slug);
   if (!t || !turmaAcessoOk(t, typeof req.query.c === 'string' ? req.query.c : '')) return res.status(404).json({ error: 'Link exclusivo.' });
-  res.json({ nome: t.nome, data: t.data, local: t.local, vagas: t.vagas, preco: t.preco, precoOriginal: t.precoOriginal, parcelasMax: t.parcelasMax });
+  res.json({ nome: t.nome, data: t.data, local: t.local, vagas: t.vagas, precos: t.precos, precosOriginais: t.precosOriginais, parcelasMax: t.parcelasMax });
 });
 
 app.get('/', (req, res, next) => {
