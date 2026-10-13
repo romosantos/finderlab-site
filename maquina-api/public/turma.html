@@ -82,9 +82,6 @@ p{margin:0}
 .chat-dots span:nth-child(2){animation-delay:.15s}
 .chat-dots span:nth-child(3){animation-delay:.3s}
 @keyframes chatDot{0%,100%{opacity:.3}50%{opacity:1}}
-.chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 14px}
-.chips button{border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.1);color:#DCD3FF;font-family:inherit;font-size:13px;font-weight:500;padding:9px 13px;border-radius:999px;cursor:pointer;transition:background .2s}
-.chips button:hover{background:rgba(116,67,245,.3)}
 .chat-form{display:flex;align-items:flex-end;gap:8px;padding:12px;border-top:1px solid rgba(255,255,255,.08)}
 .chat-form textarea{flex:1;min-width:0;min-height:48px;max-height:120px;padding:12px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-family:inherit;font-size:16px;line-height:1.4;resize:none}
 .chat-form textarea::placeholder{color:#8F8AA8}
@@ -272,13 +269,6 @@ p{margin:0}
           </div>
           <div class="chat-body" id="chat-body" aria-live="polite">
             <div class="chat-msg bot">Oi, tudo bem? Eu sou o Drigo, agente de IA do Rodrigo, e cuido desta turma para associados: respondo as dúvidas e faço a inscrição aqui mesmo. Por onde você quer começar?</div>
-          </div>
-          <div class="chips" id="chips">
-            <button type="button">Como é o dia?</button>
-            <button type="button">O que eu vou construir?</button>
-            <button type="button">Quanto custa?</button>
-            <button type="button">Isso serve para o meu negócio?</button>
-            <button type="button">Quero me inscrever</button>
           </div>
           <form class="chat-form" id="chat-form">
             <textarea id="chat-input" autocomplete="off" placeholder="Escreve aqui..." aria-label="Sua mensagem" maxlength="600" rows="1"></textarea>
@@ -561,7 +551,7 @@ p{margin:0}
     .catch(function () {});
 
   // ---------- chat do Drigo ----------
-  var chatBody = $('chat-body'), chatForm = $('chat-form'), chatInput = $('chat-input'), chatSend = $('chat-send'), chips = $('chips');
+  var chatBody = $('chat-body'), chatForm = $('chat-form'), chatInput = $('chat-input'), chatSend = $('chat-send');
   var chatSession = 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   var chatLoading = false;
 
@@ -598,7 +588,7 @@ p{margin:0}
   }
 
   var pg = params.get('pagamento');
-  if (pg === 'ok') { addMsg('bot', 'Recebi o retorno do seu pagamento. Assim que o Asaas confirmar, você recebe a confirmação por e-mail e pelo WhatsApp. Se tiver qualquer dúvida sobre o que acontece agora, é só perguntar.'); chips.style.display = 'none'; }
+  if (pg === 'ok') { addMsg('bot', 'Recebi o retorno do seu pagamento. Assim que o Asaas confirmar, você recebe a confirmação por e-mail e pelo WhatsApp. Se tiver qualquer dúvida sobre o que acontece agora, é só perguntar.'); }
   else if (pg === 'cancelado') addMsg('bot', 'Vi que o pagamento não foi concluído. Sem problema: quer que eu gere o link de novo, ou ficou alguma dúvida?');
   else if (pg === 'expirado') addMsg('bot', 'O link de pagamento expirou. Quer que eu gere outro?');
 
@@ -623,20 +613,11 @@ p{margin:0}
   chatInput.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); chatForm.requestSubmit(); }
   });
-  Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
-    b.addEventListener('click', function () {
-      if (chatLoading) return;
-      chatInput.value = b.textContent;
-      updateSend();
-      chatForm.requestSubmit();
-    });
-  });
 
   chatForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var text = chatInput.value.trim();
     if (!text || chatLoading) return;
-    chips.style.display = 'none';
     var history = Array.prototype.slice.call(chatBody.querySelectorAll('.chat-msg.user, .chat-msg.bot'))
       .slice(-16)
       .map(function (el) { return { role: el.classList.contains('user') ? 'user' : 'assistant', content: el.dataset.message || el.textContent }; });
