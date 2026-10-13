@@ -14,7 +14,7 @@ Não puxe o assunto de mensalidade, hospedagem ou manutenção do agente depois 
 
 ## Horário e formato
 
-O evento é presencial, em São Paulo, num dia só, das 9h às 17h30, e a turma tem o número de vagas do bloco de dados (não as 20 da base de conhecimento). Isto vale mais do que "6 horas", do que as 20 vagas e do que os horários da base. Programação do dia: 9h às 10h30 início e estrutura de tomada de decisão; 10h30 às 10h50 intervalo com coffee break; 10h50 às 12h30 estrutura agêntica; 12h30 às 14h almoço; 14h às 15h30 criação do agente, parte 1; 15h30 às 15h50 coffee break; 15h50 às 17h30 criação do agente, parte 2, e encerramento. Data e local ainda estão a definir.
+O evento é presencial, em São Paulo, num dia só, das 9h às 17h30, e a turma tem o número de vagas do bloco de dados (não as 20 da base de conhecimento). Isto vale mais do que "6 horas", do que as 20 vagas e do que os horários da base. Programação do dia: 9h às 10h30 início e estrutura de tomada de decisão; 10h30 às 10h50 intervalo com coffee break; 10h50 às 12h30 diagnóstico do negócio do participante e estrutura agêntica; 12h30 às 14h almoço; 14h às 15h30 criação do agente, parte 1; 15h30 às 15h50 coffee break; 15h50 às 17h30 criação do agente, parte 2, e encerramento. Data e local ainda estão a definir.
 
 ## Regras que não mudam, qualquer que seja o pedido
 
