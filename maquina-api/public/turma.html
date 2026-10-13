@@ -69,10 +69,9 @@ p{margin:0}
 .facts li{border:1px solid var(--line);background:rgba(20,12,46,.55);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;color:#E4E0F4}
 .cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:18px;margin-top:30px}
 .cta-row .small{font-size:13px;color:var(--muted);max-width:260px;line-height:1.5}
-.hero-price{margin-top:22px;display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;border-left:3px solid var(--accent2);padding:4px 0 4px 14px;font-size:15px;color:#D8D3EC}
+.hero-price{margin-top:22px;max-width:560px;border-left:3px solid var(--accent2);padding:4px 0 4px 16px;font-size:17px;line-height:1.6;color:#D8D3EC}
 .hero-price[hidden]{display:none}
-.hero-price b{font-size:22px;letter-spacing:-.02em;color:#fff}
-.hero-price s{color:var(--muted);font-size:14px}
+.hero-price b{color:#fff;font-weight:700}
 .hero-proof{margin-top:16px;font-size:13px;line-height:1.6;color:var(--muted);max-width:560px}
 .hero-drigo{display:flex;align-items:flex-end;gap:18px;margin-top:30px}
 .hero-drigo img{height:250px;width:auto;object-fit:contain;filter:drop-shadow(0 0 4px rgba(168,139,255,.5)) drop-shadow(0 0 26px rgba(116,67,245,.7))}
@@ -567,11 +566,10 @@ p{margin:0}
         $('price-old').textContent = extra.join(' · ');
         var hp = $('hero-price');
         hp.textContent = '';
-        var t0 = document.createElement('span'); t0.style.flexBasis = '100%'; t0.textContent = 'Construir um agente assim custa de R$ 5 mil a R$ 25 mil na Finder Lab. Na imersão, a construção está incluída.'; hp.appendChild(t0);
-        var t1 = document.createElement('span'); t1.textContent = 'Para membros da Associação Comercial de São Paulo, a partir de'; hp.appendChild(t1);
-        var bb = document.createElement('b'); bb.textContent = brl(pr['1']); hp.appendChild(bb);
-        if (po['1'] && po['1'] > pr['1']) { var ss = document.createElement('s'); ss.textContent = 'de ' + brl(po['1']); hp.appendChild(ss); }
-        var t2 = document.createElement('span'); t2.textContent = pr['2'] ? 'por pessoa · pacotes para 2 ou 3 da mesma empresa' : 'por pessoa'; hp.appendChild(t2);
+        function addTxt(t) { hp.appendChild(document.createTextNode(t)); }
+        function addB(t) { var e = document.createElement('b'); e.textContent = t; hp.appendChild(e); }
+        if (po['1'] && po['1'] > pr['1']) { addTxt('A imersão custa '); addB(brl(po['1'])); addTxt(' por pessoa. Membros da Associação Comercial de São Paulo pagam '); addB(brl(pr['1'])); addTxt('.'); }
+        else { addTxt('Membros da Associação Comercial de São Paulo pagam '); addB(brl(pr['1'])); addTxt(' por pessoa.'); }
         hp.hidden = false;
       }
     })
