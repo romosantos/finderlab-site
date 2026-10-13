@@ -1,0 +1,19 @@
+/* Formação Finder Lab: ligação com a imersão, separada do portfólio de software. */
+.editorial .immersion-section{background:radial-gradient(ellipse at 85% 45%,#31235c 0,transparent 58%),#100e22;color:#fff;border-block:1px solid #403653}
+.immersion-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(32px,5vw,70px);align-items:center}
+.editorial .immersion-section .eyebrow{color:#c6b4ff}
+.editorial .immersion-copy h2{color:#fff;font-size:clamp(44px,5.3vw,72px);margin:22px 0}
+.immersion-copy h2 em{color:#c6b4ff;font-style:normal}
+.immersion-copy p{color:#d9d5e5;font-size:17px;line-height:1.7;max-width:540px}
+.immersion-copy .immersion-lead{color:#fff;font-size:clamp(20px,2vw,24px);line-height:1.45;font-weight:500}
+.immersion-copy .immersion-practice{padding-left:18px;border-left:2px solid #aa89ff;margin-block:24px}
+.editorial .immersion-copy .immersion-cta{margin-top:8px;background:#c6b4ff;color:#17112c}
+.editorial .immersion-copy .immersion-cta:hover{background:#dfd3ff}
+.immersion-cta:focus-visible{outline:2px solid #fff;outline-offset:5px}
+.immersion-site-note{display:block;margin-top:16px;color:#beb5d1;font-size:12px;line-height:1.6}
+.immersion-speaker{margin:0;min-width:0}
+.immersion-speaker img{width:100%;height:auto;object-fit:contain}
+.immersion-speaker figcaption{padding:20px 0 0;border-top:1px solid #594874;display:flex;flex-direction:column;gap:6px}
+.immersion-speaker figcaption strong{font-size:20px;color:#fff}
+.immersion-speaker figcaption>span{font-size:13px;line-height:1.6;color:#c5bad8}
+@media(max-width:900px){.immersion-grid{grid-template-columns:1fr}.immersion-speaker{width:min(100%,440px);justify-self:center}.immersion-copy p{max-width:none}}
