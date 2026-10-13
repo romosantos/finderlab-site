@@ -862,6 +862,14 @@ async function migrate() {
     );
     CREATE INDEX IF NOT EXISTS whatsapp_messages_phone_idx ON whatsapp_messages (phone, created_at);
 
+    -- Conversas de WhatsApp que pertencem a uma turma fechada (o Drigo responde em modo turma)
+    CREATE TABLE IF NOT EXISTS whatsapp_turma (
+      phone       TEXT PRIMARY KEY,
+      turma       TEXT NOT NULL,
+      motivo      TEXT NOT NULL DEFAULT '',
+      created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
     CREATE TABLE IF NOT EXISTS payments (
       id                SERIAL PRIMARY KEY,
       lead_id           INTEGER NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
@@ -2575,6 +2583,64 @@ async function sendWhatsAppFreeform(phoneRaw, body) {
   }
 }
 
+// Turma no WhatsApp. O Drigo responde em modo turma (preço, regras e conhecimento da turma) quando:
+// 1) a conversa já foi marcada como da turma antes (tabela whatsapp_turma);
+// 2) a mensagem vem do botão de WhatsApp da página da imersão (texto pré-preenchido "Vim pela página da imersão");
+// 3) o número já é de um lead marcado com turma (ele conversou no chat da página e deixou o WhatsApp).
+// Fora disso, segue o agente geral do site. O modo só liga por origem confiável do servidor, nunca por pedido do modelo.
+const WHATSAPP_TURMA_PADRAO = 'associados';
+const WHATSAPP_TURMA_GATILHO_RE = /vim pela p[aá]gina da imers[aã]o/i;
+const WHATSAPP_TURMA_CANAL = '\n\n---\n\n# CANAL: WHATSAPP\n\nEsta conversa acontece pelo WhatsApp do Drigo, não pela página. A pessoa já está falando com você aqui: não mande ninguém "para a página" nem "para o chat", conduza a inscrição e o pagamento nesta própria conversa. Mensagens curtas, em texto corrido, sem markdown.';
+
+function chaveTelefoneBR(raw) {
+  let d = String(raw || '').replace(/\D/g, '');
+  if (d.length >= 12 && d.startsWith('55')) d = d.slice(2);
+  if (d.length < 10) return null;
+  return { ddd: d.slice(0, 2), fim: d.slice(-8) };
+}
+
+async function resolveWhatsAppTurma(phone, body) {
+  if (!TURMA_ADDENDUM) return null;
+  try {
+    const salvo = await pool.query('SELECT turma FROM whatsapp_turma WHERE phone = $1', [phone]);
+    if (salvo.rows[0]) {
+      const t = turmaPorSlug(salvo.rows[0].turma);
+      if (t) return t;
+    }
+    let slug = '';
+    let motivo = '';
+    if (WHATSAPP_TURMA_GATILHO_RE.test(body || '')) {
+      slug = WHATSAPP_TURMA_PADRAO;
+      motivo = 'link da pagina';
+    } else {
+      const k = chaveTelefoneBR(phone);
+      if (k) {
+        const lead = await pool.query(
+          `SELECT turma FROM (
+             SELECT id, turma,
+                    CASE WHEN length(n) >= 12 AND n LIKE '55%' THEN substr(n, 3) ELSE n END AS local
+             FROM (SELECT id, turma, regexp_replace(whats, '\\D', '', 'g') AS n FROM leads WHERE turma <> '') x
+           ) y
+           WHERE left(local, 2) = $1 AND right(local, 8) = $2
+           ORDER BY id DESC LIMIT 1`,
+          [k.ddd, k.fim]
+        );
+        if (lead.rows[0]) { slug = lead.rows[0].turma; motivo = 'lead da turma'; }
+      }
+    }
+    const t = slug ? turmaPorSlug(slug) : null;
+    if (!t) return null;
+    await pool.query(
+      'INSERT INTO whatsapp_turma (phone, turma, motivo) VALUES ($1,$2,$3) ON CONFLICT (phone) DO NOTHING',
+      [phone, t.slug, motivo]
+    );
+    return t;
+  } catch (err) {
+    console.error('WhatsApp inbound: falha ao resolver turma de %s', phone, err && err.message ? err.message : err);
+    return null;
+  }
+}
+
 // Roda depois de já termos respondido 200 pra Twilio (veja a rota abaixo), então uma
 // demora aqui (o modelo pode levar vários segundos, mais ainda se chamar
 // registrar_inscricao) não atrasa nem derruba o webhook.
@@ -2588,7 +2654,10 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
     }
 
     const history = await loadWhatsAppHistory(phone);
-    const { reply } = await getAgentReply(history, undefined, SITE_ORIGIN);
+    const turma = await resolveWhatsAppTurma(phone, body);
+    const systemPrompt = turma ? SYSTEM_PROMPT + '\n\n---\n\n' + TURMA_ADDENDUM + '\n\n---\n\n' + turmaFatos(turma) + WHATSAPP_TURMA_CANAL : undefined;
+    const ctx = turma ? { turma: turma.slug } : undefined;
+    const { reply } = await getAgentReply(history, systemPrompt, SITE_ORIGIN, undefined, undefined, ctx);
     if (!reply) {
       console.error('WhatsApp inbound: sem resposta do modelo pra %s', phone);
       return;
