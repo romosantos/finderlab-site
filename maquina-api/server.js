@@ -549,7 +549,7 @@ function turmaFatos(t) {
     L.push('Pagamento: Pix à vista, ou cartão de crédito em até ' + t.parcelasMax + 'x (o parcelamento é do cartão, na página segura do Asaas).');
     L.push('O valor está definido: pode seguir o fluxo completo até o link de pagamento com gerar_pagamento_inscricao, informando em quantidade_pessoas quantas pessoas a inscrição cobre.');
   } else {
-    L.push('Valor desta turma: AINDA NÃO DEFINIDO. Não cite nenhum valor. Faça só a pré-inscrição com registrar_inscricao e diga que o Rodrigo envia o valor e as condições especiais para associados.');
+    L.push('Valor desta turma: AINDA NÃO DEFINIDO. Não cite nenhum valor. Faça só a pré-inscrição com registrar_inscricao e diga que o Rodrigo envia o valor e as condições especiais para membros.');
   }
   L.push('Data: ' + (t.data || 'ainda sendo fechada pelo Rodrigo (não invente; a pessoa será avisada)') + '.');
   L.push('Local: ' + (t.local || 'ainda sendo fechado pelo Rodrigo (não invente; a pessoa será avisada)') + '.');

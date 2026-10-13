@@ -1,7 +1,7 @@
 {
   "associados": {
-    "nome_exibicao": "Turma para associados da Associação Comercial de São Paulo",
-    "publico": "associados da Associação Comercial de São Paulo convidados",
+    "nome_exibicao": "Turma para membros da Associação Comercial de São Paulo",
+    "publico": "membros da Associação Comercial de São Paulo convidados",
     "preco_original": 2000,
     "parcelas_max": 10,
     "data": null,
