@@ -266,7 +266,7 @@ p{margin:0}
             <textarea id="chat-input" autocomplete="off" placeholder="Escreve aqui..." aria-label="Sua mensagem" maxlength="600" rows="1"></textarea>
             <button type="submit" class="chat-send" id="chat-send" disabled aria-label="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
           </form>
-          <div class="chat-note">Sou um agente de IA. O que eu não resolver, o Rodrigo resolve pelo WhatsApp (11) 3164-3783.</div>
+          <div class="chat-note">Sou um agente de IA e resolvo tudo por aqui: dúvidas, inscrição, pagamento e pedidos especiais.</div>
         </div>
       </div>
     </div>
@@ -460,8 +460,8 @@ p{margin:0}
       <details><summary>O agente que eu construo é de verdade?</summary><p>Sim. Ele é construído sobre uma decisão real do seu negócio, com o contexto da sua empresa, e sai funcionando da imersão. Não é uma demonstração.</p></details>
       <details><summary>Minha empresa é pequena. Faz sentido?</summary><p>Faz. Empresas menores decidem rápido e costumam implementar o que aprendem já na segunda-feira.</p></details>
       <details><summary>Já uso o ChatGPT. Qual é a diferença?</summary><p>Usar IA para acelerar tarefas é diferente de repensar decisões. O foco aqui é a decisão do negócio que ainda depende de alguém juntar as peças na mão, e um agente que passa a cuidar dela.</p></details>
-      <details><summary>E se eu precisar cancelar?</summary><p>Com pelo menos 10 dias de antecedência, o valor é reembolsado. Com menos de 10 dias, a vaga é transferida para a próxima turma disponível. Os casos são tratados direto com o Rodrigo.</p></details>
-      <details><summary>Quem me atende na inscrição é uma pessoa?</summary><p>É o Drigo, um agente de IA que trabalha para o Rodrigo. Se você preferir falar com uma pessoa, é só chamar o Rodrigo no WhatsApp (11) 3164-3783 ou em rodrigo.moraes@finderlab.com.br.</p></details>
+      <details><summary>E se eu precisar cancelar?</summary><p>Com pelo menos 10 dias de antecedência, o valor é reembolsado. Com menos de 10 dias, a vaga é transferida para a próxima turma disponível. O Drigo cuida do seu pedido aqui na conversa.</p></details>
+      <details><summary>Quem me atende na inscrição é uma pessoa?</summary><p>É o Drigo, um agente de IA que trabalha para o Rodrigo. Ele responde as dúvidas, faz a inscrição, gera o pagamento e cuida dos pedidos especiais. O que depender de uma decisão do Rodrigo, o Drigo registra e o Rodrigo retorna para você.</p></details>
     </div>
   </div>
 </section>
@@ -667,7 +667,7 @@ p{margin:0}
         clearTimeout(timeoutId);
         setLoading(false);
         if (streamDiv) { streamDiv.remove(); streamDiv = null; }
-        addMsg('err', 'Não consegui responder agora. Fala com a gente pelo WhatsApp (11) 3164-3783 ou tenta de novo em instantes.');
+        addMsg('err', 'Não consegui responder agora. Tenta de novo em instantes.');
       })
       .finally(function () { setTimeout(scrollChat, 30); });
   });

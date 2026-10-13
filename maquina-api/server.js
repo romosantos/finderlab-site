@@ -545,7 +545,7 @@ function turmaFatos(t) {
   L.push('Turma: ' + t.nome + (t.publico ? ' (' + t.publico + ')' : '') + '.');
   if (t.preco) {
     const linhas = ['1', '2', '3'].filter((k) => t.precos[k]).map((k) => k + (k === '1' ? ' pessoa' : ' pessoas') + ': ' + brl(t.precos[k]) + (t.precosOriginais[k] ? ' (valor normal ' + brl(t.precosOriginais[k]) + ')' : ''));
-    L.push('Valores desta turma, total por empresa conforme o número de pessoas que a mesma pessoa inscreve: ' + linhas.join('; ') + '. É uma condição especial para esta turma. Não existe outro valor, pacote, cupom ou desconto adicional. Para mais de ' + Object.keys(t.precos).length + ' pessoas da mesma empresa, quem trata é o Rodrigo.');
+    L.push('Valores desta turma, total por empresa conforme o número de pessoas que a mesma pessoa inscreve: ' + linhas.join('; ') + '. É uma condição especial para esta turma. Não existe outro valor, pacote, cupom ou desconto adicional. Para mais de ' + Object.keys(t.precos).length + ' pessoas da mesma empresa, você registra o pedido (registrar_contato_servico) e diz que o Rodrigo retorna.');
     L.push('Pagamento: Pix à vista, ou cartão de crédito em até ' + t.parcelasMax + 'x (o parcelamento é do cartão, na página segura do Asaas).');
     L.push('O valor está definido: pode seguir o fluxo completo até o link de pagamento com gerar_pagamento_inscricao, informando em quantidade_pessoas quantas pessoas a inscrição cobre.');
   } else {
@@ -1972,7 +1972,20 @@ const LISTA_TOOLS = [
   },
 ];
 
+// Nas turmas fechadas o Drigo resolve tudo sozinho: o telefone e o e-mail pessoais do Rodrigo nunca chegam
+// ao modelo (a base de conhecimento e as mensagens de erro das ferramentas os citam). O que o Drigo não
+// resolve vira um pedido registrado (registrar_contato_servico), que avisa o Rodrigo por e-mail.
+const CONTATO_RODRIGO_RE = /\(11\) ?3164-?3783|551131643783|rodrigo\.moraes@finderlab\.com\.br/gi;
 async function runChatTool(name, toolInput, originUrl, ctx) {
+  const result = await runChatToolBase(name, toolInput, originUrl, ctx);
+  if (!ctx || !ctx.turma) return result;
+  try {
+    return JSON.parse(JSON.stringify(result).replace(CONTATO_RODRIGO_RE, '[contato pessoal do Rodrigo: NÃO repasse nesta turma; resolva você mesmo ou registre o pedido com registrar_contato_servico e diga que o Rodrigo retorna]'));
+  } catch (_) {
+    return result;
+  }
+}
+async function runChatToolBase(name, toolInput, originUrl, ctx) {
   if (name === 'registrar_interesse_lista') {
     if (!ctx || !ctx.semFerramentas) return { ok: false, error: 'Ferramenta indisponível.' };
     try {
@@ -2280,7 +2293,8 @@ app.post('/chat/memoria', publicCors, memoriaLimiter, async (req, res) => {
 
 app.post('/chat', publicCors, chatLimiter, async (req, res) => {
   if (!chatReady || !anthropic) {
-    return res.status(503).json({ error: 'O assistente está indisponível no momento. Fala com a gente pelo WhatsApp (11) 3164-3783.' });
+    const msgIndisp = req.body && req.body.turma ? 'O assistente está indisponível no momento. Tenta de novo em alguns minutos.' : 'O assistente está indisponível no momento. Fala com a gente pelo WhatsApp (11) 3164-3783.';
+    return res.status(503).json({ error: msgIndisp });
   }
 
   const chatStartedAt = Date.now();
@@ -2338,10 +2352,10 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
     if (b.turma && !isDiagnostico) {
       turma = turmaPorSlug(clean(b.turma, 40));
       if (!turma || !turmaAcessoOk(turma, clean(b.c, 80))) {
-        return res.status(403).json({ error: 'Este link é exclusivo e não está mais válido. Fala com o Rodrigo pelo WhatsApp (11) 3164-3783.' });
+        return res.status(403).json({ error: 'Este link é exclusivo e não está mais válido. Peça o link completo a quem enviou para você.' });
       }
       if (!TURMA_ADDENDUM) {
-        return res.status(503).json({ error: 'O assistente está indisponível no momento. Fala com a gente pelo WhatsApp (11) 3164-3783.' });
+        return res.status(503).json({ error: 'O assistente está indisponível no momento. Tenta de novo em alguns minutos.' });
       }
     }
     if (isLista && (!LISTA_ADDENDUM || !LISTA_PROMPT_BASE)) {
@@ -3040,7 +3054,7 @@ footer{margin-top:32px;color:#777;font-size:13px}
 });
 
 // ---------- Turmas fechadas (/turma/:slug?c=código) ----------
-const TURMA_FECHADA_HTML = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Link exclusivo · Finder Lab</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#05040C;color:#F1EEFB;font-family:Arial,Helvetica,sans-serif;padding:24px}main{max-width:460px;text-align:center;line-height:1.6}h1{font-size:22px;margin:0 0 12px}p{color:#AEA9C5;margin:0 0 10px}a{color:#A88BFF}</style></head><body><main><h1>Este link é exclusivo</h1><p>Ele não está mais válido ou foi digitado incompleto. Use o link completo que você recebeu.</p><p>Se precisar, fale com o Rodrigo pelo WhatsApp <a href="https://wa.me/551131643783">(11) 3164-3783</a>.</p></main></body></html>`;
+const TURMA_FECHADA_HTML = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Link exclusivo · Finder Lab</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#05040C;color:#F1EEFB;font-family:Arial,Helvetica,sans-serif;padding:24px}main{max-width:460px;text-align:center;line-height:1.6}h1{font-size:22px;margin:0 0 12px}p{color:#AEA9C5;margin:0 0 10px}a{color:#A88BFF}</style></head><body><main><h1>Este link é exclusivo</h1><p>Ele não está mais válido ou foi digitado incompleto. Use o link completo que você recebeu.</p><p>Se o problema continuar, peça o link novamente a quem enviou para você.</p></main></body></html>`;
 // Endereço curto e limpo de cada turma (sem código no link). Hoje só a turma de associados.
 const TURMA_ATALHOS = { imersao: 'associados' };
 app.get('/imersao', (req, res) => {
