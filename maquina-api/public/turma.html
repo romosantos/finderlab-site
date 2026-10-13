@@ -550,7 +550,8 @@ p{margin:0}
         $('price-old').textContent = extra.join(' · ');
         var hp = $('hero-price');
         hp.textContent = '';
-        var t1 = document.createElement('span'); t1.textContent = 'Condição para associados:'; hp.appendChild(t1);
+        var t0 = document.createElement('span'); t0.style.flexBasis = '100%'; t0.textContent = 'Construir um agente assim custa de R$ 5 mil a R$ 25 mil na Finder Lab. Na imersão, a construção está incluída.'; hp.appendChild(t0);
+        var t1 = document.createElement('span'); t1.textContent = 'Para associados, a partir de'; hp.appendChild(t1);
         var bb = document.createElement('b'); bb.textContent = brl(pr['1']); hp.appendChild(bb);
         if (po['1'] && po['1'] > pr['1']) { var ss = document.createElement('s'); ss.textContent = 'de ' + brl(po['1']); hp.appendChild(ss); }
         var t2 = document.createElement('span'); t2.textContent = pr['2'] ? 'por pessoa · pacotes para 2 ou 3 da mesma empresa' : 'por pessoa'; hp.appendChild(t2);
