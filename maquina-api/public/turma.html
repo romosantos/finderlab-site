@@ -6,6 +6,10 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Máquina de Decisões · Turma para associados · Finder Lab</title>
 <meta name="description" content="Imersão presencial de um dia, em São Paulo, em que você constrói o seu próprio agente de IA. O Drigo, agente da Finder Lab, cuida das suas dúvidas e da sua inscrição.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Imersão: construa o seu próprio agente de IA em um dia">
+<meta property="og:description" content="Turma fechada para associados, presencial em São Paulo, com Rodrigo Moraes. Você sai com o seu agente funcionando. O Drigo, agente de IA, cuida da sua inscrição.">
+<meta property="og:image" content="https://www.maquina.finderlab.com.br/img/drigo-avatar.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,6 +53,11 @@ p{margin:0}
 .facts li{border:1px solid var(--line);background:rgba(20,12,46,.55);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;color:#E4E0F4}
 .cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:18px;margin-top:30px}
 .cta-row .small{font-size:13px;color:var(--muted);max-width:260px;line-height:1.5}
+.hero-price{margin-top:22px;display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;border-left:3px solid var(--accent2);padding:4px 0 4px 14px;font-size:15px;color:#D8D3EC}
+.hero-price[hidden]{display:none}
+.hero-price b{font-size:22px;letter-spacing:-.02em;color:#fff}
+.hero-price s{color:var(--muted);font-size:14px}
+.hero-proof{margin-top:16px;font-size:13px;line-height:1.6;color:var(--muted);max-width:560px}
 .hero-drigo{display:flex;align-items:flex-end;gap:18px;margin-top:38px}
 .hero-drigo img{height:250px;width:auto;object-fit:contain;filter:drop-shadow(0 0 4px rgba(168,139,255,.5)) drop-shadow(0 0 26px rgba(116,67,245,.7))}
 .bubble{position:relative;max-width:300px;border:1px solid var(--line);background:rgba(20,12,46,.7);border-radius:16px 16px 16px 4px;padding:14px 16px;font-size:14px;line-height:1.6;color:#E4E0F4;margin-bottom:60px}
@@ -162,7 +171,13 @@ p{margin:0}
 .tier{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border:1px solid var(--line);background:rgba(20,12,46,.55);border-radius:12px;padding:13px 16px}
 .tier b{font-size:22px;letter-spacing:-.02em}
 .tier span{font-size:14px;color:#D2CEE6}
+.tier em{display:block;font-style:normal;font-size:12px;color:var(--accent2);text-align:right}
 .tier s{display:block;font-size:12px;color:var(--muted);text-align:right}
+.steps{margin:26px 0 0;padding:0;list-style:none;display:grid;gap:12px;counter-reset:st}
+.steps li{position:relative;padding:0 0 0 40px;font-size:14.5px;line-height:1.55;color:#D8D3EC}
+.steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.steps li b{color:#fff}
+.offer .steps li::before{background:var(--accent)}
 .price .note{margin-top:14px;font-size:12.5px;line-height:1.55;color:var(--muted)}
 
 /* faq */
@@ -240,6 +255,8 @@ p{margin:0}
         <a class="btn" href="#drigo" data-open-chat>Conversar com o Drigo</a>
         <span class="small">Ele tira suas dúvidas e faz a sua inscrição na própria conversa.</span>
       </div>
+      <div class="hero-price" id="hero-price" hidden></div>
+      <p class="hero-proof">Com Rodrigo Moraes: 21 anos em tecnologia, +500 pessoas treinadas em IA e sistemas de IA em produção em empresas reais.</p>
       <div class="hero-drigo">
         <img src="/img/drigo-avatar.png" alt="Drigo, agente de IA da Finder Lab">
         <div class="bubble"><b>Drigo</b>Eu sou um agente de IA do Rodrigo. Atendo, respondo e inscrevo 24 horas por dia. No fim da imersão, você sai com um assim para o seu negócio.</div>
@@ -259,6 +276,7 @@ p{margin:0}
           <div class="chips" id="chips">
             <button type="button">Como é o dia?</button>
             <button type="button">O que eu vou construir?</button>
+            <button type="button">Quanto custa?</button>
             <button type="button">Isso serve para o meu negócio?</button>
             <button type="button">Quero me inscrever</button>
           </div>
@@ -373,7 +391,7 @@ p{margin:0}
           <li>Quer deixar de depender de terceiros para saber o que a IA pode ou não fazer pela empresa</li>
           <li>Tem uma decisão que se repete no negócio e que hoje depende de juntar as peças na mão</li>
         </ul>
-        <p class="txt" style="margin-top:18px">Serve para empresa de qualquer tamanho. As menores costumam implementar mais rápido o que aprendem.</p>
+        <p class="txt" style="margin-top:18px">Serve para empresa de qualquer tamanho: o agente nasce de uma decisão que já é sua.</p>
       </div>
       <div class="no">
         <h3>Não é para você se</h3>
@@ -431,18 +449,23 @@ p{margin:0}
         <ul>
           <li>Imersão presencial de um dia com o Rodrigo Moraes</li>
           <li>Seu agente de IA construído e funcionando ao final</li>
-          <li>Diagnóstico individual, framework, material em PDF e grupo de acompanhamento</li>
+          <li>Diagnóstico do seu negócio, framework, material em PDF e grupo de acompanhamento</li>
           <li>Coffee break, almoço e networking com a turma</li>
           <li>Turma fechada, com 40 vagas</li>
         </ul>
+        <ol class="steps">
+          <li><b>Converse com o Drigo.</b> Ele confirma se a imersão faz sentido para você e pega os seus dados.</li>
+          <li><b>Pague no ambiente seguro do Asaas.</b> Cartão em até 10x ou Pix, em um único pagamento por empresa.</li>
+          <li><b>Receba a confirmação</b> por e-mail e WhatsApp. A data e o local chegam assim que o Rodrigo os fechar.</li>
+        </ol>
       </div>
       <div class="price">
         <div class="lbl" id="price-lbl">Condição para associados</div>
         <div class="val small" id="price-val">O Drigo apresenta o valor na conversa</div>
         <div class="tiers" id="price-tiers"></div>
         <div class="old" id="price-old"></div>
-        <a class="btn" href="#drigo" data-open-chat>Quero me inscrever</a>
-        <p class="note" id="price-note">A inscrição é feita com o Drigo, aqui na página. O pagamento acontece no ambiente seguro do Asaas.</p>
+        <a class="btn" href="#drigo" data-open-chat data-send="Quero me inscrever">Quero me inscrever</a>
+        <p class="note" id="price-note">Cancelamento com reembolso até 10 dias antes da imersão. A inscrição é feita com o Drigo, aqui na página.</p>
       </div>
     </div>
   </div>
@@ -457,10 +480,13 @@ p{margin:0}
       <p class="lead">Se a sua dúvida não está aqui, pergunte ao Drigo.</p>
     </div>
     <div class="faq">
+      <details><summary>Quanto custa e como pago?</summary><p>Para esta turma de associados, 1 pessoa paga R$ 998 (de R$ 2.000), 2 pessoas da mesma empresa pagam R$ 1.600 e 3 pessoas pagam R$ 2.200. O pagamento é um só por empresa, no ambiente seguro do Asaas, em cartão de crédito em até 10x ou Pix à vista. O Drigo gera o link na própria conversa.</p></details>
+      <details><summary>Quando e onde será?</summary><p>Presencial, em São Paulo, das 9h às 17h30. A data e o local exatos ainda estão sendo fechados pelo Rodrigo, e quem se inscreve é avisado assim que forem definidos.</p></details>
       <details><summary>Preciso entender de tecnologia ou programar?</summary><p>Não. A imersão é sobre lógica de negócio e decisão. Você aprende o que entender das ferramentas, o que terceirizar, o que montar sozinho e como saber se um fornecedor está ajudando ou enrolando.</p></details>
       <details><summary>O agente que eu construo é de verdade?</summary><p>Sim. Ele é construído sobre uma decisão real do seu negócio, com o contexto da sua empresa, e sai funcionando da imersão. Não é uma demonstração.</p></details>
-      <details><summary>Minha empresa é pequena. Faz sentido?</summary><p>Faz. Empresas menores decidem rápido e costumam implementar o que aprendem já na segunda-feira.</p></details>
       <details><summary>Já uso o ChatGPT. Qual é a diferença?</summary><p>Usar IA para acelerar tarefas é diferente de repensar decisões. O foco aqui é a decisão do negócio que ainda depende de alguém juntar as peças na mão, e um agente que passa a cuidar dela.</p></details>
+      <details><summary>Minha empresa é pequena. Faz sentido?</summary><p>Faz. O agente é construído sobre uma decisão do seu negócio, seja ele pequeno ou grande, e o Rodrigo ajuda você a escolher uma que valha a pena atacar primeiro. Se tiver dúvida se a sua realidade se encaixa, descreva-a para o Drigo.</p></details>
+      <details><summary>Posso levar sócio ou gente do meu time?</summary><p>Pode. O pacote de 2 pessoas sai por R$ 1.600 e o de 3 pessoas por R$ 2.200, no mesmo pagamento. Para mais de 3 pessoas, o Drigo registra o seu pedido e o Rodrigo retorna com a condição.</p></details>
       <details><summary>E se eu precisar cancelar?</summary><p>Com pelo menos 10 dias de antecedência, o valor é reembolsado. Com menos de 10 dias, a vaga é transferida para a próxima turma disponível. O Drigo cuida do seu pedido aqui na conversa.</p></details>
       <details><summary>Quem me atende na inscrição é uma pessoa?</summary><p>É o Drigo, um agente de IA que trabalha para o Rodrigo. Ele responde as dúvidas, faz a inscrição, gera o pagamento e cuida dos pedidos especiais. O que depender de uma decisão do Rodrigo, o Drigo registra e o Rodrigo retorna para você.</p></details>
     </div>
@@ -471,8 +497,8 @@ p{margin:0}
 <section class="final">
   <div class="wrap">
     <h2>A próxima vantagem não será ter IA. Será ter um <span class="hl">agente trabalhando</span> nas decisões do seu negócio.</h2>
-    <p class="lead">Converse com o Drigo, tire suas dúvidas e garanta a sua vaga.</p>
-    <a class="btn" href="#drigo" data-open-chat>Falar com o Drigo</a>
+    <p class="lead">São 40 vagas, em uma turma fechada, com condição especial para associados. Converse com o Drigo, tire suas dúvidas e garanta a sua.</p>
+    <a class="btn" href="#drigo" data-open-chat data-send="Quero me inscrever">Garantir minha vaga</a>
   </div>
 </section>
 </main>
@@ -515,12 +541,20 @@ p{margin:0}
           var v = document.createElement('b'); v.textContent = brl(pr[k]);
           r.appendChild(v);
           if (po[k] && po[k] > pr[k]) { var o = document.createElement('s'); o.textContent = 'de ' + brl(po[k]); r.appendChild(o); }
+          if (k !== '1') { var pp = document.createElement('em'); pp.textContent = brl(Math.round(pr[k] / Number(k))) + ' por pessoa'; r.appendChild(pp); }
           row.appendChild(l); row.appendChild(r); box.appendChild(row);
         });
         var extra = [];
         if (d.parcelasMax > 1) extra.push('Cartão em até ' + d.parcelasMax + 'x ou Pix à vista');
         extra.push('Total por empresa, conforme o número de pessoas');
         $('price-old').textContent = extra.join(' · ');
+        var hp = $('hero-price');
+        hp.textContent = '';
+        var t1 = document.createElement('span'); t1.textContent = 'Condição para associados:'; hp.appendChild(t1);
+        var bb = document.createElement('b'); bb.textContent = brl(pr['1']); hp.appendChild(bb);
+        if (po['1'] && po['1'] > pr['1']) { var ss = document.createElement('s'); ss.textContent = 'de ' + brl(po['1']); hp.appendChild(ss); }
+        var t2 = document.createElement('span'); t2.textContent = pr['2'] ? 'por pessoa · pacotes para 2 ou 3 da mesma empresa' : 'por pessoa'; hp.appendChild(t2);
+        hp.hidden = false;
       }
     })
     .catch(function () {});
@@ -535,6 +569,11 @@ p{margin:0}
       e.preventDefault();
       var alvo = $('drigo');
       if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var msg = a.getAttribute('data-send');
+      if (msg && !chatLoading && !chatBody.querySelector('.chat-msg.user')) {
+        setTimeout(function () { chatInput.value = msg; updateSend(); chatForm.requestSubmit(); }, 500);
+        return;
+      }
       setTimeout(function () { try { chatInput.focus({ preventScroll: true }); } catch (x) {} }, 450);
     });
   });
