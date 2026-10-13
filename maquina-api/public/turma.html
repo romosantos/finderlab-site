@@ -38,6 +38,22 @@ p{margin:0}
 .btn:hover{transform:translateY(-2px);box-shadow:0 12px 44px rgba(116,67,245,.6)}
 :focus-visible{outline:2px solid #A88BFF;outline-offset:3px}
 
+/* fotos de fundo */
+.sec,.final,.hero{position:relative}
+.sec,.final{overflow:hidden}
+.sec>.wrap,.final>.wrap{position:relative}
+.sec-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.fade-t,.fade-b{position:absolute;left:0;right:0;pointer-events:none}
+.fade-t{top:0;height:var(--ft,22%);background:linear-gradient(to bottom,var(--bg,#05040C) 0%,transparent 100%)}
+.fade-b{bottom:0;height:var(--fb,26%);background:linear-gradient(to top,var(--bg,#05040C) 0%,transparent 100%)}
+.sec.alt{--bg:#080714}
+.hero{overflow:clip}
+.hero-photo{position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden}
+.hero-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%;opacity:.3}
+.hero-photo::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(to right,rgba(5,4,12,.8) 0%,rgba(5,4,12,.45) 55%,rgba(5,4,12,.2) 100%)}
+.hero-photo::after{content:"";position:absolute;left:0;right:0;bottom:0;height:30%;z-index:1;background:linear-gradient(to top,#05040C 0%,transparent 100%)}
+.hero-grid{position:relative;z-index:1}
+
 /* topo */
 .top{padding:28px 0 0}
 .top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px}
@@ -200,6 +216,8 @@ p{margin:0}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.box{transition:none}}
 @media(max-width:980px){
   .wrap{padding:0 24px}
+  .hero-photo img{opacity:.2;object-position:45% 20%}
+  .hero-photo::before{background:linear-gradient(to bottom,rgba(5,4,12,.4),rgba(5,4,12,.85))}
   .hero-grid{grid-template-columns:1fr;gap:36px}
   .chat-col{position:static}
   .hero-drigo{display:none}
@@ -237,6 +255,7 @@ p{margin:0}
 <main>
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-photo" aria-hidden="true"><img src="/img/problema-bg.jpg" alt=""></div>
   <div class="wrap hero-grid">
     <div>
       <span class="pill" id="pill">Turma para membros da Associação Comercial de São Paulo</span>
@@ -283,6 +302,8 @@ p{margin:0}
 
 <!-- O DRIGO COMO PROVA -->
 <section class="sec alt">
+  <img class="sec-img" src="/img/conteudo-bg.jpg" alt="" aria-hidden="true" loading="lazy" style="object-position:58% 35%;opacity:.3">
+  <div class="fade-t"></div><div class="fade-b"></div>
   <div class="wrap">
     <div class="sec-head">
       <span class="pill">Você já está vendo o resultado</span>
@@ -342,6 +363,8 @@ p{margin:0}
 
 <!-- O DIA -->
 <section class="sec alt">
+  <img class="sec-img" src="/img/inscricao-bg.jpg" alt="" aria-hidden="true" loading="lazy" style="object-position:35% 50%;opacity:.26">
+  <div class="fade-t"></div><div class="fade-b"></div>
   <div class="wrap dia-grid">
     <div>
       <span class="pill">Como é o dia</span>
@@ -367,6 +390,8 @@ p{margin:0}
 
 <!-- PARA QUEM -->
 <section class="sec">
+  <img class="sec-img" src="/img/paraquem-bg.jpg" alt="" aria-hidden="true" loading="lazy" style="object-position:20% 30%;opacity:.22">
+  <div class="fade-t"></div><div class="fade-b"></div>
   <div class="wrap">
     <div class="sec-head">
       <span class="pill">Para quem é</span>
@@ -398,6 +423,8 @@ p{margin:0}
 
 <!-- RODRIGO + CASOS -->
 <section class="sec alt">
+  <img class="sec-img" src="/img/instrutor-bg.jpg" alt="" aria-hidden="true" loading="lazy" style="object-position:50% 40%;opacity:.2">
+  <div class="fade-t"></div><div class="fade-b"></div>
   <div class="wrap">
     <div class="rod">
       <img src="/img/instrutor-photo.png" alt="Rodrigo Moraes" loading="lazy">
