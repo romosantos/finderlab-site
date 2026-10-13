@@ -209,7 +209,19 @@ p{margin:0}
 .foot{padding:26px 24px 90px;text-align:center;font-size:13px;color:var(--muted)}
 
 /* botão flutuante (celular) */
-.fab{display:none;position:fixed;left:16px;right:16px;bottom:16px;z-index:20;min-height:54px;border-radius:14px}
+.chat-fab{display:none;position:fixed;right:24px;bottom:24px;z-index:41;width:82px;height:82px;padding:0;border-radius:50%;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,var(--accent),var(--accent2));border:1px solid rgba(168,139,255,.6);box-shadow:0 4px 24px rgba(116,67,245,.5),0 0 60px rgba(116,67,245,.3);transition:transform .2s ease,box-shadow .2s ease;cursor:pointer}
+.chat-fab.show{display:flex;animation:fabIn .35s ease}
+.chat-fab img{box-sizing:border-box;width:100%;height:100%;border-radius:50%;object-fit:contain;padding:5px}
+.chat-fab:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 12px 44px rgba(116,67,245,.65)}
+@keyframes fabIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.chat-ov{display:none;position:fixed;inset:0;z-index:50;align-items:flex-end;justify-content:flex-end;padding:24px;background:rgba(5,4,12,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.chat-ov.open{display:flex}
+.chat-ov-host{width:100%;max-width:400px}
+.chat-ov .card{height:min(620px,calc(100vh - 48px));display:flex;flex-direction:column}
+.chat-ov .chat{flex:1;min-height:0}
+.chat-ov .chat-body{flex:1;height:auto;min-height:0}
+.chat-close{display:none;margin-left:auto;width:34px;height:34px;flex-shrink:0;border-radius:50%;border:1px solid rgba(168,139,255,.45);background:transparent;color:#DCD3FF;font-size:20px;line-height:1;cursor:pointer;align-items:center;justify-content:center}
+.chat-ov .chat-close{display:flex}
 
 .banner{display:none}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.box{transition:none}}
@@ -236,7 +248,10 @@ p{margin:0}
   .box.big img{height:110px}
   .stats{grid-template-columns:1fr 1fr}
   .chat-body{height:380px}
-  .fab{display:flex}
+  .chat-fab{right:16px;bottom:16px;width:68px;height:68px}
+  .chat-ov{padding:0;align-items:stretch}
+  .chat-ov-host{max-width:none}
+  .chat-ov .card{height:100%;border-radius:0;border:0}
   .cta-row .btn{width:100%}
   .top a.t-link{display:none}
 }
@@ -259,7 +274,7 @@ p{margin:0}
     <div>
       <span class="pill" id="pill">Turma para membros da Associação Comercial de São Paulo</span>
       <h1>Você sai da imersão com o <span class="hl">seu próprio agente de IA</span> funcionando.</h1>
-      <p class="lead">Em um único dia, em São Paulo, você aprende a construir o seu próprio agente de inteligência artificial com Rodrigo Moraes, que já treinou mais de 500 pessoas para usar IA nos negócios. <strong>E você sai com o seu agente funcionando.</strong> Quem cuida da sua inscrição é o Drigo, um agente de IA como o que você vai criar. Converse com ele agora.</p>
+      <p class="lead">Em um único dia, em São Paulo, você aprende a construir o seu próprio agente de inteligência artificial com Rodrigo Moraes, que já treinou mais de 500 empresários para usar IA nos negócios. <strong>E você sai com o seu agente funcionando.</strong> Quem cuida da sua inscrição é o Drigo, um agente de IA como o que você vai criar. Converse com ele agora.</p>
       <ul class="facts" id="facts">
         <li>Presencial</li>
         <li>1 dia · 9h às 17h30</li>
@@ -284,6 +299,7 @@ p{margin:0}
           <div class="chat-head">
             <img class="drigo-avatar" src="/img/drigo-avatar-cabeca.png" width="40" height="40" alt="">
             <div><b>Drigo</b><span class="sub"><i class="dot"></i>Agente de IA · responsável por esta turma</span></div>
+            <button type="button" class="chat-close" id="chat-close" aria-label="Fechar conversa">&times;</button>
           </div>
           <div class="chat-body" id="chat-body" aria-live="polite">
             <div class="chat-msg bot">Oi, tudo bem? Eu sou o Drigo, agente de IA do Rodrigo, e cuido desta turma para membros da Associação Comercial de São Paulo: respondo as dúvidas e faço a inscrição aqui mesmo. Por onde você quer começar?</div>
@@ -520,7 +536,8 @@ p{margin:0}
 </main>
 
 <div class="foot">um projeto da Finder Lab</div>
-<a class="btn fab" href="#drigo" data-open-chat>Falar com o Drigo</a>
+<button type="button" class="chat-fab" id="chat-fab" aria-expanded="false" aria-label="Conversar com o Drigo"><img src="/img/drigo-avatar-cabeca.png" width="82" height="82" alt=""></button>
+<div class="chat-ov" id="chat-ov"><div class="chat-ov-host" id="chat-ov-host"></div></div>
 
 <script src="/online.js" data-page="turma" defer></script>
 <script src="/chat-links.js?v=20260930agree"></script>
@@ -580,11 +597,41 @@ p{margin:0}
   var chatSession = 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   var chatLoading = false;
 
+  // ---------- chat flutuante (circulo do Drigo) ----------
+  var chatCol = $('drigo'), chatCard = chatCol.querySelector('.card');
+  var fab = $('chat-fab'), ov = $('chat-ov'), ovHost = $('chat-ov-host'), chatVisible = true;
+  function isFloating() { return ov.classList.contains('open'); }
+  function openFloat() {
+    if (isFloating()) return;
+    chatCol.style.minHeight = chatCard.offsetHeight + 'px';
+    ovHost.appendChild(chatCard);
+    ov.classList.add('open');
+    fab.setAttribute('aria-expanded', 'true');
+    setTimeout(function () { scrollChat(); try { chatInput.focus({ preventScroll: true }); } catch (x) {} }, 60);
+  }
+  function closeFloat() {
+    if (!isFloating()) return;
+    chatCol.appendChild(chatCard);
+    chatCol.style.minHeight = '';
+    ov.classList.remove('open');
+    fab.setAttribute('aria-expanded', 'false');
+  }
+  function syncFab() { fab.classList.toggle('show', !chatVisible || isFloating()); }
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) { chatVisible = es[0].isIntersecting; syncFab(); }, { threshold: 0.02 }).observe(document.querySelector('.hero'));
+  }
+  fab.addEventListener('click', function () { if (isFloating()) closeFloat(); else openFloat(); syncFab(); });
+  $('chat-close').addEventListener('click', function () { closeFloat(); syncFab(); });
+  ov.addEventListener('click', function () { closeFloat(); syncFab(); });
+  ovHost.addEventListener('click', function (e) { e.stopPropagation(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isFloating()) { closeFloat(); syncFab(); } });
+
   Array.prototype.forEach.call(document.querySelectorAll('[data-open-chat]'), function (a) {
     a.addEventListener('click', function (e) {
       e.preventDefault();
-      var alvo = $('drigo');
-      if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (!chatVisible && !isFloating()) openFloat();
+      else if (!isFloating()) chatCol.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      syncFab();
       var msg = a.getAttribute('data-send');
       if (msg && !chatLoading && !chatBody.querySelector('.chat-msg.user')) {
         setTimeout(function () { chatInput.value = msg; updateSend(); chatForm.requestSubmit(); }, 500);
