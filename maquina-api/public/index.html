@@ -70,6 +70,15 @@ html{scroll-behavior:smooth}
 
 /* ---------- grids ---------- */
 .g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.prog-day{border:1px solid rgba(124,84,245,.55);background:rgba(20,12,46,.6);box-shadow:inset 0 0 24px rgba(116,67,245,.3),0 0 24px rgba(116,67,245,.14);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:18px;padding:36px}
+.prog-day .tag{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent2)}
+.prog-day h3{margin:10px 0 24px;font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.prog-row{display:grid;grid-template-columns:116px minmax(0,1fr);gap:18px;padding:16px 0;border-top:1px solid rgba(255,255,255,.1)}
+.prog-h{font-size:14px;font-weight:700;letter-spacing:.02em;color:var(--accent2);white-space:nowrap}
+.prog-t{font-size:16px;font-weight:600;line-height:1.35;color:#F1EEFB}
+.prog-d{margin-top:4px;font-size:14px;line-height:1.6;color:#B9B4CE}
+.prog-row.soft .prog-t{font-weight:500;color:#D2CEE6}
+.prog-note{margin-top:28px;font-size:14px;line-height:1.7;color:#B9B4CE;max-width:760px}
 .stack{display:flex;flex-direction:column;gap:20px}
 
 /* ---------- hero ---------- */
@@ -208,6 +217,8 @@ html{scroll-behavior:smooth}
 
 /* ============ MOBILE ============ */
 @media (max-width:560px){
+  .prog-day{padding:26px 22px}
+  .prog-row{grid-template-columns:1fr;gap:4px}
   .wrap,.sec-in{padding-left:20px;padding-right:20px}
   .sec-in{padding-top:72px;padding-bottom:72px}
   .sec{--ft:8%;--fb:12%}
@@ -468,6 +479,38 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
     </div>
   </div>
 
+  <!-- PROGRAMAÇÃO -->
+  <div id="programacao" class="sec alt" style="--ft:12%;--fb:16%">
+    <div class="sec-in">
+      <div class="pill" style="margin-bottom:28px">Programação</div>
+      <h2 class="t t-72">Dois dias, <span class="hl">do diagnóstico ao agente funcionando.</span></h2>
+      <p class="lead" style="margin-top:28px;max-width:680px">No primeiro dia você entende a lógica e estrutura o seu negócio para a IA. No segundo, você constrói o seu agente com o Rodrigo ao lado.</p>
+      <div class="g2" style="margin-top:56px;align-items:start">
+        <div class="prog-day">
+          <div class="tag">Dia 1 · quarta-feira, 9 de dezembro</div>
+          <h3>Lógica, diagnóstico e estrutura</h3>
+          <div class="prog-row soft"><div class="prog-h">8h30</div><div><div class="prog-t">Chegada e coffee</div></div></div>
+          <div class="prog-row"><div class="prog-h">9h00 às 10h30</div><div><div class="prog-t">Início + estrutura de tomada de decisão</div></div></div>
+          <div class="prog-row soft"><div class="prog-h">10h30 às 10h50</div><div><div class="prog-t">Intervalo + coffee break</div></div></div>
+          <div class="prog-row"><div class="prog-h">10h50 às 12h30</div><div><div class="prog-t">Diagnóstico do seu negócio + estrutura agêntica</div><div class="prog-d">RAG, Skill, MCP e Projetos. Parte 1.</div></div></div>
+          <div class="prog-row soft"><div class="prog-h">12h30 às 14h00</div><div><div class="prog-t">Almoço (por conta de cada um)</div><div class="prog-d">Pausa para almoçar com calma, com bate-papo e networking com a turma.</div></div></div>
+          <div class="prog-row"><div class="prog-h">14h00 às 16h00</div><div><div class="prog-t">Estrutura agêntica</div><div class="prog-d">RAG, Skill, MCP e Projetos. Parte 2.</div></div></div>
+        </div>
+        <div class="prog-day">
+          <div class="tag">Dia 2 · quinta-feira, 10 de dezembro</div>
+          <h3>Construção do seu agente</h3>
+          <div class="prog-row soft"><div class="prog-h">8h30</div><div><div class="prog-t">Chegada e coffee</div></div></div>
+          <div class="prog-row"><div class="prog-h">9h00 às 10h30</div><div><div class="prog-t">Criação do agente, parte 1</div><div class="prog-d">Você começa a construir o seu agente sobre uma decisão real do seu negócio.</div></div></div>
+          <div class="prog-row soft"><div class="prog-h">10h30 às 10h50</div><div><div class="prog-t">Intervalo + coffee break</div></div></div>
+          <div class="prog-row"><div class="prog-h">10h50 às 12h30</div><div><div class="prog-t">Criação do agente, parte 2</div></div></div>
+          <div class="prog-row soft"><div class="prog-h">12h30 às 14h00</div><div><div class="prog-t">Almoço (por conta de cada um)</div></div></div>
+          <div class="prog-row"><div class="prog-h">14h00 às 16h00</div><div><div class="prog-t">Criação do agente, parte 3 + encerramento</div><div class="prog-d">Você termina o agente com o Rodrigo ao lado e sai com ele funcionando.</div></div></div>
+        </div>
+      </div>
+      <p class="prog-note">O coffee break está incluso nos dois dias. O almoço é por conta de cada participante: das 12h30 às 14h a turma faz uma pausa para almoçar e conversar.</p>
+    </div>
+  </div>
+
   <!-- PARA QUEM -->
   <div id="paraquem" class="sec alt" style="--ft:16%;--fb:20%">
     <img class="sec-img" src="/img/paraquem-bg.jpg" alt="" aria-hidden="true" style="object-position:20% 30%;opacity:.22">
@@ -516,6 +559,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
           <div style="margin-top:32px;border-top:1px solid rgba(255,255,255,.1)">
             <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span><strong style="color:#F1EEFB;font-weight:600">Seu próprio agente de IA</strong>, construído durante o treinamento e aplicado a uma decisão real do seu negócio &mdash; o mesmo processo que a Finder Lab cobra R$ 5.000 para fazer, incluso na inscrição</span></div>
             <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>2 dias de imersão presencial com Rodrigo Moraes</span></div>
+            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Coffee break nos dois dias (o almoço é por conta de cada participante)</span></div>
             <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Framework completo: Máquina de Decisões aplicado ao seu negócio</span></div>
             <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Diagnóstico individual feito durante o treinamento</span></div>
             <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Material de referência e templates de mapeamento</span></div>
@@ -552,7 +596,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
         </div>
         <div class="faq-item" data-faq="5">
           <button class="faq-btn" aria-expanded="false"><span class="faq-q">Onde será realizado o treinamento?</span><span class="faq-ic">+</span></button>
-          <div class="faq-a" style="display:none">A imersão acontece nos dias 9 e 10 de dezembro, das 9h às 16h, na Be Next Eventos, Av. Copacabana, 238, 3º andar, Alphaville, SP. Ao se inscrever, você recebe por email todas as informações de logística.</div>
+          <div class="faq-a" style="display:none">A imersão acontece nos dias 9 e 10 de dezembro, das 9h às 16h, na Be Next Eventos, Av. Copacabana, 238, 3º andar, Alphaville, SP. A chegada é a partir das 8h30, com coffee break. O almoço não está incluso: a pausa é das 12h30 às 14h e cada participante almoça por conta própria. Ao se inscrever, você recebe por email todas as informações de logística.</div>
         </div>
         <div class="faq-item" data-faq="6">
           <button class="faq-btn" aria-expanded="false"><span class="faq-q">Posso parcelar a inscrição?</span><span class="faq-ic">+</span></button>
@@ -600,6 +644,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
             <a href="#problema">O problema</a>
             <a href="#instrutor">Quem facilita</a>
             <a href="#conteudo">Conteúdo</a>
+            <a href="#programacao">Programação</a>
           </div>
         </div>
         <div>
