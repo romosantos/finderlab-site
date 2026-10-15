@@ -140,6 +140,18 @@ html{scroll-behavior:smooth}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .price-card{border:1px solid rgba(116,67,245,.7);background:#0C0A1A;border-radius:24px;padding:44px 40px 40px;box-shadow:0 0 70px rgba(116,67,245,.38),0 30px 130px rgba(116,67,245,.34),inset 0 0 30px rgba(116,67,245,.1)}
 .price{font-size:clamp(56px,5.6vw,80px);font-weight:700;line-height:1;letter-spacing:-.045em}
+.hero-hook{margin:30px 0 0;max-width:600px;font-size:clamp(24px,2.6vw,36px);font-weight:700;letter-spacing:-.03em;line-height:1.14;color:#F1EEFB;text-shadow:0 4px 24px rgba(116,67,245,.28)}
+.hero-hook span{display:block;color:var(--accent2)}
+.cmp{margin-top:56px;border:1px solid rgba(124,84,245,.5);border-radius:20px;overflow:hidden;background:#0C0A1A;box-shadow:0 0 40px rgba(116,67,245,.18)}
+.cmp-r{display:grid;grid-template-columns:200px minmax(0,1fr) minmax(0,1fr)}
+.cmp-r>div{padding:22px 26px;border-top:1px solid rgba(255,255,255,.08);font-size:15px;line-height:1.55}
+.cmp-h>div{border-top:0;padding:18px 26px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9C97B5}
+.cmp-h>.cmp-b{background:var(--accent);color:#fff}
+.cmp-l{font-weight:600;color:#F1EEFB}
+.cmp-a{color:#A39EBB}
+.cmp-b{color:#F1EEFB;font-weight:500;background:rgba(116,67,245,.14)}
+.cmp-note{margin-top:22px;font-size:13px;line-height:1.6;color:#8F8AA8;max-width:760px}
+@media (max-width:760px){.cmp{margin-top:40px}.cmp-r{grid-template-columns:1fr}.cmp-h{display:none}.cmp-r>div{padding:14px 20px;border-top:0}.cmp-r>.cmp-l{padding-top:20px;border-top:1px solid rgba(255,255,255,.08);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2)}.cmp-r:first-of-type>.cmp-l{border-top:0}.cmp-a::before,.cmp-b::before{display:block;margin-bottom:4px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.cmp-a::before{content:"Imersão de IA comum";color:#8F8AA8}.cmp-b::before{content:"Máquina de Decisões";color:var(--accent2)}.cmp-b{margin:0 12px 12px;border-radius:12px;padding:14px 16px}}
 .tickets{display:grid;gap:22px}
 .tickets .price{font-size:clamp(44px,4.4vw,60px)}
 .tickets .price-card{padding:36px 36px 34px}
@@ -361,7 +373,8 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
       <div class="hero-text">
         <div class="pill">Curso presencial intensivo · IA para líderes</div>
         <h1 class="t t-hero" style="margin-top:28px">Máquina de <span class="hl">Decisões</span></h1>
-        <p class="lead" style="margin-top:32px;max-width:520px"><strong>Não é um curso sobre ferramentas de IA.</strong> É para líderes e empresários que querem repensar seus processos, mudar seus resultados e construir uma empresa mais inteligente a partir do que a IA torna possível.</p>
+        <p class="hero-hook">Todo mundo já testou IA. <span>Quase ninguém teve resultado.</span></p>
+        <p class="lead" style="margin-top:24px;max-width:520px"><strong>Não é um curso sobre ferramentas de IA.</strong> É para líderes e empresários que querem repensar seus processos, mudar seus resultados e construir uma empresa mais inteligente a partir do que a IA torna possível.</p>
         <a class="btn btn-fill" href="/inscricao" style="margin-top:36px">Quero participar →</a>
         <div class="muted" style="margin-top:18px;display:flex;align-items:center;gap:10px;font-size:13px">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#AEA9C5" stroke-width="1.4" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
@@ -538,6 +551,24 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
     </div>
   </div>
 
+  <!-- COMPARATIVO -->
+  <div id="diferenca" class="sec" style="--ft:12%;--fb:16%">
+    <div class="sec-in">
+      <div class="pill" style="margin-bottom:28px">Por que é diferente</div>
+      <h2 class="t t-72" style="max-width:1000px">Não é mais uma imersão de IA. <span class="hl">É repensar como o seu negócio decide.</span></h2>
+      <p class="lead" style="margin-top:28px;max-width:680px">Muita imersão ensina a usar a ferramenta. Aqui o ponto de partida é outro: a decisão. A ferramenta vem depois, a serviço dela.</p>
+      <div class="cmp" role="table" aria-label="Comparação entre uma imersão de IA comum e a Máquina de Decisões">
+        <div class="cmp-r cmp-h" role="row"><div role="columnheader"></div><div class="cmp-a" role="columnheader">Imersão de IA comum</div><div class="cmp-b" role="columnheader">Máquina de Decisões</div></div>
+        <div class="cmp-r" role="row"><div class="cmp-l" role="rowheader">Ponto de partida</div><div class="cmp-a" role="cell">A ferramenta e o prompt.</div><div class="cmp-b" role="cell">A decisão que o seu negócio precisa tomar.</div></div>
+        <div class="cmp-r" role="row"><div class="cmp-l" role="rowheader">Conteúdo</div><div class="cmp-a" role="cell">Genérico, igual para todo mundo.</div><div class="cmp-b" role="cell">Aplicado ao seu negócio, com diagnóstico individual.</div></div>
+        <div class="cmp-r" role="row"><div class="cmp-l" role="rowheader">Resultado</div><div class="cmp-a" role="cell">Certificado de presença.</div><div class="cmp-b" role="cell">Seu próprio agente de IA funcionando (no ingresso Imersão + Agente).</div></div>
+        <div class="cmp-r" role="row"><div class="cmp-l" role="rowheader">Turma</div><div class="cmp-a" role="cell">Centenas de pessoas na plateia.</div><div class="cmp-b" role="cell">50 participantes, com o Rodrigo ao lado.</div></div>
+        <div class="cmp-r" role="row"><div class="cmp-l" role="rowheader">Depois do evento</div><div class="cmp-a" role="cell">Você volta para a empresa e tenta aplicar sozinho.</div><div class="cmp-b" role="cell">Grupo de acompanhamento pós-treinamento.</div></div>
+      </div>
+      <p class="cmp-note">Comparação com o formato mais comum de imersão e workshop de IA, não com um evento específico.</p>
+    </div>
+  </div>
+
   <!-- INSCRIÇÃO -->
   <div id="inscricao" class="sec" style="--ft:16%;--fb:20%">
     <img class="sec-img" src="/img/inscricao-bg.jpg" alt="" aria-hidden="true" style="object-position:35% 50%;opacity:.3;transform:scale(1.2);transform-origin:30% 45%">
@@ -624,6 +655,14 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
         <div class="faq-item" data-faq="7">
           <button class="faq-btn" aria-expanded="false"><span class="faq-q">E se eu não puder comparecer na data?</span><span class="faq-ic">+</span></button>
           <div class="faq-a" style="display:none">Compreendemos imprevistos. Em caso de cancelamento com antecedência mínima de 7 dias, faremos a transferência do valor para a próxima turma disponível. Entre em contato para tratar o seu caso: <a href="mailto:rodrigo.moraes@finderlab.com.br" style="color:#F1EEFB">rodrigo.moraes@finderlab.com.br</a>.</div>
+        </div>
+        <div class="faq-item" data-faq="8">
+          <button class="faq-btn" aria-expanded="false"><span class="faq-q">Já uso o ChatGPT ou já fiz curso de IA. Faz sentido para mim?</span><span class="faq-ic">+</span></button>
+          <div class="faq-a" style="display:none">Faz. O curso não é sobre aprender uma ferramenta: ele parte da decisão do seu negócio, não do prompt. Quem já usa IA costuma aproveitar mais, porque chega com situações reais para estruturar. Se você procura um curso técnico, de programação, ou dicas de produtividade pessoal, esse não é o seu.</div>
+        </div>
+        <div class="faq-item" data-faq="9">
+          <button class="faq-btn" aria-expanded="false"><span class="faq-q">Qual ingresso escolher: Imersão ou Imersão + Agente?</span><span class="faq-ic">+</span></button>
+          <div class="faq-a" style="display:none">Os dois têm os dois dias completos de imersão. O ingresso Imersão (R$ 997) é para quem quer entender a lógica e aprender o passo a passo para construir o próprio agente. O Imersão + Agente (R$ 2.000) é para quem quer sair do segundo dia com o agente personalizado funcionando: o Rodrigo constrói com você, sobre uma decisão real do seu negócio. Se ainda tiver dúvida, converse com o Drigo, o assistente aqui do site.</div>
         </div>
         <div class="wa-box">
           <div><b>Ainda com dúvida?</b><span>Fale com a gente direto no WhatsApp.</span></div>
