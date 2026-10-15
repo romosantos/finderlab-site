@@ -167,7 +167,20 @@ html{scroll-behavior:smooth}
 .cmp-b{color:#F1EEFB;font-weight:500;background:rgba(116,67,245,.14)}
 .cmp-note{margin-top:22px;font-size:13px;line-height:1.6;color:#8F8AA8;max-width:760px}
 @media (max-width:760px){.cmp{margin-top:40px}.cmp-r{grid-template-columns:1fr}.cmp-h{display:none}.cmp-r>div{padding:14px 20px;border-top:0}.cmp-r>.cmp-l{padding-top:20px;border-top:1px solid rgba(255,255,255,.08);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2)}.cmp-r:first-of-type>.cmp-l{border-top:0}.cmp-a::before,.cmp-b::before{display:block;width:auto;margin-bottom:4px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.cmp-a::before{content:"Imersão de IA comum";color:#8F8AA8}.cmp-b::before{content:"Máquina de Decisões";color:var(--accent2)}.cmp-b{margin:0 12px 12px;border-radius:12px;padding:14px 16px}}
-.tickets{display:grid;gap:22px}
+.tickets{display:grid;gap:24px}
+.ins-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,540px);gap:64px;align-items:center;margin-bottom:56px}
+.ins-top .gsoft{padding:30px 32px}
+.tickets{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+.tickets .price-card{display:flex;flex-direction:column}
+.inc{margin-top:24px;border:1px solid rgba(124,84,245,.28);background:rgba(20,12,46,.4);border-radius:18px;padding:26px 30px}
+.inc-t{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent2);margin-bottom:16px}
+.inc-g{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px}
+.inc-g div{font-size:14px;line-height:1.55;color:#B9B4CE}
+.inc-g b{display:block;margin-bottom:2px;color:#F1EEFB;font-weight:600}
+@media (max-width:1000px){.inc-g{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.inc{padding:22px 20px}.inc-g{grid-template-columns:1fr;gap:16px}}
+.tk-list{margin-top:28px;border-top:1px solid rgba(255,255,255,.1);margin-bottom:28px}
+.tickets .price-card .btn{margin-top:auto!important}
 .tickets .price{font-size:clamp(44px,4.4vw,60px)}
 .tickets .price-card{padding:36px 36px 34px}
 .tk-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -208,6 +221,7 @@ html{scroll-behavior:smooth}
   .fw2-panel{padding:28px 30px;gap:16px 28px}
   .ins-grid{gap:48px}
   .ins2-grid{gap:40px}
+  .ins-top{gap:40px}
   .gcard,.gsoft,.plain{padding:30px}
   .price-card,.tickets .price-card{padding:32px 26px 30px}
   .foot-grid{gap:36px}
@@ -223,6 +237,8 @@ html{scroll-behavior:smooth}
   .ins-body{order:3}
   .ins-body .lead:first-child{margin-top:4px !important}
   .ins2-grid{grid-template-columns:1fr;gap:28px}
+  .ins-top{grid-template-columns:1fr;gap:32px;margin-bottom:40px}
+  .tickets{grid-template-columns:1fr}
   .hero{min-height:0}
   .hero-glow{display:none}
   .hero-photo{left:0;right:0;top:0;bottom:0;width:100%;height:100%}
@@ -638,12 +654,13 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
     <img class="sec-img" src="/img/inscricao-bg.jpg" alt="" aria-hidden="true" style="object-position:35% 50%;opacity:.3;transform:scale(1.2);transform-origin:30% 45%">
     <div class="fade-t"></div><div class="fade-b"></div>
     <div class="sec-in">
-      <div class="ins2-grid">
+      <div class="ins-top">
         <div>
           <div class="pill" style="margin-bottom:28px">Inscrição</div>
           <h2 class="t t-88">Garanta sua <span class="hl">vaga.</span></h2>
           <p class="lead" style="margin-top:28px;max-width:520px">A turma está limitada a 50 participantes para manter a qualidade da troca e do diagnóstico individual. Quando fechar, fecha.</p>
-          <div class="gsoft" style="margin-top:48px">
+        </div>
+        <div class="gsoft" style="margin-top:0">
             <div style="font-size:28px;font-weight:700;letter-spacing:-.03em;margin-bottom:16px;line-height:1.15">Dois dias. <span style="color:var(--accent2)">Mudança de visão.</span></div>
             <p class="cd" style="margin:0 0 28px">Intensivo presencial: sem gravação para assistir depois, sem módulo por semana. Dois dias de imersão com turma limitada, onde o que você leva para casa não é só uma forma diferente de pensar: é o método para construir o seu próprio agente de IA e, no ingresso Imersão + Agente, o agente já construído e funcionando.</p>
             <div class="three">
@@ -652,15 +669,15 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
               <div class="mini-soft"><div style="font-size:18px;font-weight:700;letter-spacing:-.02em">9 e 10 dez</div><div class="ml">Das 9h às 16h</div></div>
             </div>
           </div>
-        </div>
-        <div class="tickets">
+      </div>
+      <div class="tickets">
           <div class="price-card" id="ingresso-completo">
             <div class="tk-top"><div class="cap" style="letter-spacing:.12em">Imersão + Agente</div><span class="tk-tag">Mais completo</span></div>
             <div class="price" style="margin-top:16px">R$ 2.000</div>
             <div class="muted" style="margin-top:12px;font-size:14px">por pessoa<br>ou <strong style="color:#F1EEFB;font-weight:600">10x de R$ 200 sem juros</strong> no cartão</div>
-            <div style="margin-top:28px;border-top:1px solid rgba(255,255,255,.1)">
+            <div class="tk-list">
               <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span><strong style="color:#F1EEFB;font-weight:600">Seu agente de IA personalizado pelo Rodrigo</strong>, construído para uma decisão real do seu negócio: o mesmo processo que a Finder Lab cobra R$ 5.000 para fazer, incluso no ingresso</span></div>
-              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span><strong style="color:#F1EEFB;font-weight:600">Tudo do ingresso Imersão</strong>: 2 dias presenciais com Rodrigo Moraes, framework completo, diagnóstico, material e grupo pós-treinamento</span></div>
+              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span><strong style="color:#F1EEFB;font-weight:600">Tudo do ingresso Imersão</strong>: framework completo e diagnóstico individual</span></div>
               <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Você sai do segundo dia com o agente funcionando</span></div>
             </div>
             <a class="btn btn-fill" href="/inscricao?ingresso=completo" style="margin-top:28px;display:flex;width:100%;box-shadow:none">Quero Imersão + Agente →</a>
@@ -669,20 +686,24 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
             <div class="tk-top"><div class="cap" style="letter-spacing:.12em">Imersão</div></div>
             <div class="price" style="margin-top:16px">R$ 997</div>
             <div class="muted" style="margin-top:12px;font-size:14px">por pessoa, à vista ou <strong style="color:#F1EEFB;font-weight:600">até 3x sem juros</strong><br>ou <strong style="color:#F1EEFB;font-weight:600">10x de R$ 119,90</strong> no cartão</div>
-            <div style="margin-top:28px;border-top:1px solid rgba(255,255,255,.1)">
-              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>2 dias de imersão presencial com Rodrigo Moraes</span></div>
-              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Framework completo: Máquina de Decisões aplicado ao seu negócio</span></div>
+            <div class="tk-list">
               <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span><strong style="color:#F1EEFB;font-weight:600">Você aprende a construir o seu próprio agente de IA</strong>, passo a passo. A construção personalizada pelo Rodrigo é do ingresso Imersão + Agente</span></div>
+              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Framework completo: Máquina de Decisões aplicado ao seu negócio</span></div>
               <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Diagnóstico individual feito durante o treinamento</span></div>
-              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Coffee break nos dois dias (o almoço é por conta de cada participante)</span></div>
-              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Material de referência e templates de mapeamento</span></div>
-              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Acesso ao grupo de acompanhamento pós-treinamento</span></div>
             </div>
             <a class="btn btn-line" href="/inscricao?ingresso=imersao" style="margin-top:28px;justify-content:center;width:100%;min-height:58px;font-size:15px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">Quero a Imersão →</a>
           </div>
-          <div class="muted" style="font-size:12px;line-height:1.6;text-align:center">Turma limitada. Quando fechar, não abre nova turma imediatamente.</div>
+      </div>
+      <div class="inc">
+        <div class="inc-t">Incluso nos dois ingressos</div>
+        <div class="inc-g">
+          <div><b>2 dias presenciais</b>com o Rodrigo Moraes, das 9h às 16h</div>
+          <div><b>Coffee break</b>nos dois dias (o almoço é por conta de cada participante)</div>
+          <div><b>Material de referência</b>e templates de mapeamento</div>
+          <div><b>Grupo de acompanhamento</b>pós-treinamento</div>
         </div>
       </div>
+      <div class="muted" style="margin-top:28px;font-size:13px;line-height:1.6;text-align:center">Turma limitada. Quando fechar, não abre nova turma imediatamente.</div>
     </div>
   </div>
 
