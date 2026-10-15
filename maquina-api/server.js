@@ -1434,7 +1434,7 @@ function listaEmailText(nome) {
   const primeiroNome = String(nome || '').trim().split(' ')[0] || 'tudo bem';
   return `Oi, ${primeiroNome}!\n\n` +
     `Seu nome está na lista de prioridade da próxima turma da Máquina de Decisões.\n\n` +
-    `A imersão é presencial, de um dia, num sábado, em São Paulo, com 20 vagas. Ainda estamos fechando data e local. Assim que isso estiver definido, você é avisado antes de todo mundo, e as 20 vagas são oferecidas primeiro a quem está na lista.\n\n` +
+    `A imersão é presencial, em dois dias (9 e 10 de dezembro, das 9h às 16h), na Be Next Eventos, em Alphaville (SP), com 50 vagas. Assim que as inscrições abrirem, você é avisado antes de todo mundo, e as 50 vagas são oferecidas primeiro a quem está na lista.\n\n` +
     `Não precisa fazer nada agora e não há nenhum pagamento. Se tiver qualquer dúvida, é só responder este email ou chamar no WhatsApp (11) 3164-3783.\n\n` +
     `Um abraço,\nDrigo (assistente de IA do Rodrigo Moraes, Finder Lab)`;
 }
@@ -1446,7 +1446,7 @@ function listaEmailHtml(nome) {
     <p style="margin:0 0 16px">Oi, ${esc(primeiroNome)}!</p>
     <p style="margin:0 0 16px">Seu nome está na <b>lista de prioridade</b> da próxima turma da Máquina de Decisões.</p>
     <div style="background:#f6f3ff;border-left:3px solid #A88BFF;padding:16px 20px;border-radius:8px;margin:0 0 20px">
-      <p style="margin:0">A imersão é presencial, de um dia, num sábado, em São Paulo, com 20 vagas. Ainda estamos fechando data e local. Assim que isso estiver definido, você é avisado antes de todo mundo, e as 20 vagas são oferecidas primeiro a quem está na lista.</p>
+      <p style="margin:0">A imersão é presencial, em dois dias (9 e 10 de dezembro, das 9h às 16h), na Be Next Eventos, em Alphaville (SP), com 50 vagas. Assim que as inscrições abrirem, você é avisado antes de todo mundo, e as 50 vagas são oferecidas primeiro a quem está na lista.</p>
     </div>
     <p style="margin:0 0 16px">Não precisa fazer nada agora e não há nenhum pagamento. Se tiver qualquer dúvida, é só responder este email ou chamar no WhatsApp
       <a href="https://wa.me/551131643783" style="color:#7C5CFF">(11) 3164-3783</a>.</p>
