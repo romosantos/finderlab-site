@@ -140,6 +140,12 @@ html{scroll-behavior:smooth}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .price-card{border:1px solid rgba(116,67,245,.7);background:#0C0A1A;border-radius:24px;padding:44px 40px 40px;box-shadow:0 0 70px rgba(116,67,245,.38),0 30px 130px rgba(116,67,245,.34),inset 0 0 30px rgba(116,67,245,.1)}
 .price{font-size:clamp(56px,5.6vw,80px);font-weight:700;line-height:1;letter-spacing:-.045em}
+.tickets{display:grid;gap:22px}
+.tickets .price{font-size:clamp(44px,4.4vw,60px)}
+.tickets .price-card{padding:36px 36px 34px}
+.tk-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.tk-tag{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--accent);border-radius:999px;padding:6px 12px}
+.price-card.tk-alt{box-shadow:inset 0 0 24px rgba(116,67,245,.1);border-color:rgba(124,84,245,.4)}
 
 /* ---------- faq ---------- */
 .faq{display:flex;flex-direction:column;gap:12px}
@@ -176,7 +182,7 @@ html{scroll-behavior:smooth}
   .ins-grid{gap:48px}
   .ins2-grid{gap:40px}
   .gcard,.gsoft,.plain{padding:30px}
-  .price-card{padding:36px 30px 32px}
+  .price-card,.tickets .price-card{padding:32px 26px 30px}
   .foot-grid{gap:36px}
 }
 
@@ -258,7 +264,7 @@ html{scroll-behavior:smooth}
   .three{gap:8px}
   .mini-soft{padding:12px 8px}
   .three .mini-soft>div:first-child{font-size:14px!important;letter-spacing:-.01em!important}
-  .price-card{padding:28px 22px 24px;border-radius:20px}
+  .price-card,.tickets .price-card{padding:26px 20px 24px;border-radius:20px}
   .faq-item{padding:0 18px;border-radius:14px}
   .faq-btn{padding:18px 0;gap:14px}
   .faq-q{font-size:15px}
@@ -484,7 +490,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
     <div class="sec-in">
       <div class="pill" style="margin-bottom:28px">Programação</div>
       <h2 class="t t-72">Dois dias, <span class="hl">do diagnóstico ao agente funcionando.</span></h2>
-      <p class="lead" style="margin-top:28px;max-width:680px">No primeiro dia você entende a lógica e estrutura o seu negócio para a IA. No segundo, você constrói o seu agente com o Rodrigo ao lado.</p>
+      <p class="lead" style="margin-top:28px;max-width:680px">No primeiro dia você entende a lógica e estrutura o seu negócio para a IA. No segundo, você aprende a construir o seu agente e, no ingresso Imersão + Agente, o Rodrigo constrói o seu, personalizado para o seu negócio.</p>
       <div class="g2" style="margin-top:56px;align-items:start">
         <div class="prog-day">
           <div class="tag">Dia 1 · quarta-feira, 9 de dezembro</div>
@@ -500,11 +506,11 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
           <div class="tag">Dia 2 · quinta-feira, 10 de dezembro</div>
           <h3>Construção do seu agente</h3>
           <div class="prog-row soft"><div class="prog-h">8h30</div><div><div class="prog-t">Chegada e coffee</div></div></div>
-          <div class="prog-row"><div class="prog-h">9h00 às 10h30</div><div><div class="prog-t">Criação do agente, parte 1</div><div class="prog-d">Você começa a construir o seu agente sobre uma decisão real do seu negócio.</div></div></div>
+          <div class="prog-row"><div class="prog-h">9h00 às 10h30</div><div><div class="prog-t">Criação do agente, parte 1</div><div class="prog-d">Você começa a construir um agente sobre uma decisão real do seu negócio.</div></div></div>
           <div class="prog-row soft"><div class="prog-h">10h30 às 10h50</div><div><div class="prog-t">Intervalo + coffee break</div></div></div>
           <div class="prog-row"><div class="prog-h">10h50 às 12h30</div><div><div class="prog-t">Criação do agente, parte 2</div></div></div>
           <div class="prog-row soft"><div class="prog-h">12h30 às 14h00</div><div><div class="prog-t">Almoço (por conta de cada um)</div></div></div>
-          <div class="prog-row"><div class="prog-h">14h00 às 16h00</div><div><div class="prog-t">Criação do agente, parte 3 + encerramento</div><div class="prog-d">Você termina o agente com o Rodrigo ao lado e sai com ele funcionando.</div></div></div>
+          <div class="prog-row"><div class="prog-h">14h00 às 16h00</div><div><div class="prog-t">Criação do agente, parte 3 + encerramento</div><div class="prog-d">No ingresso Imersão + Agente, você sai com o seu agente personalizado funcionando. No ingresso Imersão, você sai sabendo construir o seu.</div></div></div>
         </div>
       </div>
       <p class="prog-note">O coffee break está incluso nos dois dias. O almoço é por conta de cada participante: das 12h30 às 14h a turma faz uma pausa para almoçar e conversar.</p>
@@ -544,7 +550,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
           <p class="lead" style="margin-top:28px;max-width:520px">A turma está limitada a 50 participantes para manter a qualidade da troca e do diagnóstico individual. Quando fechar, fecha.</p>
           <div class="gsoft" style="margin-top:48px">
             <div style="font-size:28px;font-weight:700;letter-spacing:-.03em;margin-bottom:16px;line-height:1.15">Dois dias. <span style="color:var(--accent2)">Mudança de visão.</span></div>
-            <p class="cd" style="margin:0 0 28px">Intensivo presencial: sem gravação para assistir depois, sem módulo por semana. Dois dias de imersão com turma limitada, onde o que você leva para casa não é só uma forma diferente de pensar: é o seu próprio agente de IA, construído e funcionando.</p>
+            <p class="cd" style="margin:0 0 28px">Intensivo presencial: sem gravação para assistir depois, sem módulo por semana. Dois dias de imersão com turma limitada, onde o que você leva para casa não é só uma forma diferente de pensar: é o método para construir o seu próprio agente de IA e, no ingresso Imersão + Agente, o agente já construído e funcionando.</p>
             <div class="three">
               <div class="mini-soft"><div style="font-size:18px;font-weight:700;letter-spacing:-.02em">Presencial</div><div class="ml">Intensivo · 2 dias completos</div></div>
               <div class="mini-soft"><div style="font-size:18px;font-weight:700;letter-spacing:-.02em">50 vagas</div><div class="ml">Turma limitada</div></div>
@@ -552,21 +558,34 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
             </div>
           </div>
         </div>
-        <div class="price-card">
-          <div class="cap" style="letter-spacing:.12em">Investimento</div>
-          <div class="price" style="margin-top:16px">R$ 2.000</div>
-          <div class="muted" style="margin-top:12px;font-size:14px">por pessoa<br>ou <strong style="color:#F1EEFB;font-weight:600">10x de R$ 200 sem juros</strong> no cartão</div>
-          <div style="margin-top:32px;border-top:1px solid rgba(255,255,255,.1)">
-            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span><strong style="color:#F1EEFB;font-weight:600">Seu próprio agente de IA</strong>, construído durante o treinamento e aplicado a uma decisão real do seu negócio &mdash; o mesmo processo que a Finder Lab cobra R$ 5.000 para fazer, incluso na inscrição</span></div>
-            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>2 dias de imersão presencial com Rodrigo Moraes</span></div>
-            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Coffee break nos dois dias (o almoço é por conta de cada participante)</span></div>
-            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Framework completo: Máquina de Decisões aplicado ao seu negócio</span></div>
-            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Diagnóstico individual feito durante o treinamento</span></div>
-            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Material de referência e templates de mapeamento</span></div>
-            <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Acesso ao grupo de acompanhamento pós-treinamento</span></div>
+        <div class="tickets">
+          <div class="price-card" id="ingresso-completo">
+            <div class="tk-top"><div class="cap" style="letter-spacing:.12em">Imersão + Agente</div><span class="tk-tag">Mais completo</span></div>
+            <div class="price" style="margin-top:16px">R$ 2.000</div>
+            <div class="muted" style="margin-top:12px;font-size:14px">por pessoa<br>ou <strong style="color:#F1EEFB;font-weight:600">10x de R$ 200 sem juros</strong> no cartão</div>
+            <div style="margin-top:28px;border-top:1px solid rgba(255,255,255,.1)">
+              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span><strong style="color:#F1EEFB;font-weight:600">Seu agente de IA personalizado pelo Rodrigo</strong>, construído para uma decisão real do seu negócio: o mesmo processo que a Finder Lab cobra R$ 5.000 para fazer, incluso no ingresso</span></div>
+              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span><strong style="color:#F1EEFB;font-weight:600">Tudo do ingresso Imersão</strong>: 2 dias presenciais com Rodrigo Moraes, framework completo, diagnóstico, material e grupo pós-treinamento</span></div>
+              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Você sai do segundo dia com o agente funcionando</span></div>
+            </div>
+            <a class="btn btn-fill" href="/inscricao?ingresso=completo" style="margin-top:28px;display:flex;width:100%;box-shadow:none">Quero Imersão + Agente →</a>
           </div>
-          <a class="btn btn-fill" href="/inscricao" style="margin-top:32px;display:flex;width:100%;box-shadow:none">Quero me inscrever →</a>
-          <div class="muted" style="margin-top:18px;font-size:12px;line-height:1.6;text-align:center">Turma limitada. Quando fechar, não abre nova turma imediatamente.</div>
+          <div class="price-card tk-alt" id="ingresso-imersao">
+            <div class="tk-top"><div class="cap" style="letter-spacing:.12em">Imersão</div></div>
+            <div class="price" style="margin-top:16px">R$ 997</div>
+            <div class="muted" style="margin-top:12px;font-size:14px">por pessoa, à vista ou <strong style="color:#F1EEFB;font-weight:600">até 3x sem juros</strong><br>ou <strong style="color:#F1EEFB;font-weight:600">10x de R$ 119,90</strong> no cartão</div>
+            <div style="margin-top:28px;border-top:1px solid rgba(255,255,255,.1)">
+              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>2 dias de imersão presencial com Rodrigo Moraes</span></div>
+              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Framework completo: Máquina de Decisões aplicado ao seu negócio</span></div>
+              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span><strong style="color:#F1EEFB;font-weight:600">Você aprende a construir o seu próprio agente de IA</strong>, passo a passo. A construção personalizada pelo Rodrigo é do ingresso Imersão + Agente</span></div>
+              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Diagnóstico individual feito durante o treinamento</span></div>
+              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Coffee break nos dois dias (o almoço é por conta de cada participante)</span></div>
+              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Material de referência e templates de mapeamento</span></div>
+              <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Acesso ao grupo de acompanhamento pós-treinamento</span></div>
+            </div>
+            <a class="btn btn-line" href="/inscricao?ingresso=imersao" style="margin-top:28px;justify-content:center;width:100%;min-height:58px;font-size:15px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">Quero a Imersão →</a>
+          </div>
+          <div class="muted" style="font-size:12px;line-height:1.6;text-align:center">Turma limitada. Quando fechar, não abre nova turma imediatamente.</div>
         </div>
       </div>
     </div>
@@ -584,7 +603,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
         </div>
         <div class="faq-item" data-faq="2">
           <button class="faq-btn" aria-expanded="false"><span class="faq-q">Eu realmente saio com um agente de IA pronto?</span><span class="faq-ic">+</span></button>
-          <div class="faq-a" style="display:none">Sim. Na parte final da imersão você constrói, junto com o Rodrigo, o seu próprio agente de IA aplicado a uma decisão real do seu negócio — o mesmo processo que a Finder Lab cobra R$ 5.000 para fazer sob demanda, incluso na sua inscrição. Ele fica hospedado na infraestrutura da Finder Lab, e você escolhe se quer ele rodando só como webapp, ou webapp mais WhatsApp. A construção está inclusa; manter o agente funcionando depois do curso tem uma mensalidade de manutenção à parte, entre R$ 700 e R$ 1.000.</div>
+          <div class="faq-a" style="display:none">Depende do ingresso. No Imersão + Agente (R$ 2.000), o Rodrigo constrói com você o seu próprio agente de IA, personalizado para uma decisão real do seu negócio, e você sai com ele funcionando: o mesmo processo que a Finder Lab cobra R$ 5.000 para fazer sob demanda. No ingresso Imersão (R$ 997), você aprende o passo a passo para construir o seu agente, mas a construção personalizada não está inclusa. O agente do ingresso completo fica hospedado na infraestrutura da Finder Lab, e você escolhe se quer ele rodando só como webapp, ou webapp mais WhatsApp. A construção está inclusa; manter o agente funcionando depois do curso tem uma mensalidade de manutenção à parte, entre R$ 700 e R$ 1.000.</div>
         </div>
         <div class="faq-item" data-faq="3">
           <button class="faq-btn" aria-expanded="false"><span class="faq-q">Minha empresa é pequena. Faz sentido para mim?</span><span class="faq-ic">+</span></button>
@@ -600,7 +619,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
         </div>
         <div class="faq-item" data-faq="6">
           <button class="faq-btn" aria-expanded="false"><span class="faq-q">Posso parcelar a inscrição?</span><span class="faq-ic">+</span></button>
-          <div class="faq-a" style="display:none">Sim. Você pode parcelar a inscrição em até 10x sem juros no cartão de crédito.</div>
+          <div class="faq-a" style="display:none">Sim. No ingresso Imersão + Agente (R$ 2.000), você parcela em até 10x de R$ 200 sem juros no cartão. No ingresso Imersão (R$ 997), você paga à vista ou em até 3x sem juros no cartão, ou ainda em 10x de R$ 119,90.</div>
         </div>
         <div class="faq-item" data-faq="7">
           <button class="faq-btn" aria-expanded="false"><span class="faq-q">E se eu não puder comparecer na data?</span><span class="faq-ic">+</span></button>

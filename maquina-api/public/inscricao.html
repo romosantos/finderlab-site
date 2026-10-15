@@ -58,6 +58,19 @@ a{color:inherit;text-decoration:none}
 .field::placeholder{color:#8F8AA8}
 .field:focus{outline:none;border-color:#8B63FF;box-shadow:0 0 0 3px rgba(116,67,245,.28)}
 .err{font-size:13px;color:#FFB86B}
+.tk-pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tk-opt{position:relative;display:block;cursor:pointer}
+.tk-opt input{position:absolute;opacity:0;pointer-events:none}
+.tk-opt>span{display:block;height:100%;box-sizing:border-box;padding:16px 16px 15px;border-radius:12px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);transition:border-color .2s ease,box-shadow .2s ease,background .2s ease}
+.tk-opt b{display:block;font-size:16px;color:#F1EEFB}
+.tk-opt i{display:block;margin-top:4px;font-style:normal;font-size:14px;font-weight:600;color:#A88BFF}
+.tk-opt em{display:block;margin-top:6px;font-style:normal;font-size:12px;line-height:1.45;color:#AEA9C5}
+.tk-opt input:checked+span{border-color:#8B63FF;background:rgba(116,67,245,.18);box-shadow:0 0 0 3px rgba(116,67,245,.28)}
+.tk-opt input:focus-visible+span{box-shadow:0 0 0 3px rgba(168,139,255,.6)}
+.tk-parc{display:grid;gap:10px;margin-top:2px}
+.tk-parc label{display:flex;gap:10px;align-items:flex-start;font-weight:500;font-size:14px;line-height:1.45;color:#D2CEE6;cursor:pointer}
+.tk-parc input{margin-top:3px;accent-color:#7443F5}
+@media (max-width:560px){.tk-pick{grid-template-columns:1fr}}
 .field[aria-invalid="true"]{border-color:#FFB86B}
 .consent{display:flex;gap:12px;align-items:flex-start;margin-top:24px;font-size:13px;line-height:1.55;color:#B9B4CE;cursor:pointer}
 .consent input{flex-shrink:0;appearance:none;-webkit-appearance:none;width:22px;height:22px;margin:0;border:1.5px solid rgba(168,139,255,.6);border-radius:6px;background:rgba(8,6,20,.7);cursor:pointer;display:grid;place-content:center;transition:background .2s ease,border-color .2s ease}
@@ -220,6 +233,20 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
         <form class="gform" id="lead-form" novalidate>
           <div class="fields">
             <div style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true"><label for="f-web">Não preencha este campo</label><input id="f-web" type="text" name="website" tabindex="-1" autocomplete="off"></div>
+            <div class="fw field-w" role="radiogroup" aria-labelledby="tk-label">
+              <label id="tk-label">Escolha o seu ingresso</label>
+              <div class="tk-pick">
+                <label class="tk-opt"><input type="radio" name="ingresso" value="completo" checked><span><b>Imersão + Agente</b><i>R$ 2.000 &middot; 10x de R$ 200</i><em>Com o seu agente de IA personalizado pelo Rodrigo</em></span></label>
+                <label class="tk-opt"><input type="radio" name="ingresso" value="imersao"><span><b>Imersão</b><i>R$ 997 &middot; até 3x sem juros</i><em>Você aprende a construir o seu agente, sem a construção personalizada</em></span></label>
+              </div>
+            </div>
+            <div class="fw field-w" id="parc-wrap" style="display:none">
+              <label id="parc-label">Como prefere pagar o ingresso Imersão?</label>
+              <div class="tk-parc" role="radiogroup" aria-labelledby="parc-label">
+                <label><input type="radio" name="parcelamento" value="ate3" checked><span>R$ 997 à vista (Pix ou cartão) ou em até 3x sem juros no cartão</span></label>
+                <label><input type="radio" name="parcelamento" value="10x"><span>10x de R$ 119,90 no cartão (total de R$ 1.199)</span></label>
+              </div>
+            </div>
             <div class="fw field-w">
               <label for="f-nome">Nome completo</label>
               <input id="f-nome" class="field" type="text" autocomplete="name" placeholder="Como devemos te chamar" aria-describedby="e-nome">
@@ -308,8 +335,9 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
         <div class="cap">Resumo da inscrição</div>
         <div style="margin-top:18px;font-size:26px;font-weight:700;letter-spacing:-.03em;line-height:1.15">Máquina de Decisões</div>
         <div class="muted" style="margin-top:6px;font-size:14px">Curso presencial intensivo com Rodrigo Moraes</div>
-        <div class="price" style="margin-top:26px">R$ 2.000</div>
-        <div class="muted" style="margin-top:10px;font-size:14px">por pessoa<br>ou <strong style="color:#F1EEFB;font-weight:600">10x de R$ 200 sem juros</strong> no cartão</div>
+        <div class="cap" id="sum-ticket" style="margin-top:22px;letter-spacing:.12em">Ingresso Imersão + Agente</div>
+        <div class="price" id="sum-price" style="margin-top:14px">R$ 2.000</div>
+        <div class="muted" id="sum-pay" style="margin-top:10px;font-size:14px">por pessoa<br>ou <strong style="color:#F1EEFB;font-weight:600">10x de R$ 200 sem juros</strong> no cartão</div>
 
         <div class="three" style="margin-top:26px">
           <div class="mini-soft"><b>2 dias</b><span>9 e 10 dez, das 9h às 16h</span></div>
@@ -318,7 +346,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
         </div>
 
         <div style="margin-top:26px;border-top:1px solid rgba(255,255,255,.1)">
-          <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span><strong style="color:#F1EEFB;font-weight:600">Seu próprio agente de IA</strong>, construído durante o treinamento e aplicado a uma decisão real do seu negócio &mdash; o mesmo processo que a Finder Lab cobra R$ 5.000 para fazer, incluso na inscrição</span></div>
+          <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span id="sum-agent"><strong style="color:#F1EEFB;font-weight:600">Seu próprio agente de IA</strong>, construído durante o treinamento e aplicado a uma decisão real do seu negócio &mdash; o mesmo processo que a Finder Lab cobra R$ 5.000 para fazer, incluso na inscrição</span></div>
           <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>2 dias de imersão presencial com Rodrigo Moraes</span></div>
           <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Coffee break nos dois dias (o almoço é por conta de cada participante)</span></div>
           <div class="chk"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5l4 4 7-8"/></svg><span>Framework completo: Máquina de Decisões aplicado ao seu negócio</span></div>
@@ -480,6 +508,51 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
 
   var tried = false;
 
+  /* ---------- ingressos (Imersão + Agente x Imersão) ---------- */
+  var PAY = '<strong style="color:#F1EEFB;font-weight:600">';
+  var PLANOS = {
+    completo: {
+      ticket: 'Ingresso Imersão + Agente',
+      price: 'R$ 2.000',
+      pay: function () { return 'por pessoa<br>ou ' + PAY + '10x de R$ 200 sem juros</strong> no cartão'; },
+      agent: PAY + 'Seu próprio agente de IA</strong>, personalizado pelo Rodrigo e construído durante o treinamento para uma decisão real do seu negócio: o mesmo processo que a Finder Lab cobra R$ 5.000 para fazer, incluso na inscrição'
+    },
+    imersao: {
+      ticket: 'Ingresso Imersão',
+      price: 'R$ 997',
+      pay: function (p) {
+        return p === '10x'
+          ? 'por pessoa<br>' + PAY + '10x de R$ 119,90</strong> no cartão (total de R$ 1.199)'
+          : 'por pessoa, à vista<br>ou ' + PAY + 'até 3x sem juros</strong> no cartão';
+      },
+      agent: PAY + 'Você aprende a construir o seu próprio agente de IA</strong>, passo a passo, sobre uma decisão real do seu negócio. A construção personalizada pelo Rodrigo é do ingresso Imersão + Agente'
+    }
+  };
+  var ingressoEls = document.querySelectorAll('input[name="ingresso"]');
+  var parcEls = document.querySelectorAll('input[name="parcelamento"]');
+  function checkedValue(list, fallback) {
+    for (var i = 0; i < list.length; i++) if (list[i].checked) return list[i].value;
+    return fallback;
+  }
+  function currentIngresso() { return checkedValue(ingressoEls, 'completo') === 'imersao' ? 'imersao' : 'completo'; }
+  function currentParcelamento() { return currentIngresso() === 'imersao' && checkedValue(parcEls, 'ate3') === '10x' ? '10x' : ''; }
+  function renderIngresso() {
+    var ing = currentIngresso();
+    var pl = PLANOS[ing];
+    document.getElementById('sum-ticket').textContent = pl.ticket;
+    document.getElementById('sum-price').textContent = currentParcelamento() === '10x' ? 'R$ 1.199' : pl.price;
+    document.getElementById('sum-pay').innerHTML = pl.pay(currentParcelamento());
+    document.getElementById('sum-agent').innerHTML = pl.agent;
+    document.getElementById('parc-wrap').style.display = ing === 'imersao' ? '' : 'none';
+  }
+  Array.prototype.forEach.call(ingressoEls, function (r) { r.addEventListener('change', renderIngresso); });
+  Array.prototype.forEach.call(parcEls, function (r) { r.addEventListener('change', renderIngresso); });
+  (function () {
+    var m = /[?&]ingresso=(imersao|completo)\b/.exec(location.search);
+    if (m) Array.prototype.forEach.call(ingressoEls, function (r) { r.checked = r.value === m[1]; });
+    renderIngresso();
+  })();
+
   els.whats.addEventListener('input', function () {
     els.whats.value = mask(els.whats.value);
   });
@@ -565,6 +638,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
         empresa: els.empresa.value.trim(),
         cargo: els.cargo.value.trim(),
         consent: true,
+        ingresso: currentIngresso(),
         website: hp
       })
     })
@@ -579,7 +653,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     return fetch('/payments/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ leadId: leadId })
+      body: JSON.stringify({ leadId: leadId, parcelamento: currentParcelamento() })
     })
       .then(function (r) { return r.json().catch(function () { return {}; }); })
       .then(function (data) { return data && data.url ? data.url : null; })

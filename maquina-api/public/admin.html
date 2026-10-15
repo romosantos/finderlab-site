@@ -163,7 +163,7 @@ button{font-family:inherit;cursor:pointer}
 
       var a = el('div');
       a.appendChild(el('div', 'n', l.nome));
-      var bits = [l.turma ? 'Turma ' + l.turma + (l.pessoas > 1 ? ' · ' + l.pessoas + ' pessoas' : '') : '', l.cargo, l.empresa].filter(Boolean);
+      var bits = [l.turma ? 'Turma ' + l.turma + (l.pessoas > 1 ? ' · ' + l.pessoas + ' pessoas' : '') : (l.ingresso === 'imersao' ? 'Ingresso Imersão' : 'Ingresso Imersão + Agente'), l.cargo, l.empresa].filter(Boolean);
       a.appendChild(el('div', 's', bits.length ? bits.join(' · ') : 'Empresa e cargo não informados'));
       row.appendChild(a);
 

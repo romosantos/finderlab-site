@@ -72,7 +72,7 @@ const STATUSES = ['novo', 'contatado', 'pago'];
 let SYSTEM_PROMPT = '';
 let REGISTRATION_TERMS = '';
 function semValoresParaLista(texto) {
-  const DROP = /^- Formulário de inscrição:|^- Página da Máquina de Decisões:|^- (Investimento|Manutenção do agente após o curso|Cancelamento):|^O agente fica hospedado na infraestrutura|^\*\*"Está caro\."|^\*\*"O agente fica funcionando|Parcelamento para os pacotes|novos valores para 2 e 3|^Os itens 1 a 10 já foram respondidos/;
+  const DROP = /^- Formulário de inscrição:|^- Página da Máquina de Decisões:|^- (Investimento|Ingressos|Manutenção do agente após o curso|Cancelamento):|^O agente fica hospedado na infraestrutura|^\*\*"Está caro\."|^\*\*"O agente fica funcionando|Parcelamento para os pacotes|novos valores para 2 e 3|^Os itens 1 a 10 já foram respondidos/;
   let out = String(texto).split('\n').filter((l) => !DROP.test(l)).join('\n');
   out = out.replace(/, o mesmo processo que a Finder Lab cobra R\$ 5\.000 para fazer sob demanda/g, '');
   out = out.replace(/ É o mesmo processo que a Finder Lab constrói para clientes que contratam isso à parte, por R\$ 5\.000\. O agente pode citar esse valor como referência do que o curso já inclui, nunca como desconto ou promoção\./g, '');
@@ -478,6 +478,29 @@ const ASAAS_WEBHOOK_TOKEN = process.env.ASAAS_WEBHOOK_TOKEN || '';
 const COURSE_PRICE = Number(process.env.COURSE_PRICE) || 2000;
 const COURSE_MAX_INSTALLMENTS = Number(process.env.COURSE_MAX_INSTALLMENTS) || 10;
 
+// Dois ingressos na turma aberta (página principal):
+//  - 'completo' (Imersão + Agente): COURSE_PRICE, em até COURSE_MAX_INSTALLMENTS sem juros.
+//  - 'imersao' (só a imersão, sem o agente personalizado): INGRESSO_IMERSAO_PRICE à vista ou em até
+//    3x sem juros; ou em 10x de R$ 119,90 (total INGRESSO_IMERSAO_PRICE_10X, com juros).
+// O Asaas Checkout só aceita um valor total por checkout (o cliente escolhe de 1 a N parcelas
+// desse total), então o "10x" é um checkout à parte, com o total maior e teto de 10 parcelas.
+const INGRESSO_IMERSAO_PRICE = Number(process.env.INGRESSO_IMERSAO_PRICE) || 997;
+const INGRESSO_IMERSAO_PRICE_10X = Number(process.env.INGRESSO_IMERSAO_PRICE_10X) || 1199;
+const INGRESSO_IMERSAO_PARCELAS_SEM_JUROS = 3;
+
+// Ingresso do lead ('' = inscrição antiga, de quando só existia o ingresso completo).
+function ingressoDoLead(lead) {
+  return lead && lead.ingresso === 'imersao' ? 'imersao' : 'completo';
+}
+
+// Valor total e teto de parcelas de um checkout fora de turma fechada.
+// Pix não parcela e usa sempre o valor à vista (nunca o total do 10x).
+function condicaoPagamento(ingresso, parcelamento, billingType) {
+  if (ingresso !== 'imersao') return { valor: COURSE_PRICE, parcelas: COURSE_MAX_INSTALLMENTS };
+  if (parcelamento === '10x' && billingType !== 'PIX') return { valor: INGRESSO_IMERSAO_PRICE_10X, parcelas: 10 };
+  return { valor: INGRESSO_IMERSAO_PRICE, parcelas: INGRESSO_IMERSAO_PARCELAS_SEM_JUROS };
+}
+
 // Turmas fechadas (ex.: associados): knowledge/turmas.json. Cada turma tem o próprio preço,
 // parcelamento, data, local e um código de acesso (?c=) no link. O preço da turma só vale
 // para quem foi marcado como dessa turma pelo servidor (a partir do link), nunca por dado vindo do cliente
@@ -618,12 +641,14 @@ function buildAsaasCustomerData(lead) {
   return data;
 }
 
-async function createAsaasCheckout(lead, originUrl, billingType) {
+async function createAsaasCheckout(lead, originUrl, billingType, parcelamento) {
   // Lead de turma fechada: preço, parcelas e páginas de retorno da própria turma.
   const turma = lead.turma ? turmaPorSlug(lead.turma) : null;
   const pessoas = turma ? Math.min(3, Math.max(1, Number(lead.pessoas) || 1)) : 1;
-  const valor = turma ? precoPara(turma, pessoas) : COURSE_PRICE;
-  const parcelas = turma ? turma.parcelasMax : COURSE_MAX_INSTALLMENTS;
+  const ingresso = turma ? '' : ingressoDoLead(lead);
+  const cond = turma ? null : condicaoPagamento(ingresso, parcelamento, billingType);
+  const valor = turma ? precoPara(turma, pessoas) : cond.valor;
+  const parcelas = turma ? turma.parcelasMax : cond.parcelas;
   const retorno = turma ? originUrl + '/turma/' + turma.slug : originUrl + '/inscricao.html';
   // a página da turma só abre com o código de acesso, então ele vai junto na volta do pagamento
   const retornoQs = (estado) => '?' + (turma && turma.acesso ? 'c=' + encodeURIComponent(turma.acesso) + '&' : '') + 'pagamento=' + estado;
@@ -632,8 +657,11 @@ async function createAsaasCheckout(lead, originUrl, billingType) {
   // restrito a ela, pra página do Asaas abrir direto na forma escolhida em vez de
   // mostrar a escolha. Pix não parcela, então junto com billingType='PIX' o checkout
   // também fica só à vista.
-  const billingTypes = billingType === 'PIX' || billingType === 'CREDIT_CARD' ? [billingType] : ['PIX', 'CREDIT_CARD'];
-  const chargeTypes = billingType === 'PIX' ? ['DETACHED'] : ['DETACHED', 'INSTALLMENT'];
+  // Ingresso Imersão em 10x (total com juros): só cartão parcelado. Sem isso o cliente poderia
+  // pagar o total do 10x (R$ 1.199) à vista no Pix, mais caro que o preço à vista (R$ 997).
+  const so10x = !turma && ingresso === 'imersao' && cond.parcelas === 10;
+  const billingTypes = so10x ? ['CREDIT_CARD'] : billingType === 'PIX' || billingType === 'CREDIT_CARD' ? [billingType] : ['PIX', 'CREDIT_CARD'];
+  const chargeTypes = so10x ? ['INSTALLMENT'] : billingType === 'PIX' ? ['DETACHED'] : ['DETACHED', 'INSTALLMENT'];
   const payload = {
     billingTypes,
     chargeTypes,
@@ -642,7 +670,7 @@ async function createAsaasCheckout(lead, originUrl, billingType) {
     items: [
       {
         name: 'Máquina de Decisões',
-        description: 'Inscrição no curso Máquina de Decisões' + (turma ? ' · ' + turma.nome + ' · ' + pessoas + (pessoas === 1 ? ' pessoa' : ' pessoas') : ''),
+        description: 'Inscrição no curso Máquina de Decisões' + (turma ? ' · ' + turma.nome + ' · ' + pessoas + (pessoas === 1 ? ' pessoa' : ' pessoas') : ingresso === 'imersao' ? ' · Ingresso Imersão' : ' · Ingresso Imersão + Agente'),
         quantity: 1,
         value: valor,
       },
@@ -830,6 +858,8 @@ async function migrate() {
     -- existe sem elas, então o CREATE TABLE acima não as cria. ALTER ... IF NOT EXISTS
     -- garante que o banco existente seja atualizado também, sem quebrar nada.
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS turma       TEXT NOT NULL DEFAULT '';
+    -- ingresso da turma aberta: 'imersao' (sem o agente) ou 'completo' (Imersão + Agente); '' = antigo (completo)
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS ingresso    TEXT NOT NULL DEFAULT '';
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS pessoas     SMALLINT NOT NULL DEFAULT 1;
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS participantes TEXT NOT NULL DEFAULT '';
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS cpf_cnpj    TEXT NOT NULL DEFAULT '';
@@ -1226,6 +1256,8 @@ async function saveLead(input, opts) {
   const turma = opts && opts.turma && turmaPorSlug(opts.turma) ? turmaPorSlug(opts.turma).slug : '';
   const pessoas = turma ? Math.min(3, Math.max(1, Math.round(Number(opts.pessoas)) || 1)) : 1;
   const participantes = turma ? clean(opts.participantes, 600) : '';
+  // ingresso só vale fora de turma fechada (a turma tem preço próprio); qualquer outro valor vira ''
+  const ingresso = !turma && (b.ingresso === 'imersao' || b.ingresso === 'completo') ? b.ingresso : '';
   const nome = clean(b.nome, 160);
   const email = clean(b.email, 200).toLowerCase();
   const whats = clean(b.whats, 30);
@@ -1253,8 +1285,8 @@ async function saveLead(input, opts) {
 
   // mesma pessoa reenviando: atualiza os dados e preserva o andamento
   const { rows } = await pool.query(
-    `INSERT INTO leads (nome, email, whats, empresa, cargo, cpf_cnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+    `INSERT INTO leads (nome, email, whats, empresa, cargo, cpf_cnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes, ingresso)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
      ON CONFLICT (lower(email)) DO UPDATE
        SET nome=EXCLUDED.nome, whats=EXCLUDED.whats, empresa=EXCLUDED.empresa,
            cargo=EXCLUDED.cargo,
@@ -1270,9 +1302,10 @@ async function saveLead(input, opts) {
            turma=CASE WHEN EXCLUDED.turma <> '' THEN EXCLUDED.turma ELSE leads.turma END,
            pessoas=CASE WHEN EXCLUDED.turma <> '' THEN EXCLUDED.pessoas ELSE leads.pessoas END,
            participantes=CASE WHEN EXCLUDED.turma <> '' THEN EXCLUDED.participantes ELSE leads.participantes END,
+           ingresso=CASE WHEN EXCLUDED.ingresso <> '' THEN EXCLUDED.ingresso ELSE leads.ingresso END,
            updated_at=now()
      RETURNING id`,
-    [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes]
+    [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes, ingresso]
   );
   notifyLeadWhatsApp({ id: rows[0].id, nome, email, whats, empresa, cargo });
   return { ok: true, id: rows[0].id };
@@ -1645,7 +1678,7 @@ const paymentLimiter = rateLimit({
 // Valida os dados da inscrição e gera (ou reaproveita) o link de pagamento no Asaas.
 // Extraído do POST /payments/checkout pra ser chamado também pela ferramenta de chat
 // gerar_pagamento_inscricao, sem duplicar a lógica de validação/checkout em dois lugares.
-async function createCheckoutForLead(leadId, originUrl, billingType) {
+async function createCheckoutForLead(leadId, originUrl, billingType, parcelamento) {
   if (!ASAAS_API_KEY) return { ok: false, status: 503, error: 'Pagamento indisponível no momento.' };
 
   const { rows } = await pool.query('SELECT * FROM leads WHERE id=$1', [leadId]);
@@ -1665,21 +1698,23 @@ async function createCheckoutForLead(leadId, originUrl, billingType) {
   if (lead.turma && (!turmaLead || !precoPara(turmaLead, lead.pessoas))) {
     return { ok: false, status: 409, error: 'O valor desta turma para esse número de pessoas não está definido. A inscrição está registrada e o Rodrigo envia o valor e o link de pagamento.' };
   }
-  const valorCobrado = turmaLead ? precoPara(turmaLead, lead.pessoas) : COURSE_PRICE;
+  const valorCobrado = turmaLead
+    ? precoPara(turmaLead, lead.pessoas)
+    : condicaoPagamento(ingressoDoLead(lead), parcelamento, billingType).valor;
 
   const existing = await pool.query(
     `SELECT id, checkout_url FROM payments
      WHERE lead_id=$1 AND status NOT IN ('EXPIRED', 'CANCELLED', 'REFUNDED')
        AND ($2::numeric IS NULL OR value = $2::numeric)
      ORDER BY created_at DESC LIMIT 1`,
-    [leadId, turmaLead ? valorCobrado : null]
+    [leadId, valorCobrado]
   );
   if (existing.rows[0] && existing.rows[0].checkout_url) {
     await notifyPaymentWhatsApp(lead, existing.rows[0].id, existing.rows[0].checkout_url);
     return { ok: true, url: existing.rows[0].checkout_url };
   }
 
-  const checkout = await createAsaasCheckout(lead, originUrl, billingType);
+  const checkout = await createAsaasCheckout(lead, originUrl, billingType, parcelamento);
   const url = checkout.link || ('https://asaas.com/checkoutSession/show?id=' + checkout.id);
 
   const payment = await pool.query(
@@ -1704,7 +1739,8 @@ app.post('/payments/checkout', publicCors, paymentLimiter, async (req, res) => {
     if (!Number.isInteger(leadId) || leadId <= 0) return res.status(400).json({ error: 'Pedido inválido.' });
 
     const originUrl = req.protocol + '://' + req.get('host');
-    const result = await createCheckoutForLead(leadId, originUrl);
+    const parcelamento = req.body && req.body.parcelamento === '10x' ? '10x' : '';
+    const result = await createCheckoutForLead(leadId, originUrl, undefined, parcelamento);
     if (!result.ok) return res.status(result.status || 502).json({ error: result.error });
 
     res.json({ ok: true, url: result.url });
@@ -1846,6 +1882,7 @@ const CHAT_TOOLS = [
         whats: { type: 'string', description: 'WhatsApp com DDD, exatamente como a pessoa informou.' },
         empresa: { type: 'string', description: 'Empresa da pessoa, se ela informou. String vazia se não informou.' },
         cargo: { type: 'string', description: 'Cargo da pessoa, se ela informou. String vazia se não informou.' },
+        ingresso: { type: 'string', enum: ['imersao', 'completo'], description: 'Fora da turma fechada: ingresso que a pessoa escolheu. "imersao" = só os 2 dias de imersão, sem o agente personalizado; "completo" = Imersão + Agente (o Rodrigo constrói o agente pessoal dela). Pergunte qual ela quer antes de registrar; nunca escolha por ela. Ignorado na turma fechada.' },
         quantidade_pessoas: { type: 'integer', minimum: 1, maximum: 3, description: 'Só na turma fechada (página de turma): quantas pessoas da mesma empresa esta inscrição cobre (1, 2 ou 3), conforme a pessoa disse. Padrão 1. Ignorado fora da turma fechada.' },
         outros_participantes: { type: 'string', description: 'Só na turma fechada: nome completo (e e-mail ou WhatsApp, se a pessoa tiver) das outras pessoas cobertas por esta inscrição. String vazia se for só uma pessoa.' },
         consent: {
@@ -1938,12 +1975,14 @@ const CHAT_TOOLS = [
         bairro: { type: 'string', description: 'Bairro, exatamente como a pessoa informou.' },
         cidade: { type: 'string', description: 'Cidade, se a pessoa informou. String vazia se não informou.' },
         estado: { type: 'string', description: 'Estado (UF, 2 letras), se a pessoa informou. String vazia se não informou.' },
+        parcelamento: { type: 'string', enum: ['ate_3x', '10x', ''], description: 'Só para o ingresso "imersao" no cartão: "ate_3x" (valor à vista, em até 3x sem juros) ou "10x" (10 parcelas de R$ 119,90, com juros). String vazia se ela não escolheu ou for o ingresso completo (que parcela em até 10x sem juros). Ignorado na turma fechada e no Pix.' },
         formaPagamento: {
           type: 'string',
           enum: ['pix', 'cartao', ''],
           description:
             'Forma de pagamento que a pessoa disse preferir: "pix" ou "cartao". String vazia se ela não tiver preferência ou não tiver dito — nesse caso o link de pagamento mostra as duas opções pra ela escolher lá.',
         },
+        ingresso: { type: 'string', enum: ['imersao', 'completo'], description: 'Fora da turma fechada: ingresso que a pessoa escolheu. "imersao" = só os 2 dias de imersão, sem o agente personalizado; "completo" = Imersão + Agente (o Rodrigo constrói o agente pessoal dela). Pergunte qual ela quer antes de registrar; nunca escolha por ela. Ignorado na turma fechada.' },
         quantidade_pessoas: { type: 'integer', minimum: 1, maximum: 3, description: 'Só na turma fechada (página de turma): quantas pessoas da mesma empresa esta inscrição cobre (1, 2 ou 3), conforme a pessoa disse. Padrão 1. Ignorado fora da turma fechada.' },
         outros_participantes: { type: 'string', description: 'Só na turma fechada: nome completo (e e-mail ou WhatsApp, se a pessoa tiver) das outras pessoas cobertas por esta inscrição. String vazia se for só uma pessoa.' },
         consent: {
@@ -2129,6 +2168,9 @@ async function runChatToolBase(name, toolInput, originUrl, ctx) {
     if (turmaCtx && !precoPara(turmaCtx, toolInput && toolInput.quantidade_pessoas)) {
       return { sucesso: false, erro: 'Para esse número de pessoas não há valor definido nesta turma. NÃO gere pagamento. Diga que o Rodrigo trata essa condição e passe o WhatsApp (11) 3164-3783 e o e-mail rodrigo.moraes@finderlab.com.br.' };
     }
+    if (!turmaCtx && !(toolInput && (toolInput.ingresso === 'imersao' || toolInput.ingresso === 'completo'))) {
+      return { sucesso: false, erro: 'Falta o ingresso. NÃO gere pagamento ainda: pergunte à pessoa qual ela quer (Imersão, sem o agente, ou Imersão + Agente) e chame de novo com o campo ingresso.' };
+    }
     const saved = await saveLead(toolInput, { turma: ctx && ctx.turma, pessoas: toolInput && toolInput.quantidade_pessoas, participantes: toolInput && toolInput.outros_participantes });
     if (!saved.ok) {
       return { sucesso: false, erro: saved.error, campos_invalidos: saved.errors || null };
@@ -2139,7 +2181,7 @@ async function runChatToolBase(name, toolInput, originUrl, ctx) {
         : toolInput && toolInput.formaPagamento === 'cartao'
           ? 'CREDIT_CARD'
           : undefined;
-    const checkout = await createCheckoutForLead(saved.id, originUrl || SITE_ORIGIN, billingType);
+    const checkout = await createCheckoutForLead(saved.id, originUrl || SITE_ORIGIN, billingType, toolInput && toolInput.parcelamento === '10x' ? '10x' : '');
     if (!checkout.ok) {
       return { sucesso: false, erro: checkout.error, inscricao_id: saved.id };
     }
@@ -2740,12 +2782,12 @@ app.get('/admin/api/leads.csv', async (_req, res) => {
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // evita injeção de fórmula no Excel
     return '"' + s.replace(/"/g, '""') + '"';
   };
-  const head = ['Data', 'Nome', 'Email', 'WhatsApp', 'CPF/CNPJ', 'CEP', 'Endereço', 'Número', 'Complemento', 'Bairro', 'Cidade', 'Estado', 'Empresa', 'Cargo', 'Turma', 'Pessoas', 'Participantes', 'Status'];
+  const head = ['Data', 'Nome', 'Email', 'WhatsApp', 'CPF/CNPJ', 'CEP', 'Endereço', 'Número', 'Complemento', 'Bairro', 'Cidade', 'Estado', 'Empresa', 'Cargo', 'Turma', 'Pessoas', 'Participantes', 'Ingresso', 'Status'];
   const lines = [head.map(esc).join(';')].concat(
     rows.map((l) =>
       [
         new Date(l.created_at).toISOString(), l.nome, l.email, l.whats, l.cpf_cnpj, l.cep, l.endereco, l.numero,
-        l.complemento, l.bairro, l.cidade, l.estado, l.empresa, l.cargo, l.turma, l.turma ? l.pessoas : '', l.participantes, l.status,
+        l.complemento, l.bairro, l.cidade, l.estado, l.empresa, l.cargo, l.turma, l.turma ? l.pessoas : '', l.participantes, l.turma ? '' : (l.ingresso === 'imersao' ? 'Imersão' : 'Imersão + Agente'), l.status,
       ].map(esc).join(';')
     )
   );
