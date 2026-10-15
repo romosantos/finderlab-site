@@ -641,6 +641,21 @@ function buildAsaasCustomerData(lead) {
   return data;
 }
 
+// Token que volta na URL depois do pagamento (e vai para o chat) para o servidor saber de qual
+// inscrição se trata. Ele só identifica a inscrição: o pagamento em si é sempre confirmado
+// direto com o Asaas, nunca por parâmetro de URL.
+const PAY_RETURN_SECRET = process.env.PAYMENT_RETURN_SECRET || ASAAS_WEBHOOK_TOKEN || ADMIN_PASSWORD || '';
+function payToken(leadId) {
+  const mac = crypto.createHmac('sha256', PAY_RETURN_SECRET || 'sem-segredo').update('pay:' + leadId).digest('hex').slice(0, 24);
+  return leadId + '.' + mac;
+}
+function leadIdFromPayToken(tok) {
+  const m = /^(\d{1,9})\.([0-9a-f]{24})$/.exec(String(tok || ''));
+  if (!m || !PAY_RETURN_SECRET) return 0;
+  return safeEqual(payToken(Number(m[1])), m[0]) ? Number(m[1]) : 0;
+}
+const PAGO_STATUS = ['CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH', 'PAYMENT_CONFIRMED', 'PAYMENT_RECEIVED'];
+
 async function createAsaasCheckout(lead, originUrl, billingType, parcelamento) {
   // Lead de turma fechada: preço, parcelas e páginas de retorno da própria turma.
   const turma = lead.turma ? turmaPorSlug(lead.turma) : null;
@@ -649,9 +664,9 @@ async function createAsaasCheckout(lead, originUrl, billingType, parcelamento) {
   const cond = turma ? null : condicaoPagamento(ingresso, parcelamento, billingType);
   const valor = turma ? precoPara(turma, pessoas) : cond.valor;
   const parcelas = turma ? turma.parcelasMax : cond.parcelas;
-  const retorno = turma ? originUrl + '/turma/' + turma.slug : originUrl + '/inscricao.html';
+  const retorno = turma ? originUrl + '/turma/' + turma.slug : originUrl + '/';
   // a página da turma só abre com o código de acesso, então ele vai junto na volta do pagamento
-  const retornoQs = (estado) => '?' + (turma && turma.acesso ? 'c=' + encodeURIComponent(turma.acesso) + '&' : '') + 'pagamento=' + estado;
+  const retornoQs = (estado) => '?' + (turma && turma.acesso ? 'c=' + encodeURIComponent(turma.acesso) + '&' : '') + 'pagamento=' + estado + '&r=' + payToken(lead.id) + (turma ? '' : '#drigo');
   if (!(valor > 0)) throw new Error('Turma sem preço definido');
   // Se a pessoa já disse a forma de pagamento (pix ou cartão), gera o checkout já
   // restrito a ela, pra página do Asaas abrir direto na forma escolhida em vez de
@@ -915,6 +930,7 @@ async function migrate() {
     CREATE UNIQUE INDEX IF NOT EXISTS payments_checkout_uq ON payments (asaas_checkout_id);
     CREATE INDEX IF NOT EXISTS payments_lead_idx ON payments (lead_id, created_at DESC);
     ALTER TABLE payments ADD COLUMN IF NOT EXISTS whatsapp_payment_notified_at TIMESTAMPTZ;
+    ALTER TABLE payments ADD COLUMN IF NOT EXISTS boas_vindas_enviada_em TIMESTAMPTZ;
 
     CREATE TABLE IF NOT EXISTS page_views (
       id            SERIAL PRIMARY KEY,
@@ -1750,6 +1766,170 @@ app.post('/payments/checkout', publicCors, paymentLimiter, async (req, res) => {
   }
 });
 
+// ---------- Pagamento confirmado: boas-vindas por e-mail e aviso ao Rodrigo ----------
+const ESC_HTML = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const primeiroNomeDe = (nome) => String(nome || '').trim().split(/\s+/)[0] || '';
+const ingressoNomeDe = (lead) => (lead.ingresso === 'imersao' ? 'Imersão' : 'Imersão + Agente');
+const EMAIL_REPLY_TO = process.env.EMAIL_REPLY_TO || 'rodrigo.moraes@finderlab.com.br';
+
+// Mesmo texto no e-mail e na mensagem do Drigo no chat: logística da turma aberta.
+function logisticaTurmaAberta(lead) {
+  const sai = lead.ingresso === 'imersao'
+    ? 'Você sai do segundo dia com o método para construir o seu próprio agente de IA.'
+    : 'Você sai do segundo dia com o seu agente de IA funcionando.';
+  return {
+    quando: 'Quarta e quinta-feira, 9 e 10 de dezembro de 2026, das 9h às 16h. A chegada pode ser a partir das 8h30, com coffee.',
+    onde: 'Be Next Eventos, Av. Copacabana, 238, 3º andar, Alphaville, SP.',
+    levar: 'Notebook, obrigatório e carregado, porque vamos construir durante os dois dias.',
+    comer: 'Coffee break nos dois dias, na chegada e no intervalo da manhã. O almoço é por conta de cada participante, com pausa das 12h30 às 14h.',
+    sai,
+  };
+}
+
+function boasVindasEmailText(lead) {
+  const l = logisticaTurmaAberta(lead);
+  const nome = primeiroNomeDe(lead.nome);
+  return `Oi${nome ? ', ' + nome : ''}!\n\n` +
+    `Recebi a confirmação do seu pagamento. Sua vaga na Máquina de Decisões está garantida (ingresso ${ingressoNomeDe(lead)}). Que bom ter você com a gente.\n\n` +
+    `QUANDO\n${l.quando}\n\nONDE\n${l.onde}\n\nO QUE LEVAR\n${l.levar}\n\nALIMENTAÇÃO\n${l.comer}\n\n${l.sai}\n\n` +
+    `Qualquer dúvida, é só responder este e-mail ou chamar no WhatsApp (11) 3164-3783.\n\n` +
+    `Um abraço,\nDrigo (assistente de IA do Rodrigo Moraes, Finder Lab)`;
+}
+
+function boasVindasEmailHtml(lead) {
+  const l = logisticaTurmaAberta(lead);
+  const nome = primeiroNomeDe(lead.nome);
+  const bloco = (titulo, texto) => `<p style="margin:0 0 4px;font-size:12px;letter-spacing:.08em;color:#7C5CFF;font-weight:700">${titulo}</p><p style="margin:0 0 18px">${ESC_HTML(texto)}</p>`;
+  return `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a;line-height:1.55">
+    <p style="margin:0 0 16px">Oi${nome ? ', ' + ESC_HTML(nome) : ''}!</p>
+    <p style="margin:0 0 16px">Recebi a confirmação do seu pagamento. <b>Sua vaga na Máquina de Decisões está garantida</b> (ingresso ${ESC_HTML(ingressoNomeDe(lead))}). Que bom ter você com a gente.</p>
+    <div style="background:#f6f3ff;border-left:3px solid #A88BFF;padding:18px 20px;border-radius:8px;margin:0 0 20px">
+      ${bloco('QUANDO', l.quando)}${bloco('ONDE', l.onde)}${bloco('O QUE LEVAR', l.levar)}${bloco('ALIMENTAÇÃO', l.comer)}
+      <p style="margin:0"><b>${ESC_HTML(l.sai)}</b></p>
+    </div>
+    <p style="margin:0 0 16px">Qualquer dúvida, é só responder este e-mail ou chamar no WhatsApp
+      <a href="https://wa.me/551131643783" style="color:#7C5CFF">(11) 3164-3783</a>.</p>
+    <p style="margin:24px 0 0;color:#555">Um abraço,<br>Drigo (assistente de IA do Rodrigo Moraes, Finder Lab)</p>
+  </div>`;
+}
+
+async function enviarEmailResend(payload, rotulo) {
+  if (!RESEND_API_KEY) return false;
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: EMAIL_FROM, reply_to: EMAIL_REPLY_TO, ...payload }),
+    });
+    if (!r.ok) {
+      console.error('Falha ao enviar e-mail (%s)', rotulo, r.status, await r.text().catch(() => ''));
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Falha ao enviar e-mail (%s)', rotulo, err && err.message ? err.message : err);
+    return false;
+  }
+}
+
+// Mensagem que o Drigo posta no chat quando o pagamento é confirmado (turma aberta).
+function mensagemPagamentoConfirmadoChat(lead) {
+  const l = logisticaTurmaAberta(lead);
+  const nome = primeiroNomeDe(lead.nome);
+  return `Pagamento confirmado${nome ? ', ' + nome : ''}! Sua vaga na Máquina de Decisões está garantida (ingresso ${ingressoNomeDe(lead)}).\n\n` +
+    `Mandei agora um e-mail com tudo, mas já deixo aqui o essencial:\n\n` +
+    `Quando: ${l.quando}\nOnde: ${l.onde}\nO que levar: ${l.levar}\n\n${l.comer}\n\n${l.sai}\n\n` +
+    `Qualquer dúvida, é só falar comigo por aqui ou chamar o Rodrigo no WhatsApp (11) 3164-3783.`;
+}
+
+// Chamada quando o Asaas confirma o pagamento (webhook ou consulta de status). Idempotente: o envio
+// só acontece uma vez por pagamento, mesmo que o webhook chegue repetido ou o chat consulte junto.
+async function confirmarPagamentoLead(leadId) {
+  await pool.query(`UPDATE leads SET status='pago', updated_at=now() WHERE id=$1`, [leadId]);
+  const claim = await pool.query(
+    `UPDATE payments SET boas_vindas_enviada_em=now()
+     WHERE id = (SELECT id FROM payments WHERE lead_id=$1 ORDER BY created_at DESC LIMIT 1)
+       AND boas_vindas_enviada_em IS NULL
+     RETURNING id, value`,
+    [leadId]
+  );
+  if (!claim.rows[0]) return;
+  const { rows } = await pool.query('SELECT * FROM leads WHERE id=$1', [leadId]);
+  const lead = rows[0];
+  if (!lead) return;
+  const valor = Number(claim.rows[0].value);
+  const valorTxt = 'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  let enviado = true;
+  if (!lead.turma) {
+    enviado = await enviarEmailResend({
+      to: lead.email,
+      subject: 'Sua vaga na Máquina de Decisões está confirmada',
+      text: boasVindasEmailText(lead),
+      html: boasVindasEmailHtml(lead),
+    }, 'boas-vindas lead ' + leadId);
+  }
+  if (!enviado) {
+    await pool.query('UPDATE payments SET boas_vindas_enviada_em=NULL WHERE id=$1', [claim.rows[0].id]);
+    console.error('Boas-vindas não enviada para o lead %s; será tentada de novo na próxima confirmação ou consulta', leadId);
+  }
+  // aviso ao Rodrigo (inclusive de turma fechada, que ainda não tem e-mail automático)
+  if (SERVICO_NOTIFY_EMAIL) {
+    await enviarEmailResend({
+      to: SERVICO_NOTIFY_EMAIL,
+      subject: `Pagamento confirmado: ${lead.nome} (${lead.turma ? 'turma ' + lead.turma : ingressoNomeDe(lead)})`,
+      text: `Pagamento confirmado na Máquina de Decisões.\n\nNome: ${lead.nome}\nE-mail: ${lead.email}\nWhatsApp: ${lead.whats}\n` +
+        (lead.turma ? `Turma: ${lead.turma} (${lead.pessoas} pessoa(s))\n` : `Ingresso: ${ingressoNomeDe(lead)}\n`) +
+        `Valor: ${valorTxt}\n` +
+        (lead.turma ? '\nEsta é uma turma fechada: a confirmação para o participante ainda é feita por você.' : enviado ? '\nO e-mail de boas-vindas com a logística foi enviado ao participante.' : '\nATENÇÃO: o e-mail de boas-vindas ao participante falhou. Verifique os logs.'),
+    }, 'aviso pagamento lead ' + leadId);
+  }
+}
+
+// Consulta direta ao Asaas quando o webhook ainda não chegou (ex.: pessoa voltou do pagamento em segundos).
+const ultimaConsultaAsaas = new Map();
+async function consultarPagamentoNoAsaas(leadId) {
+  const agora = Date.now();
+  if (agora - (ultimaConsultaAsaas.get(leadId) || 0) < 8000) return false;
+  ultimaConsultaAsaas.set(leadId, agora);
+  if (ultimaConsultaAsaas.size > 500) ultimaConsultaAsaas.clear();
+  try {
+    const lista = await asaasRequest('GET', '/payments?externalReference=' + encodeURIComponent('lead-' + leadId) + '&limit=10');
+    const pago = ((lista && lista.data) || []).find((p) => PAGO_STATUS.includes(p.status));
+    if (!pago) return false;
+    await pool.query(
+      `UPDATE payments SET status=$1, asaas_payment_id=$2, updated_at=now()
+       WHERE id = (SELECT id FROM payments WHERE lead_id=$3 ORDER BY created_at DESC LIMIT 1)`,
+      [pago.status, pago.id, leadId]
+    );
+    await confirmarPagamentoLead(leadId);
+    return true;
+  } catch (err) {
+    console.error('consultarPagamentoNoAsaas lead %s', leadId, err && err.message ? err.message : err);
+    return false;
+  }
+}
+
+const statusPagamentoLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false, message: { error: 'Muitas consultas.' } });
+app.options('/payments/status', publicCors);
+app.get('/payments/status', publicCors, statusPagamentoLimiter, async (req, res) => {
+  try {
+    const leadId = leadIdFromPayToken(req.query && req.query.r);
+    if (!leadId) return res.status(400).json({ error: 'Pedido inválido.' });
+    const { rows } = await pool.query('SELECT * FROM leads WHERE id=$1', [leadId]);
+    const lead = rows[0];
+    if (!lead) return res.status(404).json({ error: 'Inscrição não encontrada.' });
+    const ult = await pool.query('SELECT status FROM payments WHERE lead_id=$1 ORDER BY created_at DESC LIMIT 1', [leadId]);
+    let pago = lead.status === 'pago' || (ult.rows[0] && PAGO_STATUS.includes(ult.rows[0].status));
+    if (pago) await confirmarPagamentoLead(leadId); // garante o e-mail, caso o webhook tenha falhado no meio
+    else if (ASAAS_API_KEY) pago = await consultarPagamentoNoAsaas(leadId);
+    if (!pago) return res.json({ estado: 'aguardando' });
+    res.json({ estado: 'pago', mensagem: lead.turma ? '' : mensagemPagamentoConfirmadoChat(lead) });
+  } catch (err) {
+    console.error('GET /payments/status', err && err.message ? err.message : err);
+    res.status(500).json({ error: 'Não foi possível consultar agora.' });
+  }
+});
+
 // ---------- Webhook: Asaas avisa aqui quando o pagamento muda de status ----------
 app.post('/payments/webhook', async (req, res) => {
   const token = req.header('asaas-access-token') || '';
@@ -1790,7 +1970,7 @@ app.post('/payments/webhook', async (req, res) => {
 
     const PAID_EVENTS = ['PAYMENT_CONFIRMED', 'PAYMENT_RECEIVED'];
     if (PAID_EVENTS.includes(event)) {
-      await pool.query(`UPDATE leads SET status='pago', updated_at=now() WHERE id=$1`, [leadId]);
+      await confirmarPagamentoLead(leadId);
     }
   } catch (err) {
     console.error('POST /payments/webhook', err && err.message ? err.message : err);
@@ -2185,6 +2365,7 @@ async function runChatToolBase(name, toolInput, originUrl, ctx) {
     if (!checkout.ok) {
       return { sucesso: false, erro: checkout.error, inscricao_id: saved.id };
     }
+    if (ctx) ctx.pagamentoToken = payToken(saved.id);
     return { sucesso: true, inscricao_id: saved.id, url_pagamento: checkout.url };
   }
   return { sucesso: false, erro: 'Ferramenta desconhecida.' };
@@ -2295,7 +2476,7 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
     .join('\n')
     .trim();
 
-  return { reply: stripMarkdown(stripInternalReasoning(rawReply)), toolRounds, listaRegistrada: !!(ctx && ctx.listaRegistrada) };
+  return { reply: stripMarkdown(stripInternalReasoning(rawReply)), toolRounds, listaRegistrada: !!(ctx && ctx.listaRegistrada), pagamentoToken: (ctx && ctx.pagamentoToken) || '' };
 }
 
 app.options('/chat', publicCors);
@@ -2433,7 +2614,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
           else if (kind === 'reset') sseSend({ reset: true });
         }
       : null;
-    const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel, listaRegistrada } = await getAgentReply(
+    const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel, listaRegistrada, pagamentoToken } = await getAgentReply(
       messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : (isDiagnostico ? CHAT_DIAGNOSTIC_MAX_TOKENS : CHAT_MAX_TOKENS), { sessionId, contextoVisita, semFerramentas: isLista, turma: turma ? turma.slug : '', ipHash: hashIp(req.ip), origem: clean(b.utm_source, 80), campanha: clean(b.utm_campaign, 120) }
     );
 
@@ -2455,10 +2636,10 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       .catch((err) => console.error('Falha ao gravar chat_logs', err));
 
     if (wantsStream) {
-      sseSend({ done: true, reply, showTermsAcceptance: showTermsAcceptance === true, termsAcceptanceLabel, listaRegistrada: listaRegistrada === true });
+      sseSend({ done: true, reply, showTermsAcceptance: showTermsAcceptance === true, termsAcceptanceLabel, listaRegistrada: listaRegistrada === true, pagamentoToken: pagamentoToken || '' });
       if (!clientGone) res.end();
     } else if (!clientGone) {
-      res.json({ reply, showTermsAcceptance: showTermsAcceptance === true, termsAcceptanceLabel, listaRegistrada: listaRegistrada === true });
+      res.json({ reply, showTermsAcceptance: showTermsAcceptance === true, termsAcceptanceLabel, listaRegistrada: listaRegistrada === true, pagamentoToken: pagamentoToken || '' });
     }
   } catch (err) {
     console.error('POST /chat', err && err.message ? err.message : err, `(${Date.now() - chatStartedAt}ms decorridos)`);

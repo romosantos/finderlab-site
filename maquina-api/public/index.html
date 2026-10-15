@@ -1045,6 +1045,51 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
     error: function (text) { addMsg('err', text); scrollChat(); }
   });
 
+  /* ---------- confirmação de pagamento: o Drigo avisa no chat quando o Asaas confirmar ---------- */
+  var payWatchTimer = null, payAnnounced = {};
+  function stopPayWatch() { if (payWatchTimer) { clearInterval(payWatchTimer); payWatchTimer = null; } }
+  function startPayWatch(tok) {
+    if (!tok || payAnnounced[tok]) return;
+    stopPayWatch();
+    var started = Date.now(), busy = false;
+    function tick() {
+      if (busy || payAnnounced[tok]) return;
+      busy = true;
+      fetch('/payments/status?r=' + encodeURIComponent(tok))
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          busy = false;
+          if (d && d.estado === 'pago' && !payAnnounced[tok]) {
+            payAnnounced[tok] = true;
+            stopPayWatch();
+            if (d.mensagem) { addMsg('bot', d.mensagem); setTimeout(scrollChat, 30); }
+          }
+        })
+        .catch(function () { busy = false; });
+      if (Date.now() - started > 45 * 60 * 1000) stopPayWatch();
+    }
+    payWatchTimer = setInterval(tick, 6000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
+  }
+  // Volta do Asaas: ?pagamento=ok|cancelado|expirado&r=<token>
+  (function () {
+    var qs = new URLSearchParams(location.search), pg = qs.get('pagamento'), tok = qs.get('r') || '';
+    if (!pg) return;
+    try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
+    if (pg === 'ok' && tok) {
+      addMsg('bot', 'Que bom que você voltou. Estou confirmando o seu pagamento com o Asaas, é rápido.');
+      startPayWatch(tok);
+      var first = setTimeout(function () {
+        fetch('/payments/status?r=' + encodeURIComponent(tok)).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+          if (d && d.estado === 'pago' && !payAnnounced[tok]) { payAnnounced[tok] = true; stopPayWatch(); if (d.mensagem) addMsg('bot', d.mensagem); setTimeout(scrollChat, 30); }
+        }).catch(function () {});
+      }, 600);
+    } else if (pg === 'cancelado') addMsg('bot', 'Vi que o pagamento não foi concluído. Sem problema: quer que eu gere o link de novo, ou ficou alguma dúvida?');
+    else if (pg === 'expirado') addMsg('bot', 'O link de pagamento expirou. Quer que eu gere outro?');
+    else return;
+    if (!wideMq.matches) setTimeout(openChat, 300);
+  })();
+
   chatForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var text = chatInput.value.trim();
@@ -1072,8 +1117,9 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
       chatBody.appendChild(streamDiv);
       if (voiceTurn) voice.beginReply();
     }
-    function finishStream(reply, showTermsAcceptance, termsAcceptanceLabel) {
+    function finishStream(reply, showTermsAcceptance, termsAcceptanceLabel, pagamentoToken) {
       ensureStreamBubble();
+      if (pagamentoToken) startPayWatch(pagamentoToken);
       window.DrigoChatLinks.render(streamDiv, reply);
       if (showTermsAcceptance === true) {
         window.DrigoChatLinks.addTermsAcceptance(streamDiv, function () {
@@ -1106,6 +1152,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
             if (!r.ok || !data.reply) throw new Error((data && data.error) || 'falha');
             setLoading(false);
             addMsg('bot', data.reply, data.showTermsAcceptance, data.termsAcceptanceLabel);
+            if (data.pagamentoToken) startPayWatch(data.pagamentoToken);
             if (voiceTurn) { voiceTurn = false; voice.reply(data.reply); } else { voice.resume(); }
           });
         }
@@ -1149,7 +1196,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
             }
             if (res.done) {
               if (!finalPayload) throw new Error('stream incompleto');
-              finishStream(finalPayload.reply, finalPayload.showTermsAcceptance, finalPayload.termsAcceptanceLabel);
+              finishStream(finalPayload.reply, finalPayload.showTermsAcceptance, finalPayload.termsAcceptanceLabel, finalPayload.pagamentoToken);
               return;
             }
             return pump();
