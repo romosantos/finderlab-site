@@ -142,6 +142,21 @@ html{scroll-behavior:smooth}
 .price{font-size:clamp(56px,5.6vw,80px);font-weight:700;line-height:1;letter-spacing:-.045em}
 .hero-hook{margin:30px 0 0;max-width:600px;font-size:clamp(24px,2.6vw,36px);font-weight:700;letter-spacing:-.03em;line-height:1.14;color:#F1EEFB;text-shadow:0 4px 24px rgba(116,67,245,.28)}
 .hero-hook span{display:block;color:var(--accent2)}
+.phases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:56px}
+.phase{border:1px solid rgba(124,84,245,.55);background:rgba(20,12,46,.6);box-shadow:inset 0 0 24px rgba(116,67,245,.3),0 0 24px rgba(116,67,245,.14);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:18px;padding:30px 28px 28px;display:flex;flex-direction:column}
+.phase-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.phase-n{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#fff;background:var(--accent);border-radius:999px;padding:6px 12px}
+.phase-d{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9C97B5}
+.phase h3{margin:20px 0 0;font-size:24px;font-weight:700;letter-spacing:-.025em;line-height:1.2;color:#F1EEFB}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chips span{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#D2CEE6;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);border-radius:8px;padding:7px 11px}
+.phase p{margin:22px 0 0;font-size:15px;line-height:1.65;color:#B9B4CE}
+.phases-sub{margin:40px 0 0;font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent2)}
+@media (max-width:1000px){.phases{grid-template-columns:1fr}.phase{padding:26px 22px}}
+.cmp-a::before,.cmp-b::before{display:inline-block;width:24px;font-weight:700}
+.cmp-a::before{content:"\2715";color:#6F6A88}
+.cmp-b::before{content:"\2713";color:var(--accent2)}
+.cmp-h>.cmp-b::before{color:#fff}
 .cmp{margin-top:56px;border:1px solid rgba(124,84,245,.5);border-radius:20px;overflow:hidden;background:#0C0A1A;box-shadow:0 0 40px rgba(116,67,245,.18)}
 .cmp-r{display:grid;grid-template-columns:200px minmax(0,1fr) minmax(0,1fr)}
 .cmp-r>div{padding:22px 26px;border-top:1px solid rgba(255,255,255,.08);font-size:15px;line-height:1.55}
@@ -151,7 +166,7 @@ html{scroll-behavior:smooth}
 .cmp-a{color:#A39EBB}
 .cmp-b{color:#F1EEFB;font-weight:500;background:rgba(116,67,245,.14)}
 .cmp-note{margin-top:22px;font-size:13px;line-height:1.6;color:#8F8AA8;max-width:760px}
-@media (max-width:760px){.cmp{margin-top:40px}.cmp-r{grid-template-columns:1fr}.cmp-h{display:none}.cmp-r>div{padding:14px 20px;border-top:0}.cmp-r>.cmp-l{padding-top:20px;border-top:1px solid rgba(255,255,255,.08);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2)}.cmp-r:first-of-type>.cmp-l{border-top:0}.cmp-a::before,.cmp-b::before{display:block;margin-bottom:4px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.cmp-a::before{content:"Imersão de IA comum";color:#8F8AA8}.cmp-b::before{content:"Máquina de Decisões";color:var(--accent2)}.cmp-b{margin:0 12px 12px;border-radius:12px;padding:14px 16px}}
+@media (max-width:760px){.cmp{margin-top:40px}.cmp-r{grid-template-columns:1fr}.cmp-h{display:none}.cmp-r>div{padding:14px 20px;border-top:0}.cmp-r>.cmp-l{padding-top:20px;border-top:1px solid rgba(255,255,255,.08);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2)}.cmp-r:first-of-type>.cmp-l{border-top:0}.cmp-a::before,.cmp-b::before{display:block;width:auto;margin-bottom:4px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.cmp-a::before{content:"Imersão de IA comum";color:#8F8AA8}.cmp-b::before{content:"Máquina de Decisões";color:var(--accent2)}.cmp-b{margin:0 12px 12px;border-radius:12px;padding:14px 16px}}
 .tickets{display:grid;gap:22px}
 .tickets .price{font-size:clamp(44px,4.4vw,60px)}
 .tickets .price-card{padding:36px 36px 34px}
@@ -504,7 +519,13 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
       <div class="pill" style="margin-bottom:28px">Programação</div>
       <h2 class="t t-72">Dois dias, <span class="hl">do diagnóstico ao agente funcionando.</span></h2>
       <p class="lead" style="margin-top:28px;max-width:680px">No primeiro dia você entende a lógica e estrutura o seu negócio para a IA. No segundo, você aprende a construir o seu agente e, no ingresso Imersão + Agente, o Rodrigo constrói o seu, personalizado para o seu negócio.</p>
-      <div class="g2" style="margin-top:56px;align-items:start">
+            <div class="phases">
+        <div class="phase"><div class="phase-top"><span class="phase-n">Fase 1</span><span class="phase-d">Dia 1</span></div><h3>Estrutura de decisão e diagnóstico</h3><div class="chips"><span>Estrutura de decisão</span><span>Diagnóstico do negócio</span></div><p>Você entende a lógica da Máquina de Decisões e mapeia qual decisão do seu negócio mais vale colocar na IA.</p></div>
+        <div class="phase"><div class="phase-top"><span class="phase-n">Fase 2</span><span class="phase-d">Dia 1</span></div><h3>Estrutura agêntica</h3><div class="chips"><span>RAG</span><span>Skill</span><span>MCP</span><span>Projetos</span></div><p>As peças que fazem um agente trabalhar com o contexto do seu negócio, e não com respostas genéricas.</p></div>
+        <div class="phase"><div class="phase-top"><span class="phase-n">Fase 3</span><span class="phase-d">Dia 2</span></div><h3>Construção do agente</h3><div class="chips"><span>Decisão real</span><span>Seu agente</span></div><p>Você constrói sobre uma decisão real do seu negócio. No ingresso Imersão + Agente, o Rodrigo constrói o agente com você e você sai com ele funcionando. No ingresso Imersão, você sai sabendo construir o seu.</p></div>
+      </div>
+      <p class="phases-sub">Hora a hora</p>
+      <div class="g2" style="margin-top:20px;align-items:start">
         <div class="prog-day">
           <div class="tag">Dia 1 · quarta-feira, 9 de dezembro</div>
           <h3>Lógica, diagnóstico e estrutura</h3>
@@ -560,6 +581,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
       <div class="cmp" role="table" aria-label="Comparação entre uma imersão de IA comum e a Máquina de Decisões">
         <div class="cmp-r cmp-h" role="row"><div role="columnheader"></div><div class="cmp-a" role="columnheader">Imersão de IA comum</div><div class="cmp-b" role="columnheader">Máquina de Decisões</div></div>
         <div class="cmp-r" role="row"><div class="cmp-l" role="rowheader">Ponto de partida</div><div class="cmp-a" role="cell">A ferramenta e o prompt.</div><div class="cmp-b" role="cell">A decisão que o seu negócio precisa tomar.</div></div>
+        <div class="cmp-r" role="row"><div class="cmp-l" role="rowheader">Formato</div><div class="cmp-a" role="cell">Workshop pontual, sem continuidade.</div><div class="cmp-b" role="cell">2 dias, do diagnóstico à construção do agente.</div></div>
         <div class="cmp-r" role="row"><div class="cmp-l" role="rowheader">Conteúdo</div><div class="cmp-a" role="cell">Genérico, igual para todo mundo.</div><div class="cmp-b" role="cell">Aplicado ao seu negócio, com diagnóstico individual.</div></div>
         <div class="cmp-r" role="row"><div class="cmp-l" role="rowheader">Resultado</div><div class="cmp-a" role="cell">Certificado de presença.</div><div class="cmp-b" role="cell">Seu próprio agente de IA funcionando (no ingresso Imersão + Agente).</div></div>
         <div class="cmp-r" role="row"><div class="cmp-l" role="rowheader">Turma</div><div class="cmp-a" role="cell">Centenas de pessoas na plateia.</div><div class="cmp-b" role="cell">50 participantes, com o Rodrigo ao lado.</div></div>
