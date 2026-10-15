@@ -75,6 +75,9 @@ button{font-family:inherit;cursor:pointer}
 @media(max-width:560px){.ptable{font-size:13px;gap:10px 8px}}
 @media(max-width:1100px){.wrap{padding-left:40px;padding-right:40px}}
 @media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
+.ign{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 14px;color:var(--muted);font-size:14px}
+.ign button{font:inherit;font-size:13px;color:var(--text,#eee);background:transparent;border:1px solid rgba(140,110,255,.45);border-radius:999px;padding:6px 14px;cursor:pointer}
+.ign button:hover{background:rgba(140,110,255,.15)}
 @media(max-width:560px){.wrap{padding:28px 20px 72px}.stat{padding:18px}.stat b{font-size:28px}}
 </style>
 </head>
@@ -89,6 +92,11 @@ button{font-family:inherit;cursor:pointer}
     <a href="/admin/whatsapp">Conversas WhatsApp</a>
     <a href="/admin/diagnosticos">Diagnósticos</a>
     <a href="/admin/lista">Lista de prioridade</a>
+  </div>
+
+  <div class="ign" id="ign" hidden>
+    <span id="ignTxt"></span>
+    <button type="button" id="ignBtn"></button>
   </div>
 
   <div class="online zero" id="online" aria-live="polite">
@@ -327,6 +335,22 @@ button{font-family:inherit;cursor:pointer}
   loadOnline();
   setInterval(load, 30000);
   setInterval(loadOnline, 10000);
+})();
+</script>
+<script>
+(function(){
+  var box=document.getElementById('ign'),txt=document.getElementById('ignTxt'),btn=document.getElementById('ignBtn'),ativo=false;
+  function draw(){
+    txt.textContent=ativo?'Suas visitas neste navegador não estão sendo contadas.':'Suas visitas neste navegador estão sendo contadas.';
+    btn.textContent=ativo?'Voltar a contar minhas visitas':'Ignorar minhas visitas';
+    box.hidden=false;
+  }
+  fetch('/admin/api/ignorar-visitas',{credentials:'same-origin'}).then(function(r){return r.json()}).then(function(d){ativo=!!d.ativo;draw()}).catch(function(){});
+  btn.addEventListener('click',function(){
+    btn.disabled=true;
+    fetch('/admin/api/ignorar-visitas',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo:!ativo})})
+      .then(function(r){return r.json()}).then(function(d){ativo=!!d.ativo;draw()}).catch(function(){}).then(function(){btn.disabled=false});
+  });
 })();
 </script>
 </body>

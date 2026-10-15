@@ -1181,6 +1181,16 @@ function getOrSetVisitorId(req, res) {
   return visitorId;
 }
 
+// Cookie "mdi": marca o navegador do próprio Rodrigo para os acessos dele não entrarem
+// nas métricas (nem no "Online agora"). Só o admin (com senha) consegue ligar ou desligar.
+const IGNORE_COOKIE = 'mdi';
+const visitaIgnorada = (req) => new RegExp('(?:^|;\\s*)' + IGNORE_COOKIE + '=1(?:;|$)').test(req.headers.cookie || '');
+function cookieIgnorar(req, ativo) {
+  // Domain compartilhado: um clique vale para maquina.finderlab.com.br e diagnostico.finderlab.com.br
+  const dominio = /(^|\.)finderlab\.com\.br$/i.test(req.hostname || '') ? '; Domain=.finderlab.com.br' : '';
+  return IGNORE_COOKIE + '=' + (ativo ? '1' : '') + '; Path=/' + dominio + '; Max-Age=' + (ativo ? 31536000 : 0) + '; HttpOnly; Secure; SameSite=Lax';
+}
+
 // Qual página foi aberta: domínio do diagnóstico, lista de prioridade, inscrição ou landing.
 function pageKeyFromRequest(req) {
   if (/diagnostico/i.test(req.hostname || '')) return '/diagnostico';
@@ -1193,7 +1203,7 @@ function pageKeyFromRequest(req) {
 async function trackPageView(req, res) {
   try {
     const ua = req.headers['user-agent'] || '';
-    if (BOT_UA_RE.test(ua)) return;
+    if (BOT_UA_RE.test(ua) || visitaIgnorada(req)) return;
 
     const visitorId = getOrSetVisitorId(req, res);
 
@@ -2936,6 +2946,14 @@ app.get('/admin/whatsapp', (_req, res) => res.sendFile(path.join(__dirname, 'pub
 app.get('/admin/acessos', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-acessos.html')));
 app.get('/admin/diagnosticos', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-diagnosticos.html')));
 
+// Liga/desliga "ignorar minhas visitas" neste navegador (cookie mdi).
+app.get('/admin/api/ignorar-visitas', (req, res) => res.json({ ativo: visitaIgnorada(req) }));
+app.post('/admin/api/ignorar-visitas', (req, res) => {
+  const ativo = !!(req.body && req.body.ativo === true);
+  res.setHeader('Set-Cookie', cookieIgnorar(req, ativo));
+  res.json({ ativo });
+});
+
 app.get('/admin/api/leads', async (_req, res) => {
   const { rows } = await pool.query('SELECT * FROM leads ORDER BY created_at DESC');
   res.json(rows);
@@ -3271,7 +3289,7 @@ app.post('/t/ping', pingLimiter, (req, res) => {
   try {
     const ua = req.headers['user-agent'] || '';
     const page = req.body && typeof req.body.p === 'string' ? req.body.p : '';
-    if (!BOT_UA_RE.test(ua) && Object.prototype.hasOwnProperty.call(ONLINE_PAGES, page)) {
+    if (!BOT_UA_RE.test(ua) && !visitaIgnorada(req) && Object.prototype.hasOwnProperty.call(ONLINE_PAGES, page)) {
       const visitorId = getOrSetVisitorId(req, res); // grava o cookie antes de responder
       const now = Date.now();
       const prev = onlineVisitors.get(visitorId);
