@@ -362,6 +362,22 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
 .chat-ov .chat-companion{display:none}
 @media (max-width:560px){.chat-fab{right:16px;bottom:16px;width:68px;height:68px}.chat-ov{padding:0;align-items:stretch}.chat-modal{max-width:none;height:100%;border-radius:0}}
 @media (min-width:901px){.chat-ov{gap:20px}.chat-ov .chat-companion{display:block;height:520px;width:auto;align-self:flex-end;object-fit:contain;filter:drop-shadow(0 0 4px rgba(168,139,255,.5)) drop-shadow(0 0 22px rgba(116,67,245,.65)) drop-shadow(0 26px 50px rgba(116,67,245,.45));cursor:default}.chat-modal{max-width:440px;height:min(680px,calc(100vh - 48px))}}
+
+/* ---------- bloco do Drigo (chat inline) ---------- */
+.drigo-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,460px);gap:64px;align-items:center;padding-top:96px;padding-bottom:96px}
+.drigo-l .lead{margin-top:22px;max-width:560px}
+.drigo-chips{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 0;padding:0;list-style:none}
+.drigo-chips li{border:1px solid rgba(168,139,255,.4);background:rgba(116,67,245,.1);color:#E4E0F4;font-size:13px;font-weight:500;padding:8px 14px;border-radius:999px}
+.drigo-mascot{display:flex;align-items:flex-end;gap:18px;margin-top:30px}
+.drigo-mascot img{height:230px;width:auto;object-fit:contain;filter:drop-shadow(0 0 4px rgba(168,139,255,.5)) drop-shadow(0 0 26px rgba(116,67,245,.7))}
+.drigo-bubble{position:relative;max-width:310px;border:1px solid rgba(124,84,245,.5);background:rgba(20,12,46,.7);border-radius:16px 16px 16px 4px;padding:14px 16px;font-size:14px;line-height:1.6;color:#E4E0F4;margin-bottom:56px}
+.drigo-bubble b{display:block;margin-bottom:4px;color:var(--accent2);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.drigo-cta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:28px}
+.drigo-cta small{font-size:13px;color:#8F8AA8;max-width:260px;line-height:1.5}
+.drigo-slot .chat-modal{max-width:none;width:100%;height:560px}
+.drigo-slot .chat-x{display:none}
+.chat-fab.hide{display:none}
+@media (max-width:900px){.drigo-grid{grid-template-columns:1fr;gap:0;padding-top:72px;padding-bottom:72px}.drigo-slot{display:none}.drigo-mascot img{height:150px}.drigo-bubble{margin-bottom:34px;font-size:13.5px}}
 </style>
 </head>
 <body>
@@ -443,6 +459,32 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
         <div class="fw2-pt" id="fw2-pt">Dado</div>
         <p class="fw2-pd" id="fw2-pd">Tudo começa no que a empresa já registra: vendas, atendimentos, contratos, planilhas. Dado solto não decide nada, mas sem ele não existe decisão.</p>
       </div>
+    </div>
+  </div>
+
+  <!-- DRIGO -->
+  <div id="drigo" class="sec alt">
+    <div class="sec-in drigo-grid">
+      <div class="drigo-l">
+        <div class="pill">Quem atende você aqui</div>
+        <h2 class="t t-64" style="margin-top:28px">Quem atende você aqui é um <span class="hl">agente de IA.</span></h2>
+        <p class="lead">O Drigo responde as suas dúvidas, ajuda você a escolher o ingresso e faz a sua inscrição, a qualquer hora do dia. Ele foi construído com o mesmo método que você aprende na imersão. <strong>Converse com ele agora.</strong></p>
+        <ul class="drigo-chips">
+          <li>Atende 24 horas</li>
+          <li>Responde dúvidas</li>
+          <li>Faz a sua inscrição</li>
+          <li>Gera o pagamento</li>
+        </ul>
+        <div class="drigo-mascot">
+          <img src="/img/drigo-avatar.png" alt="Drigo, agente de IA da Finder Lab" loading="lazy">
+          <div class="drigo-bubble"><b>Drigo</b>Eu sou um agente de IA do Rodrigo. Atendo, respondo e inscrevo 24 horas por dia. Esse é o tipo de agente que você aprende a construir na imersão.</div>
+        </div>
+        <div class="drigo-cta">
+          <a class="btn btn-fill" href="#drigo" data-open-chat>Conversar com o Drigo</a>
+          <small>Sem formulário. A conversa é o atendimento.</small>
+        </div>
+      </div>
+      <div class="drigo-slot" id="drigo-slot"></div>
     </div>
   </div>
 
@@ -871,16 +913,44 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
 
   function scrollChat() { chatBody.scrollTop = chatBody.scrollHeight; }
 
+  var drigoSlot = document.getElementById('drigo-slot');
+  var wideMq = window.matchMedia('(min-width:901px)');
+  var slotVisible = false;
+  function placeModal() {
+    if (chatOv.classList.contains('open')) return;
+    if (wideMq.matches && drigoSlot) drigoSlot.appendChild(chatModal); else chatOv.appendChild(chatModal);
+  }
+  function syncFab() {
+    chatFab.classList.toggle('hide', wideMq.matches && slotVisible && !chatOv.classList.contains('open'));
+  }
   function openChat() {
+    chatOv.appendChild(chatModal);
     chatOv.classList.add('open');
     chatFab.setAttribute('aria-expanded', 'true');
+    syncFab();
     setTimeout(scrollChat, 50);
   }
   function closeChat() {
     if (voice) voice.stop();
     chatOv.classList.remove('open');
     chatFab.setAttribute('aria-expanded', 'false');
+    placeModal();
+    syncFab();
   }
+  placeModal();
+  if (wideMq.addEventListener) wideMq.addEventListener('change', function () { placeModal(); syncFab(); });
+  if (drigoSlot && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) { slotVisible = es[0].isIntersecting; syncFab(); }, { threshold: 0.25 }).observe(drigoSlot);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-open-chat]'), function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (wideMq.matches && drigoSlot && !chatOv.classList.contains('open')) {
+        drigoSlot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(function () { try { chatInput.focus({ preventScroll: true }); } catch (x) {} }, 500);
+      } else if (!chatOv.classList.contains('open')) { openChat(); }
+    });
+  });
   chatFab.addEventListener('click', function () {
     if (chatOv.classList.contains('open')) closeChat(); else openChat();
   });
