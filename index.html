@@ -132,7 +132,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent2);outline-of
                 </sc-if>
                 <sc-if value="{{m.drigo}}" hint-placeholder-val="{{ true }}">
                   <div style="align-self: flex-start; max-width: 88%; border: 1px solid rgba(20,16,43,.06); padding: 14px 16px; border-radius: 16px 16px 16px 4px; font-size: 14.5px; line-height: 1.6; color: var(--ink); background-color: #FFFFFF; box-shadow: 0 1px 2px rgba(20,16,43,.18)">
-                    <div style="color: #14102B">{{m.text}}</div>
+                    <div style="color: #14102B; white-space: pre-wrap; overflow-wrap: anywhere">{{m.text}}</div>
                     <sc-for list="{{m.parts}}" as="p" hint-placeholder-count="0">
                       <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(91,47,208,.12)"><span style="display:block;font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2);margin-bottom:2px">{{p.label}}</span>{{p.text}}</div>
                     </sc-for>
@@ -148,7 +148,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent2);outline-of
             <div class="hero-comp" style="display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:14px;min-height:124px;padding:18px 14px 14px 18px;border:1px solid rgba(91,47,208,.3);border-radius:14px;background:#FFFFFF;color:var(--muted);font-size:15.5px;box-shadow:inset 0 2px 6px rgba(20,16,43,.08),0 1px 0 #fff,0 8px 20px -8px rgba(91,47,208,.25)"><textarea value="{{draft}}" onInput="{{onInput}}" onKeyDown="{{onKey}}" placeholder="Ou escreva a sua decisão aqui…" rows="4" style="flex:1;min-width:0;align-self:stretch;border:0;outline:0;background:transparent;resize:none;font-family:inherit;font-size:15.5px;color:var(--ink);padding:0"></textarea><button onClick="{{send}}" aria-label="Enviar" style="cursor:pointer;border:0;padding:0;align-self:center;flex:none;width:44px;height:44px;border-radius:50%;background:var(--accent);background-image:linear-gradient(160deg,#8559FF,#6232E8);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 10px 20px rgba(116,67,245,.5),inset 0 1px 0 rgba(255,255,255,.35)">→</button></div>
           </div>
         </div>
-        <div class="hero-note" style="color:var(--muted);font-size:12.5px;padding:0 4px;margin-top:12px">Respostas de exemplo, só para mostrar como funciona. O diagnóstico completo é personalizado.</div>
+        <div class="hero-note" style="color:var(--muted);font-size:12.5px;padding:0 4px;margin-top:12px">Você conversa com o Drigo, agente de IA da Finder Lab. A conversa fica registrada para melhorarmos o atendimento; não envie dados sensíveis.</div>
       </div>
     </div>
 
@@ -723,25 +723,61 @@ class Component extends DCLogic {
     super(props);
     this.state = { b: freshB(), msgs: [{ me: false, drigo: true, text: INTRO, parts: [] }], typing: false, draft: '', agenda: false, contact: false, sysMenu: false, legal: '', zelus: false, sending: false, statusText: 'Retornamos após analisar a sua mensagem.', statusColor: '#7C7696' };
   }
-  ask(c) {
-    if (this.state.typing) return;
-    this.setState({ msgs: [...this.state.msgs, { me: true, drigo: false, text: c.label, parts: [] }], typing: true });
-    setTimeout(() => {
-      this.setState({ msgs: [...this.state.msgs, { me: false, drigo: true, text: c.intro, parts: c.parts }], typing: false });
-    }, 1200);
-  }
+  ask(c) { this.talk(c.label); }
   say(text, intro, parts) {
     this.setState({ msgs: [...this.state.msgs, { me: false, drigo: true, text: intro, parts: parts }], typing: false });
   }
   send() {
     const t = (this.state.draft || '').trim();
-    if (!t || this.state.typing) return;
-    const low = t.toLowerCase();
-    const KEYS = [['contrat|equipe|time|gente|automat|pessoa', 0], ['ia |inteligência|investir|ai ', 1], ['produto|lançar|lancar|ideia', 2], ['operação|operacao|process|organiz|rotina', 3]];
-    let hit = null;
-    for (const k of KEYS) { if (new RegExp(k[0]).test(low + ' ')) { hit = CHIPS[k[1]]; break; } }
-    this.setState({ msgs: [...this.state.msgs, { me: true, drigo: false, text: t, parts: [] }], typing: true, draft: '' });
-    setTimeout(() => { if (hit) this.say(t, hit.intro, hit.parts); else this.say(t, 'Ainda não consegui entender a decisão por trás disso. Me conta em uma frase: o que você está tentando decidir no negócio, e o que te faz hesitar?', []); }, 1300);
+    if (!t) return;
+    this.talk(t);
+  }
+  async talk(t) {
+    if (this.state.typing) return;
+    const API = 'https://www.maquina.finderlab.com.br/chat';
+    if (!this.sid) this.sid = 'fl-' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    const hist = (this.hist || []).slice(-12);
+    const base = [...this.state.msgs, { me: true, drigo: false, text: t, parts: [] }];
+    this.setState({ msgs: base, typing: true, draft: '' });
+    let shown = false;
+    const show = (txt) => { this.setState({ msgs: base.concat([{ me: false, drigo: true, text: txt, parts: [] }]), typing: false }); shown = true; };
+    let final = '';
+    try {
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 60000);
+      const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal, body: JSON.stringify({ message: t, history: hist, sessionId: this.sid, stream: true, modo: 'diagnostico' }) });
+      if (!r.ok) { let m = ''; try { m = (await r.json()).error || ''; } catch (e) {} throw new Error(m || ('http ' + r.status)); }
+      if ((r.headers.get('content-type') || '').indexOf('text/event-stream') !== -1) {
+        const rd = r.body.getReader(), dec = new TextDecoder();
+        let buf = '', acc = '', done = false;
+        while (!done) {
+          const x = await rd.read();
+          buf += dec.decode(x.value || new Uint8Array(), { stream: !x.done });
+          const parts = buf.split('\n\n'); buf = parts.pop();
+          for (const ev of parts) {
+            const ln = ev.split('\n').find((l) => l.indexOf('data:') === 0);
+            if (!ln) continue;
+            let o = null; try { o = JSON.parse(ln.slice(5)); } catch (e) { continue; }
+            if (o.error) throw new Error(o.error);
+            if (o.reset) { acc = ''; }
+            if (o.delta) { acc += o.delta; show(acc); }
+            if (o.done) { final = o.reply || acc; done = true; }
+          }
+          if (x.done) done = true;
+        }
+        if (!final) final = acc;
+      } else {
+        final = ((await r.json()).reply) || '';
+      }
+      clearTimeout(to);
+      if (!final) throw new Error('vazio');
+      show(final);
+      this.hist = hist.concat([{ role: 'user', content: t }, { role: 'assistant', content: final }]);
+    } catch (e) {
+      const msg = 'Não consegui responder agora. Tenta de novo em instantes ou me chama no WhatsApp: https://wa.me/551150399353';
+      if (shown && final) return;
+      show(msg);
+    }
   }
   onInteresse(e) { this.setState({ zelus: e.target.value === 'Zelus' }); }
   async sendContact() {

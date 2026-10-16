@@ -20,6 +20,11 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
+// Site institucional (finderlab.com.br): o chat da Home fala com o Drigo por aqui.
+const SITE_PRINCIPAL_ORIGINS = ['https://finderlab.com.br', 'https://www.finderlab.com.br'];
+if (ALLOWED_ORIGINS.length) {
+  for (const o of SITE_PRINCIPAL_ORIGINS) if (!ALLOWED_ORIGINS.includes(o)) ALLOWED_ORIGINS.push(o);
+}
 // Usado como originUrl quando não existe req HTTP pra derivar um (fluxo do WhatsApp).
 const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.maquina.finderlab.com.br';
 
@@ -2583,7 +2588,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
 
     // Modo diagnóstico: ativado pelo domínio de entrada (diagnostico.finderlab.com.br),
     // não muda a persona nem a base de conhecimento, só acrescenta o addendum de fluxo.
-    const isDiagnostico = /diagnostico/i.test(req.hostname || '');
+    const isDiagnostico = /diagnostico/i.test(req.hostname || '') || (b.modo === 'diagnostico' && SITE_PRINCIPAL_ORIGINS.includes(req.headers.origin || ''));
     const isVoiceTurn = b.voice === true;
     // Modo lista: pedido pela página /lista. Sem ferramentas (não há inscrição nem pagamento
     // nessa etapa), então nada do que o cliente mandar consegue disparar registro ou cobrança.
