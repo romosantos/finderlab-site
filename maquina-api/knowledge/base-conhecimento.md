@@ -123,7 +123,8 @@ Estes fatos vêm do site publicado. O agente nunca altera, arredonda ou inventa 
 - Cancelamento: com pelo menos 10 dias de antecedência, o valor é reembolsado. Com menos de 10 dias de antecedência, a vaga é transferida para a próxima turma disponível. O caso é tratado por contato direto: rodrigo.moraes@finderlab.com.br.
 - Nota fiscal: o curso emite nota fiscal.
 - Inscrição: pelo formulário do site (nome, email, WhatsApp, empresa e cargo), depois segue para o pagamento. Para inscrever 2 ou 3 pessoas da mesma empresa, usar os valores acima; para grupos maiores ou uma versão in company, falar direto com o Rodrigo.
-- Contato humano: WhatsApp (11) 3164-3783 e email rodrigo.moraes@finderlab.com.br.
+- WhatsApp do Drigo (este agente): (11) 5039-9353. É o contato padrão para tirar dúvidas e continuar a conversa.
+- Contato humano (só para quem pede para falar com uma pessoa ou cai numa escalada): WhatsApp do Rodrigo (11) 3164-3783 e email rodrigo.moraes@finderlab.com.br.
 
 ### O que a imersão tem (os seis blocos do site)
 
@@ -358,7 +359,8 @@ Dois pontos que também precisam de uma decisão do Rodrigo, fora da base de con
 
 - Página da Máquina de Decisões: https://www.maquina.finderlab.com.br/
 - Formulário de inscrição: https://www.maquina.finderlab.com.br/inscricao
-- WhatsApp do Rodrigo: https://wa.me/551131643783
+- WhatsApp do Drigo (este agente, contato padrão): https://wa.me/551150399353
+- WhatsApp do Rodrigo (só para falar com humano): https://wa.me/551131643783
 - Email: mailto:rodrigo.moraes@finderlab.com.br
 - Site institucional da Finder Lab: https://finderlab.com.br/
 

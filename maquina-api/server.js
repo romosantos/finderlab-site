@@ -779,7 +779,7 @@ function diagnosisEmailText(nome, leitura) {
   return `Oi, ${primeiroNome}!\n\n` +
     `Aqui está a leitura rápida que fizemos juntos sobre a decisão que você trouxe:\n\n` +
     `${leitura}\n\n` +
-    `Se quiser continuar a conversa ou tirar mais dúvidas, é só responder este email ou chamar no WhatsApp (11) 3164-3783.\n\n` +
+    `Se quiser continuar a conversa ou tirar mais dúvidas, é só responder este email ou chamar no WhatsApp (11) 5039-9353.\n\n` +
     `Um abraço,\nDrigo (assistente de IA do Rodrigo Moraes, Finder Lab)`;
 }
 
@@ -794,7 +794,7 @@ function diagnosisEmailHtml(nome, leitura) {
       <p style="margin:0 0 16px">${leituraHtml}</p>
     </div>
     <p style="margin:0 0 16px">Se quiser continuar a conversa ou tirar mais dúvidas, é só responder este email ou chamar no WhatsApp
-      <a href="https://wa.me/551131643783" style="color:#7C5CFF">(11) 3164-3783</a>.</p>
+      <a href="https://wa.me/551150399353" style="color:#7C5CFF">(11) 5039-9353</a>.</p>
     <p style="margin:24px 0 0;color:#555">Um abraço,<br>Drigo (assistente de IA do Rodrigo Moraes, Finder Lab)</p>
   </div>`;
 }
@@ -1494,7 +1494,7 @@ function listaEmailText(nome) {
   return `Oi, ${primeiroNome}!\n\n` +
     `Seu nome está na lista de prioridade da próxima turma da Máquina de Decisões.\n\n` +
     `A imersão é presencial, em dois dias (9 e 10 de dezembro, das 9h às 16h), na Be Next Eventos, em Alphaville (SP), com 50 vagas. Assim que as inscrições abrirem, você é avisado antes de todo mundo, e as 50 vagas são oferecidas primeiro a quem está na lista.\n\n` +
-    `Não precisa fazer nada agora e não há nenhum pagamento. Se tiver qualquer dúvida, é só responder este email ou chamar no WhatsApp (11) 3164-3783.\n\n` +
+    `Não precisa fazer nada agora e não há nenhum pagamento. Se tiver qualquer dúvida, é só responder este email ou chamar no WhatsApp (11) 5039-9353.\n\n` +
     `Um abraço,\nDrigo (assistente de IA do Rodrigo Moraes, Finder Lab)`;
 }
 
@@ -1508,7 +1508,7 @@ function listaEmailHtml(nome) {
       <p style="margin:0">A imersão é presencial, em dois dias (9 e 10 de dezembro, das 9h às 16h), na Be Next Eventos, em Alphaville (SP), com 50 vagas. Assim que as inscrições abrirem, você é avisado antes de todo mundo, e as 50 vagas são oferecidas primeiro a quem está na lista.</p>
     </div>
     <p style="margin:0 0 16px">Não precisa fazer nada agora e não há nenhum pagamento. Se tiver qualquer dúvida, é só responder este email ou chamar no WhatsApp
-      <a href="https://wa.me/551131643783" style="color:#7C5CFF">(11) 3164-3783</a>.</p>
+      <a href="https://wa.me/551150399353" style="color:#7C5CFF">(11) 5039-9353</a>.</p>
     <p style="margin:24px 0 0;color:#555">Um abraço,<br>Drigo (assistente de IA do Rodrigo Moraes, Finder Lab)</p>
   </div>`;
 }
@@ -1802,7 +1802,7 @@ function boasVindasEmailText(lead) {
   return `Oi${nome ? ', ' + nome : ''}!\n\n` +
     `Recebi a confirmação do seu pagamento. Sua vaga na Máquina de Decisões está garantida (ingresso ${ingressoNomeDe(lead)}). Que bom ter você com a gente.\n\n` +
     `QUANDO\n${l.quando}\n\nONDE\n${l.onde}\n\nO QUE LEVAR\n${l.levar}\n\nALIMENTAÇÃO\n${l.comer}\n\n${l.sai}\n\n` +
-    `Qualquer dúvida, é só responder este e-mail ou chamar no WhatsApp (11) 3164-3783.\n\n` +
+    `Qualquer dúvida, é só responder este e-mail ou chamar no WhatsApp (11) 5039-9353.\n\n` +
     `Um abraço,\nDrigo (assistente de IA do Rodrigo Moraes, Finder Lab)`;
 }
 
@@ -1818,7 +1818,7 @@ function boasVindasEmailHtml(lead) {
       <p style="margin:0"><b>${ESC_HTML(l.sai)}</b></p>
     </div>
     <p style="margin:0 0 16px">Qualquer dúvida, é só responder este e-mail ou chamar no WhatsApp
-      <a href="https://wa.me/551131643783" style="color:#7C5CFF">(11) 3164-3783</a>.</p>
+      <a href="https://wa.me/551150399353" style="color:#7C5CFF">(11) 5039-9353</a>.</p>
     <p style="margin:24px 0 0;color:#555">Um abraço,<br>Drigo (assistente de IA do Rodrigo Moraes, Finder Lab)</p>
   </div>`;
 }
@@ -1849,7 +1849,7 @@ function mensagemPagamentoConfirmadoChat(lead) {
   return `Pagamento confirmado${nome ? ', ' + nome : ''}! Sua vaga na Máquina de Decisões está garantida (ingresso ${ingressoNomeDe(lead)}).\n\n` +
     `Mandei agora um e-mail com tudo, mas já deixo aqui o essencial:\n\n` +
     `Quando: ${l.quando}\nOnde: ${l.onde}\nO que levar: ${l.levar}\n\n${l.comer}\n\n${l.sai}\n\n` +
-    `Qualquer dúvida, é só falar comigo por aqui ou chamar o Rodrigo no WhatsApp (11) 3164-3783.`;
+    `Qualquer dúvida, é só falar comigo por aqui ou pelo WhatsApp (11) 5039-9353.`;
 }
 
 // Chamada quando o Asaas confirma o pagamento (webhook ou consulta de status). Idempotente: o envio
@@ -3358,7 +3358,7 @@ footer{margin-top:32px;color:#777;font-size:13px}
 <h1>${primeiroNome ? 'Oi, ' + esc(primeiroNome) + '!' : 'Seu diagnóstico rápido'}</h1>
 <p class="sub">Esta é a leitura rápida que fizemos juntos na conversa com o Drigo, assistente de IA da Finder Lab.</p>
 <div class="card">${paragrafos}</div>
-<p class="cta">Quer conversar sobre ela? Responda a mensagem no WhatsApp ou chame em <a href="https://wa.me/551131643783">(11) 3164-3783</a>.</p>
+<p class="cta">Quer conversar sobre ela? Responda a mensagem no WhatsApp ou chame em <a href="https://wa.me/551150399353">(11) 5039-9353</a>.</p>
 <footer>Finder Lab · leitura estruturada a partir da conversa, não é uma medição.</footer>
 </main></body></html>`);
 });
