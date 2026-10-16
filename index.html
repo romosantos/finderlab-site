@@ -1,98 +1,918 @@
 <!doctype html>
-<html lang="pt-BR" data-lang="pt">
+<html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Finder Lab · Produtos e Máquina de Decisões</title>
-<meta name="description" content="Produtos digitais e formação da Finder Lab. Conheça Zelus Health, Zelus Pet, EDI VITA e a imersão Máquina de Decisões com Rodrigo Moraes.">
-<link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="assets/editorial.css"><link rel="stylesheet" href="assets/tech-layer.css?v=20260923"><link rel="stylesheet" href="assets/brand.css"><link rel="stylesheet" href="assets/reframe.css?v=20260924health">
-<link rel="stylesheet" href="assets/site-shell.css?v=20261013immersion"><link rel="stylesheet" href="assets/edi-vita-image.css?v=20260923">
-<link rel="stylesheet" href="assets/maquina-decisoes.css?v=20261013">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finder Lab · Agentes de IA sob medida para a sua operação</title>
+<meta name="description" content="A Finder Lab constrói agentes de IA que atendem, qualificam e resolvem dentro do WhatsApp e dos sistemas da sua empresa. Comece por um diagnóstico gratuito com o Drigo.">
+<link rel="canonical" href="https://finderlab.com.br/">
+<meta property="og:title" content="Finder Lab · Agentes de IA sob medida para a sua operação">
+<meta property="og:description" content="A Finder Lab constrói agentes de IA que atendem, qualificam e resolvem dentro do WhatsApp e dos sistemas da sua empresa. Comece por um diagnóstico gratuito com o Drigo.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://finderlab.com.br/">
+<script src="./support.js"></script>
 </head>
-<body class="editorial">
-<a class="skip" href="#conteudo">Ir para o conteúdo</a>
-<header class="site-head site-shell-head">
-  <div class="site-shell-wrap site-shell-row">
-    <a class="logo" translate="no" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R<span class="finder-lab">LAB</span></a>
-    <input class="site-shell-toggle" id="menu" type="checkbox" aria-label="Abrir menu de navegação">
-    <label class="site-shell-menu-button" for="menu"><span class="site-shell-visually-hidden">Menu</span></label>
-    <nav class="site-shell-nav site-nav" aria-label="Principal" id="primary-navigation">
-      <a href="zelus.html">Zelus</a><a href="edi-vita.html">EDI VITA</a><a href="sistemas.html"><span class="t-pt">Produtos</span><span class="t-es">Productos</span><span class="t-en">Products</span></a><a href="sobre.html"><span class="t-pt">A Finder</span><span class="t-es">Sobre Finder</span><span class="t-en">About Finder</span></a>
-      <a class="site-shell-immersion-link" href="https://www.maquina.finderlab.com.br/"><span class="t-pt">Máquina de Decisões</span><span class="t-es">Máquina de Decisões</span><span class="t-en">Máquina de Decisões</span></a>
-      <div class="site-shell-language" role="group" aria-label="Idioma / Language"><button type="button" data-set-lang="pt" aria-pressed="true">PT</button><button type="button" data-set-lang="en" aria-pressed="false">EN</button><button type="button" data-set-lang="es" aria-pressed="false">ESP</button></div>
-      <a class="site-shell-contact-button" href="contato.html"><span class="t-pt">Contato</span><span class="t-es">Contacto</span><span class="t-en">Contact</span></a>
+<body>
+<x-dc>
+<helmet>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAASNElEQVR42u2dW4xdV3nHf9+39jlnznjGTkJsHLAp15SLIATRBCigkEKBol5Qq6hSX1oVVSi0asVD1b5UVau26gsvFRJCldpK7QsVAlWtQkIJaaAUAmoaAYUGYoITJ45jMLHHnpmz91pfH9Zl7308dsaxz5nYPss643PZe5+Z/3e/rG8L21+SHiG9rpxbvl1EbwW7WdAPgnnAcWUvD+KM8BmQB83C17w/cy/QpM8VsPTYFqjbWS5+MYzc7vd5CTcBHxHYDzLY5nddgUsAqw2OAh93pg9t+pOfm8bsYgig6UL1Cit7Nyv5FHBb/KiA3qTj9CpDP6RHNQXlfaPG7lhj7WlgkIgQzsfZ5yUvEKpq9aNe+DtEbgIL6aLSuYZcpeyvHU5M3C4v88KvqxtJCJP/TJ/LhUpAEp/xiwaV+1vg/Z0vcSzWs9iIgtFddeM/BOtPnEslyXnAf3Hl3P0i8vJkXOUqVDMXo54MxJnZocb7d8L6ka2IoFvofD8ejw9UTu9L4NfpxAX421/JdlotIi+vnN43Ho8PJPD1XBKggI5Go5d4P7hLkBvBmtbILNZzXA1IZdjDztXv39zcPNwx4D1qOKAJfvCJBH69AP+SrAqsFuTG4AefSF6jm/aCFPBVtev3Bf2d5OkMFthdsuWAGuSlqoOTIdRfyR5Ujm51F7teMKn0m8C+RICFzr/khlkUODZswutPc/pHQNBEAD9xfBpsX/J4FuDPxDCbB9sXsY6xlALBuV3vRuTWKCYLP3/mqkjkVud2vTtLgBORt8SczmLNKYgeRMxxAlBVK4cFDj5b2LxYl2QZIAaPNc3aS9S55fcKXJP80gX4c2B/IAhc49zye1VEbwFZZRup08W6ZMuDrIroLRXYzVEiZmF8BZmHUM3qK8yw2dQ6XFRFdrMMqhWbFSqGx9vm9jXjLLXuBR0kGIbTATpj36RKul9nAf5I9nDD6FaGuoJnM9JcjECDWYNhiMQ/NuBBshlSFIeIQyTHipaZEsQQyXW/gIlHxKFoes+SUBgBA20oFVUxxFIJQwTBISaoDBCBQMAwVJTja9/m5MYhZHaeeahmEXQJQhMm3Lj6a7xr359joQanqGmrL8RiHF6eR1ARMARRaVWLSPot4/+mnWMjjpCPL+91XxuikdCU9yVGQemaIq7U9QIN1WjM9w7fxd1f/21q1hIRLrmYajUbiQ84GXF99WqGjJk0DWIOlUgAyewrSVoKAaQFMAuDWCdj0tHNSh/MHqFSlkXT6WoQ0leKRunJtazI9skCGhZI0iRct/sVjN1eJs0zqLiZaMmZpRzMAj5MUBwqA9QcgrYs2iqVxKhS8JbcU2C0qsPydSOhBInHlisl5WPW6vRsRM1ieUTkLJUv1p4rENNg1mAEMENEZxoezUQCBCWwwYb9GBWH00FUEUU3J66V7GPE51EvU9RLZg9LSIsmMolAeS9xdH4ttFLWVUGiReLiecmyaFZh8RHhVkRdNhnpPLt8CBCNcMMZfwzzkSszp9q00yFRZdEztcU0nK19ehwvictbexGNejLE0ufdLD10tFT5JTLIEhlIRQh1Qx3WZpqbnNGVDRHHyfoIa/4pVB0heAzDLCTfJD2KmsjqKBEr2QXKZ5I8oAyodF8kFZaUmWh84FBxLfeLgFp8dKQhsnkoLrpIBQ5OnTnCejiB4mbmJets4DecjDhaf4Mj699AULxNCKEh4JOetvJ/Vzp6EmL9WKu4pJJcSIl/gkorJtIhT4/TO05VfkPEOralI10OJtbw6FNfxIeNlDS2y0sClAHrHOfw6fvZCM/QyAbeGiy1FQULfZA6Brn7t1ri6IR2VFNG4fau6hHRrpWJErclcAYW8MEIBIJ5jECwQGObWGWcOXmMx57+IqYBMbncVFDrin5n/Z95cvIQTpYIVscY05i2CEXVBEs2I4GsxQOSBHLm/BzKJLVmIbFx24RWjrMOh1vHsBMwMvges4bGNhEZ8H+PfJqfrH8PJ8Nioy4rAkQpcKzxOF/78cfY8CcY6SrZ6ys6u/O6qBAhib3Q4fVW73czTMI5ud56cjTtSEZ/N1uO7DYvLe3hyScf4L8f+Rs8GzNPEDunwz+dJRGcDDnhH2atPsqLx29lZbQPxLfpAou+j0kCToi6WTKUyVgXjo2fhWIk4nsmYep4X56HxOVmoQQZ5Z94TAJSOUbLqzx9/Dvc+42Pcnzjm1S6xKwbj2eYjOvHBbWd4aeGt/Mz1/4eB5d/llG1G0GSa9j68a2PLzGCTWmGHL2Kgql0UhBTsqxtgJuPsdw6LB1LrO3DFGq/xuEnv8xX/vcveOrM13FuqafOLmsClPyQTRjLdRwYvJ2Dy2/nuqUbGenuyKGFAK0ask7slNWSqHQCqxwpaSFGIHN5JqolQlovtyQieAmY1Zw6/QQ/ePpuDh//ApvhBOpGcwF/rgTIkmBEQ1cxZiirqFTnz7l3DGnf+nZJ23eB+2rbeuFb94ycpqj9OnU4hXOj5PMH5obJPAnQDZnaYMy2NHM2FRnLdrSxPZc6TRu4mRnz3myyA62HrZciuHOCJFuAKM+O5UUlD3di7XDv59W6tWkuccBiLQhwGaznSfv5TrYj2dVJgJ4reA63z7ZNInnOYIoomMzV9dxxAgiKZxMxpZJdCYQUIHWhlpLsSakJciq0l7cukW8+rVNv7hFc6JQs46r9KQyP09GOeELVTnC+t01W9CBvuPY3ObDnbVTVUsx6iiCVtsV1TRWuVDTJxftSqqSfxrB0Xs7jmQri0rVcp2CfSRXg0A8/z7ce+XvWNh/DyWBWjVjPn0i4sQ1eOLiZ99zwMa5b+emYcpYBqqkHqEotKc5iHbnkcSKbW0o5tKCH9F5qPcl14vzcteCbWswlEWL9txrCUHn6yHe4+74Pc/TUV6lk6cqMhGNVbJM91cv5xQP/wN7Rq5mEtRiFqosPAdShquA0cnKn3ycDbxqBJ0lDkQrpHhuJIAI4LcQUFUzTuS5K0dLuZQ4d+jL/eu9vsNEcn1UP0M66oUlT86qVX+CGpZvw9YShrDCQMZUs4RigDHFSoVQ4qRCqVNcd4CS2CcbnFU4HOB3idEglIypdKq+dG6KuSo9BOnaA0wrVQTp2KQEd2DxzhgMvfQuvOPBL+GYTN8etEtW8lI/hGcoqLxy+CcwxcOOkUqzH4VmtdBsMMYv6PdvV3IxV7EMksWTb0ZWETuNXtMNGvxlCMQKDQcXK6n6MELvk7IoiQAKIioGsourAKtBsWLMXk0yg9vOX5adMZYhy6hrDRFMhJ+n+LHdiU4m31HuRiFyuX34YwZorMxKOBtd1XEfJDQ5tg9ZWPr+cHRNIp8Mut51Yp6wpSaRyHTkTL1fNegXLMM0q4cokAJD6Q7cKtFroLdhU9JWacW0q5MoVNLo7EfqqKnfIlR5rs9IBkUNASz2hO5EQrebJ/0agCRttR5qVknDBzXKnc9ExSUUl9O2sWFn6FQXrxG4pbstvmPbrwa0KCnH/ejP/TUJzkgBDUCbhJMc2v4WT2LoYW0FCB5CwRe4hgVcK7rmAn7k4d9e1BrclnvSauaTbeJobMiy2YU/8Os+sPz73vJTOj/+VIDXfP/1vnJg8xmCwjFlDCA3eaoJNEkHaDgYzH1sazcfPgidYg/c1PkwIocb7Bh8meD/BhwkWGoLVmNWEULfPrcaCj31AIW4QwQIWAuPxbo4ee4hHn7yHqhrPNSUx90jYh01eteuXue3gX7Jn6WBsW0+F9hj1aundzNFsN9jqvpZ8fKe7WVzb/VyiaNcN5GhTGwhU8MzJx7nnP+7kh0fvptKlK78mHGzCdYPX8Ibrfou9u15Tuhtiq3jscuj589ktLfmg0Lqu2dBq6+2Ik7YhN0XT0o05kt43C5x65gn+5+FP8NQzD+B0GeacFd0BAkTNF2wSZaJEnbaNWoFdEKH7pf0pa58NcPAEPJXbmWzoDhGA1BlhnN3/sB0CyDmN/XYrCF2XKXZEXGVFeTsLTNkmV1/M51sfv1Pg70ggtlgLAiwIsFjPAxvAfKZIbNMeXaiHdRkTQJLQBRqChbPtpvEc3M6LI6WIolLtiEGu5s3xtZ1GTFnW/QyrXXE/7hSW0UXtSEm3r7+Hd79ecM6CupzfS63rddbWDyMqVG6+qYg5VsQCIXj2j97MgeV38KqVD7BnfBCpqjbjKQIu1Qm0X8ftphusPE+RhACpzmu9+REJ9+548e7GdwUxZe3UMb79g3/k0cfv4cTp76Y81XxU0swDsdyKTnC8ac+HuGXvH7BraT+Bpk0du87AjZQ2UHVlHoS4Duhlp4yVcmTbIZH2AGsRpbKjpiRCVUvqAk3pj0rQARx96rvc/19/zKNH78JVw7kQYS6RsBm89do/4m37/xC1QG1nIrhomozSTjRBpfxfcjhTkmAZ5Gnw846YXISZzgdpyhXl60uI21BRTKBaGbL2kx9xzxfu5JFjn6WqlmaujmZKAEGpw2netHontx/4KzSkrJpq2TqUN+eZhDa7WYhAhwBSMpxdaaBIgvXG15QmrbJDnqLW8jGiLiX6GkxianuwvMqPT/yAf7n7Do6vPTRzm6CzVD2Bmhe41/HmF9yJBoe3SapuJaQMxHIFV6OHZMLZRca0GzLtIe51L5qka2i6irY/TRHTzrXJu1OLYbc0/8CCom5As7HB9Te8jDe+/k4qXUmp6ctwozYIPtS8dvUOrhm+lIk/jZlgFjdF562jeUIVvTJh6nSwqfEFveEbUxWuYlVbh6dUz1KVTLpNXqngE4vBcUaQUKE4mk3PK1/xAa5deSU+TGYaseiswDfxjGQ3149fh5kRQpNAjbvT6QDfax+RaYeybG2Pv7BID3xhevd8KuLk97vE641ekXZDX7eRVyBMGpZXr+fADbelYZ52eREgjizbZO/gjVw/fE1qQSy3pEmEaP+uFvx2bIyU0THniJ2nup+nCSad/a05rpA8eSWLkUj6przhO27q9qFGTNi/75ZO17RcZhJgDXuGL2H38AaMOFQvrngzjmmx3vJVZ6DT1ltUtw69trqWMD2PJU/U8sm2hLJt1UJDCIHV1RfNZWrijLIrjl3VPiodUYfNNJ1Q2ylM2fspHWmSDG1yS6OaRrSvgui0mZTuBmv3BFhnNFlubsyzguMp8Tss+BgzWKdGbKQpXpEQlRviZIS3jZlZgZkRQKlYctfGaYk+9/c0CSyd6vHplMFFCo1608IUsBRElSF73WLOuee65UlZwUIc3ifJm/Kd3flOyu8TJMTWxcqhbgnqE6nP/XIhgEQXdD0cp3IDZHBNv/GKHATlSNja1MJU9JrBiX6/pq6HHCfEPQTZmPYafXO0m/YIZI8IIc0STe1cjjICAddObRyMobEJIWzM1FmczeBWi1NnD619ni898dcM3UqZ2Sm06gdtO9NK/kbaiHV6/mfc0S6YSGnm7bS/levk41VdS4hiU8q4xFbiUmtLVl2BgKhw6NF/Z+J/EkeYzSZdHWY8urihCZtsr+A+nYW2S2OKLsZDSXsQZmqEDfuMoL+S2EgvpR0QKoY6uBCaPe/WjNIQIZr78NkK5EHgg7Q35bykxviCNr1dPZMLPDAAeVDNwgNgp1jcO2aey4GdMgsPLG5hsgNaje4tTBLnfzLh3izwmflqEtafJO7fxJvZV9OtCxdrPkJQR8zxubQRBm7XlxB5O4t7Bs/a+DrMvlz70+8glp9i4mbo+VWQYynmDgusZuJ6OpBjEeu4GzxzutTUa6qDWpCfK9m0xbrUuj8Y4U82w+l7cwKr6/EMgHpQrdwD8p5kExZ317s0q453KrTP183az2esmQq8PFCpqz9s2MPp1oYLr+jScP7AsIfV1R8m5t/8uYJ/BcJ4PD5QT/SLIvrKhSRcPOebhe8PhuFd6+vrj2eMz5d9STeeH7+4cu7+dF95T++mIov17AYXA3Fmdqjx/p2wfqTFts/xW7tKrB9pvH8H2F3kOuLidofbdTVTgGt3RQy3Bp/zeDopJdGcCmHyT6qjU2K8FpFrEnU9F7a36EpPLdCCKw7jMRP5s6ZZ+11oTpHrrVusZwMvpyrqFVb2blbyKeC2/veWLKpehWomUKqKBcr7Ro3dscba08l2+vPFVdvl3iI+I7f7fV7CTcBHBPYn9+oqZX6JaQU4CnzcmT606U9+bhqzZ7vChXxbV5Qq55ZvF9FbwW4W9IPJWF/pAZwHcUb4DMiDZuFr3p+5t+Oy5+zCtrjy/wFTGpBscGxa5gAAAABJRU5ErkJggg==">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300..800&amp;display=swap" rel="stylesheet">
+<style>
+section[id]{scroll-margin-top:84px}
+@media(max-width:760px){.cgrid{grid-template-columns:1fr!important}.crow{grid-template-columns:1fr!important}}
+.flink{transition:color .2s ease,opacity .2s ease}
+@media(max-width:760px){.hero-pill{display:none!important}.hero-sub{font-size:17px!important}.hero-row{flex-direction:column!important;flex-wrap:nowrap!important;gap:20px!important;align-items:stretch!important}.hero-left{display:contents!important}.hero-chat{order:1;flex:none!important;width:100%!important;max-width:none!important}.hero-char{order:2}.hero-note{display:none!important}.hero-img{width:137px!important}.pill-desafios{display:none!important}.pill-metodo{display:none!important}.pill-entreg{display:none!important}.pill-arq{display:none!important}.pill-dif{display:none!important}.pill-ag{display:none!important}.faq-i summary::-webkit-details-marker{display:none}.faq-i[open] .faq-pl{transform:rotate(45deg)}.faq-pl{transition:transform .2s ease}.pill-prox{display:none!important}.prox-av{flex:1 1 100%!important;width:100%!important}.prox-av img{margin:0 auto}.foot-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:36px 24px!important}.foot-grid>div:first-child,.foot-grid>div:nth-child(4){grid-column:1/-1!important}#diferencial{padding:56px 0 72px!important}#diferencial .wrap{gap:32px!important}#diferencial .wrap>div:first-child{margin-top:0!important}.foot-bar{flex-direction:column!important;align-items:stretch!important}.foot-r{display:contents!important}.foot-top{order:-1;align-self:flex-end}.foot-legal{order:2}#proximo-passo .cta-btn{width:100%!important;box-sizing:border-box;min-height:68px}.arch-row{padding:22px 16px!important;gap:10px!important}.arch-row>div:not(:first-child){background:var(--soft);border-left:3px solid var(--accent2);border-radius:10px;padding:10px 14px;font-size:14px;line-height:1.5}.arch-row>div:first-child{margin-bottom:2px}.arch-lbl{font-size:10.5px!important;margin-bottom:3px}.arch-row>div:last-child{background:#E6DEFF}.desafios-sub{font-size:17px!important}.hero-comp{min-height:0!important;padding:10px 12px 10px 16px!important}.hero-char{flex-wrap:nowrap!important;align-items:center!important}.hero-img{flex:none}.hero-char p{width:auto!important;height:auto!important;flex:1 1 0!important;min-width:0!important;font-size:13.5px!important;line-height:1.5!important}.hero-chat div[style*="width: 558px"]{width:100%!important;box-sizing:border-box}}
+.drigo-fab{transition:transform .2s ease,box-shadow .2s ease}
+.drigo-fab:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 12px 44px rgba(116,67,245,.65)!important}
+@media(max-width:560px){.drigo-fab{right:16px!important;bottom:16px!important;width:68px!important;height:68px!important}}
+.flink:hover{color:#B79CFF!important}
+.flink-ic{transition:transform .25s ease,background .25s ease}
+.flink-ic:hover{transform:translateY(-3px);background:rgba(116,67,245,.3)!important}
+.cta-btn{transition:transform .25s ease,box-shadow .25s ease,filter .25s ease}
+.cta-btn:hover{transform:translateY(-4px);filter:brightness(1.05);box-shadow:0 22px 36px -8px rgba(20,16,43,.6)!important}
+.dfcard{transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease}
+.dfcard .dfbar{transition:width .45s ease;background:linear-gradient(90deg,#7443F5,#A88BFF)!important}
+.dfcard h3{transition:color .3s ease}
+.dfcard:hover{transform:translateY(-10px);border-color:rgba(116,67,245,.5)!important;box-shadow:0 2px 4px rgba(20,16,43,.1),0 20px 36px rgba(91,47,208,.22),0 40px 70px -10px rgba(91,47,208,.4)!important}
+.dfcard:hover .dfbar{width:100%}
+.dfcard:hover h3{color:var(--accent2)}
+.arch-table{background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 0 0 1px rgba(183,156,255,.2),0 0 24px rgba(116,67,245,.2),0 20px 40px -10px rgba(116,67,245,.35),0 44px 80px -16px rgba(116,67,245,.35)}
+.arch-row{display:grid;grid-template-columns:200px 1.3fr 1.1fr 1fr;gap:24px;padding:24px 28px;align-items:center;font-size:15px;line-height:1.55;color:var(--muted)}
+.arch-row+.arch-row{border-top:1px solid var(--line)}
+.arch-head{padding:14px 28px;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)}
+.arch-lbl{display:none}
+@media(max-width:860px){.arch-head{display:none}.arch-row{grid-template-columns:1fr;gap:10px}.arch-lbl{display:block;font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)}}
+.mstep{transition:background .3s ease}
+.mstep:first-child{border-radius:24px 0 0 24px}.mstep:last-child{border-radius:0 24px 24px 0}
+.mstep::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:linear-gradient(90deg,#7443F5,#A88BFF);transform:scaleX(0);transform-origin:left;transition:transform .4s ease}
+.mstep:first-child::after{border-bottom-left-radius:24px}.mstep:last-child::after{border-bottom-right-radius:24px}
+.mstep:hover{background:linear-gradient(180deg,#FFFFFF,#F3EFFE)}
+.mstep:hover::after{transform:scaleX(1)}
+.mstep .mnum{transition:transform .3s ease,box-shadow .3s ease}
+.mstep:hover .mnum{transform:translateY(-4px) scale(1.08);box-shadow:0 14px 26px -4px rgba(91,47,208,.7)}
+.mstep+.mstep::before{transition:transform .3s ease,background .3s ease,color .3s ease}
+.mstep:hover+.mstep::before,.mstep:hover::before{background:var(--accent2);color:#fff;transform:translateX(3px)}
+.mflow{position:relative;display:grid;grid-template-columns:repeat(3,1fr);background:#fff;border-radius:24px;box-shadow:0 0 0 1px rgba(183,156,255,.2),0 0 24px rgba(116,67,245,.2),0 20px 40px -10px rgba(116,67,245,.35),0 44px 80px -16px rgba(116,67,245,.35)}
+.mstep{position:relative;padding:36px 32px 30px;display:flex;flex-direction:column;gap:14px}
+.mstep+.mstep{border-left:1px solid var(--line)}
+.mstep+.mstep::before{content:"›";position:absolute;left:-18px;top:34px;width:36px;height:36px;border-radius:50%;background:#fff;border:1px solid rgba(91,47,208,.35);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;padding-bottom:3px;box-shadow:0 6px 14px -4px rgba(91,47,208,.45)}
+@media(max-width:860px){.arch{grid-template-columns:1fr!important}}
+@media(max-width:860px){.mflow{grid-template-columns:1fr}.mstep+.mstep{border-left:0;border-top:1px solid var(--line)}.mstep+.mstep::before{left:32px;top:-18px;transform:rotate(90deg)}}
+.dcard{transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;position:relative;overflow:hidden}
+.dcard::before{content:"";position:absolute;left:-1px;top:-1px;height:4px;width:0;background:linear-gradient(90deg,#7443F5,#A88BFF);transition:width .3s ease}
+.dcard:hover{transform:translateY(-8px);border-color:rgba(116,67,245,.55)!important;box-shadow:0 2px 4px rgba(20,16,43,.1),0 18px 32px rgba(91,47,208,.2),0 36px 64px -8px rgba(91,47,208,.42)!important}
+.dcard:hover::before{width:calc(100% + 2px)}
+body{margin:0;background:#F8F7FC}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+a{text-decoration:none}
+button{font-family:inherit}
+.pcard{transition:transform .3s ease}
+.pcard:hover{transform:translateY(-6px)}
+.navlink:hover{color:#C9B6FF!important}
+.sys-item{transition:background .2s ease}
+.sys-item:hover{background:#EFECFA}
+.sys-chev{opacity:0;transform:translateX(-4px);transition:opacity .2s ease,transform .2s ease}
+.sys-item:hover .sys-chev{opacity:1;transform:translateX(0)}
+.chip{transition:background .2s,border-color .2s}
+.chip:hover{background:rgba(116,67,245,.28)!important;border-color:var(--accent2)!important}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent2);outline-offset:3px;border-radius:10px}
+@keyframes dot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.d1,.d2,.d3{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent2);animation:dot 1.2s infinite}
+.d2{animation-delay:.2s}.d3{animation-delay:.4s}
+@media(max-width:700px){.int-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;flex-basis:100%!important}.int-grid>.dcard{grid-column:span 2}.int-grid>.dcard:nth-child(n+4){grid-column:span 3}}
+@media(max-width:860px){.nav-links{display:none!important}.nav-mini{display:inline-flex!important}.hero-char{max-width:100%!important}}
+@media(max-width:560px){.wrap{padding-left:20px!important;padding-right:20px!important}.hero-ctas a{width:100%;justify-content:center}.pcard{min-height:560px!important}.pcard>div:first-child{padding:32px 28px 28px!important}}
+</style>
+</helmet>
+<div style="--accent:{{accent}};--accent2:#5B2FD0;--ink:#14102B;--muted:#55506E;--bg:#F8F7FC;--soft:#EFECFA;--card:#FFFFFF;--line:rgba(91,47,208,.16);background:var(--bg);color:var(--ink);font-family:'Sora','Helvetica Neue',sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:clip">
+
+<header style="position:sticky;top:0;z-index:50;background:#1A1233;border-bottom:1px solid rgba(255,255,255,.08)">
+  <div class="wrap" style="max-width:1240px;margin:0 auto;padding:0 40px;height:80px;display:flex;align-items:center;justify-content:space-between;gap:24px">
+    <a href="#topo" aria-label="Finder Lab, início" style="display:inline-flex;align-items:center;min-height:44px"><img src="/assets/site/ba17e5fe5d7f586c4b5c649ba1c52ab0.png" alt="Finder Lab" style="height:34px;width:auto;display:block"></a>
+    <nav class="nav-links" aria-label="Principal" style="display:flex;align-items:center;gap:28px">
+      <a class="navlink" href="#desafios" style="color:#fff;font-size:14.5px;font-weight:600;min-height:44px;display:inline-flex;align-items:center">Desafios</a><a class="navlink" href="#metodo" style="color:#fff;font-size:14.5px;font-weight:600;min-height:44px;display:inline-flex;align-items:center">Método</a><a class="navlink" href="#entregaveis" style="color:#fff;font-size:14.5px;font-weight:600;min-height:44px;display:inline-flex;align-items:center">Entregas</a><a class="navlink" href="#arquitetura" style="color:#fff;font-size:14.5px;font-weight:600;min-height:44px;display:inline-flex;align-items:center">Arquitetura</a><a class="navlink" href="#diferencial" style="color:#fff;font-size:14.5px;font-weight:600;min-height:44px;display:inline-flex;align-items:center">Diferencial</a><div style="position:relative;display:inline-flex;align-items:center">
+        <button class="navlink" onClick="{{toggleSys}}" aria-haspopup="true" style="cursor:pointer;background:none;border:0;font-family:inherit;color:#fff;font-size:14.5px;font-weight:600;min-height:44px;display:inline-flex;align-items:center;gap:6px">Sistemas <span style="font-size:10px">▾</span></button>
+        <sc-if value="{{sysOpen}}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{closeSys}}" style="position:fixed;inset:0;z-index:1"></div>
+          <div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:14px;z-index:2;width:330px;background:#fff;border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:2px;box-shadow:0 0 0 1px rgba(91,47,208,.14),0 24px 48px -8px rgba(20,16,43,.45)"><span aria-hidden="true" style="position:absolute;top:-7px;left:50%;margin-left:-8px;width:16px;height:16px;background:#fff;transform:rotate(45deg);border-radius:3px 0 0 0;box-shadow:-1px -1px 0 rgba(91,47,208,.14)"></span><a class="sys-item" href="https://finderlab.com.br/anchora.html" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:10px;color:var(--ink)"><span style="display:flex;flex-direction:column;gap:1px"><span style="font-weight:800;font-size:14.5px">Anchora</span><span style="font-size:12.5px;color:var(--muted);font-weight:500">Gestão de performance agêntica</span></span><svg class="sys-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B2FD0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></a><a class="sys-item" href="https://www.zelus-health.com.br/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:10px;color:var(--ink)"><span style="display:flex;flex-direction:column;gap:1px"><span style="font-weight:800;font-size:14.5px">Zelus Health</span><span style="font-size:12.5px;color:var(--muted);font-weight:500">Exames e histórico de saúde organizados</span></span><svg class="sys-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B2FD0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></a><a class="sys-item" href="https://zelus-pet.ia.br/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:10px;color:var(--ink)"><span style="display:flex;flex-direction:column;gap:1px"><span style="font-weight:800;font-size:14.5px">Zelus Pet</span><span style="font-size:12.5px;color:var(--muted);font-weight:500">Saúde do pet, por espécie</span></span><svg class="sys-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B2FD0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></a><a class="sys-item" href="https://www.edivita.com.br/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:10px;color:var(--ink)"><span style="display:flex;flex-direction:column;gap:1px"><span style="font-weight:800;font-size:14.5px">Edi Vita</span><span style="font-size:12.5px;color:var(--muted);font-weight:500">Gestão condominial</span></span><svg class="sys-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B2FD0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></a><a class="sys-item" href="https://finderlab.com.br/famulus.html" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:10px;color:var(--ink)"><span style="display:flex;flex-direction:column;gap:1px"><span style="font-weight:800;font-size:14.5px">Famulus</span><span style="font-size:12.5px;color:var(--muted);font-weight:500">Saúde e segurança do trabalho</span></span><svg class="sys-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B2FD0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></a></div>
+        </sc-if>
+      </div><button class="navlink" onClick="{{openContact}}" style="cursor:pointer;background:none;border:0;font-family:inherit;color:#fff;font-size:14.5px;font-weight:600;min-height:44px;display:inline-flex;align-items:center">Contato</button>
     </nav>
+    <a class="nav-mini" href="https://wa.me/551150399353?text=Oi%2C%20Drigo!%20Vim%20pelo%20site%20da%20Finder%20Lab." target="_blank" rel="noopener" aria-label="Falar com o Drigo no WhatsApp" style="display:none;position:relative;flex:none;width:56px;height:56px"><svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true" style="position:absolute;inset:0"><path d="M32 8.5A23.5 23.5 0 0 0 11.6 43.6L8.5 55.5l12.2-3.2A23.5 23.5 0 1 0 32 8.5z" fill="#25D366" stroke="#fff" stroke-width="4.2" stroke-linejoin="round"/></svg><span style="position:absolute;left:50%;top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;overflow:hidden;background:#25D366;display:block"><img src="/assets/site/d0c4c1da3570f7fb59588cd4cec11860.png" alt="" style="position:absolute;left:50%;top:50%;width:31px;height:31px;margin:-15.5px 0 0 -15.5px;object-fit:contain;display:block"></span></a>
   </div>
 </header>
-<main id="conteudo">
-<section class="hero"><div class="wrap hero-grid"><div class="hero-copy"><div class="eyebrow"><span class="t-pt">Finder Lab · tecnologia com propósito</span><span class="t-es">Finder Lab · tecnología con propósito</span><span class="t-en">Finder Lab · technology with purpose</span></div><h1 class="serif"><span class="t-pt">Tecnologia para cuidar melhor <em>do que importa.</em></span><span class="t-es">Tecnología para cuidar mejor <em>lo que importa.</em></span><span class="t-en">Technology to care for <em>what matters.</em></span></h1><p><span class="t-pt">Criamos produtos que tornam informações importantes mais claras e decisões cotidianas mais simples. Começamos pela saúde. Seguimos para os lugares onde a vida acontece.</span><span class="t-es">Creamos productos que aclaran la información importante y simplifican las decisiones cotidianas. Empezamos por la salud. Vamos a los lugares donde sucede la vida.</span><span class="t-en">We build products that make important information clearer and everyday decisions simpler. We start with health and continue where life happens.</span></p><div class="actions"><a class="button" href="zelus-health.html"><span class="t-pt">Conhecer Zelus Health</span><span class="t-es">Conocer Zelus Health</span><span class="t-en">Explore Zelus Health</span> ↗</a><a class="button button-outline" href="zelus.html"><span class="t-pt">Explorar o Zelus</span><span class="t-es">Explorar Zelus</span><span class="t-en">Explore Zelus</span> →</a></div><div class="hero-note eyebrow"><span class="t-pt">Saúde · gestão · pessoas</span><span class="t-es">Salud · gestión · personas</span><span class="t-en">Health · management · people</span></div></div><div class="hero-visual hero-device-stage"><div class="hero-laptop"><div class="hero-laptop-screen"><div class="site-preview site-preview-health" role="img" aria-label="Prévia da página desktop do site Zelus Health" translate="no"><div class="site-preview-nav"><span class="site-preview-brand"><b class="site-preview-mark health-mark">Z</b> ZELUS<span>Health</span></span><span class="site-preview-links">Como funciona&nbsp;&nbsp; Recursos&nbsp;&nbsp; Planos&nbsp;&nbsp; FAQ</span><span class="site-preview-nav-cta">Começar grátis</span></div><div class="site-preview-body"><div class="site-preview-copy"><small>✦ IA CLÍNICA PARA TODAS AS FASES DA VIDA</small><strong>Um único app.<br><em>Toda a vida.</em></strong><p>Do pré-natal ao 65+. IA clínica que entende sua fase da vida.</p><span class="site-preview-cta">Testar grátis por 7 dias&nbsp; ↗</span></div><img class="site-preview-art" src="assets/img/zelus-health-site-visual.png" alt="" width="1536" height="1024"></div><div class="site-preview-foot">CONFORME LGPD <span>•</span> FONTES MÉDICAS INTERNACIONAIS</div></div></div><div class="hero-laptop-base" aria-hidden="true"></div></div><div class="hero-phone"><img src="assets/img/n_pet1.png" alt="Tela completa do aplicativo Zelus Pet" width="708" height="1280"></div><span class="stage-caption"><span class="t-pt">ZELUS / SAÚDE CONECTADA</span><span class="t-es">ZELUS / SALUD CONECTADA</span><span class="t-en">ZELUS / CONNECTED HEALTH</span></span></div></div></section>
-<nav class="signal-rail" aria-label="Explorar produtos"><div class="wrap signal-rail-grid"><a href="#zelus"><span><span class="t-pt">ECOSSISTEMA</span><span class="t-es">ECOSISTEMA</span><span class="t-en">ECOSYSTEM</span></span><strong><span class="t-pt">Zelus Health + Pet</span><span class="t-es">Zelus Health + Pet</span><span class="t-en">Zelus Health + Pet</span></strong><span aria-hidden="true">↗</span></a><a href="#edi-vita"><span><span class="t-pt">GESTÃO</span><span class="t-es">GESTIÓN</span><span class="t-en">MANAGEMENT</span></span><strong>EDI VITA</strong><span aria-hidden="true">↗</span></a><a href="#portfolio"><span><span class="t-pt">PORTFÓLIO</span><span class="t-es">PORTAFOLIO</span><span class="t-en">PORTFOLIO</span></span><strong><span class="t-pt">Outros produtos</span><span class="t-es">Otros productos</span><span class="t-en">Other products</span></strong><span aria-hidden="true">↗</span></a></div></nav>
-<section class="section" id="zelus"><div class="wrap"><div class="section-intro"><div><div class="eyebrow"><span class="t-pt">Nosso ecossistema principal</span><span class="t-es">Nuestro ecosistema principal</span><span class="t-en">Our flagship ecosystem</span></div><h2 class="serif"><span class="t-pt">Zelus. Uma história de saúde mais completa.</span><span class="t-es">Zelus. Una historia de salud más completa.</span><span class="t-en">Zelus. A fuller picture of health.</span></h2></div><p><span class="t-pt">Informações de saúde costumam estar espalhadas. O Zelus reúne o que importa para acompanhar o cuidado e chegar melhor preparado à próxima consulta.</span><span class="t-es">La información de salud suele estar dispersa. Zelus reúne lo importante para seguir tu salud y llegar mejor preparado a tu próxima consulta.</span><span class="t-en">Health information is often scattered. Zelus brings it together to support ongoing care and better prepare for the next appointment.</span></p></div><div class="product-grid">
-<article class="product-card health-photo"><div class="product-text"><div class="eyebrow"><span class="t-pt">Primeiro, as pessoas</span><span class="t-es">Primero, las personas</span><span class="t-en">First, people</span></div><h3>Zelus <span>Health</span></h3><p><span class="t-pt">Exames, sintomas e histórico em uma visão contínua da sua saúde. Mais contexto para a conversa com o médico.</span><span class="t-es">Exámenes, síntomas e historial en una visión continua de tu salud. Más contexto para la conversación con el médico.</span><span class="t-en">Exams, symptoms and history in one ongoing view of your health. More context for the conversation with your doctor.</span></p><a class="text-link" href="zelus-health.html"><span class="t-pt">Conhecer Zelus Health</span><span class="t-es">Conocer Zelus Health</span><span class="t-en">Explore Zelus Health</span> ↗</a></div><div class="product-media"><img class="frame" src="assets/img/n_hl1.png" alt="Tela do Zelus Health" loading="lazy" width="600" height="800"></div></article>
-<article class="product-card pet pet-photo"><div class="product-text"><div class="eyebrow"><span class="t-pt">Também, quem está ao nosso lado</span><span class="t-es">También, quienes están a nuestro lado</span><span class="t-en">Also, those beside us</span></div><h3>Zelus <span>Pet</span></h3><p><span class="t-pt">O histórico de saúde do pet organizado por espécie. Um apoio para tutores e veterinários acompanharem cada etapa.</span><span class="t-es">El historial de salud de tu mascota organizado por especie. Una ayuda para tutores y veterinarios en cada etapa.</span><span class="t-en">Your pet's health history organized by species. Support for owners and veterinarians through every stage.</span></p><a class="text-link" href="zelus-pet.html"><span class="t-pt">Conhecer Zelus Pet</span><span class="t-es">Conocer Zelus Pet</span><span class="t-en">Explore Zelus Pet</span> ↗</a></div><div class="product-media"><img class="frame" src="assets/img/n_pet1.png" alt="Tela do Zelus Pet" loading="lazy" width="600" height="800"></div></article>
-</div></div></section>
-<section class="section section-dark" id="edi-vita"><div class="wrap edivita-grid"><div><div class="eyebrow"><span class="t-pt">Gestão condominial</span><span class="t-es">Gestión de condominios</span><span class="t-en">Condominium management</span></div><h2 class="serif">EDI VITA</h2><p><span class="t-pt">O condomínio funciona melhor quando pessoas, documentos e operação estão no mesmo lugar. A EDI VITA conecta cobranças, ocorrências, reservas e assembleias. A assistente Edi ajuda a encontrar respostas nos documentos do condomínio.</span><span class="t-es">El condominio funciona mejor cuando personas, documentos y operaciones están en un mismo lugar. EDI VITA conecta pagos, incidencias, reservas y asambleas. La asistente Edi ayuda a encontrar respuestas en los documentos del condominio.</span><span class="t-en">A condominium works better when people, documents and operations are in one place. EDI VITA connects billing, incidents, bookings and assemblies. Its assistant Edi helps find answers in condominium documents.</span></p><a class="button" href="edi-vita.html"><span class="t-pt">Conhecer a EDI VITA</span><span class="t-es">Conocer EDI VITA</span><span class="t-en">Explore EDI VITA</span> ↗</a></div><div class="edivita-media"><img class="edivita-building" src="assets/img/edi-vita-visual.png" alt="Apresentação da EDI VITA com edifício residencial, assistente digital e recursos de gestão condominial" loading="lazy" width="1370" height="1148"></div></div></section>
-<section class="section" id="portfolio"><div class="wrap"><div class="section-intro"><div><div class="eyebrow"><span class="t-pt">Outras frentes</span><span class="t-es">Otros frentes</span><span class="t-en">Other work</span></div><h2 class="serif"><span class="t-pt">Produtos para desafios diferentes.</span><span class="t-es">Productos para diferentes desafíos.</span><span class="t-en">Products for different challenges.</span></h2></div><p><span class="t-pt">A mesma atenção ao contexto orienta soluções em outras áreas. Conheça o restante do portfólio.</span><span class="t-es">La misma atención al contexto orienta las soluciones en otras áreas. Descubre el resto del portafolio.</span><span class="t-en">The same attention to context guides solutions in other fields. Explore the rest of the portfolio.</span></p></div><div class="minor-grid"><a href="anchora.html"><strong>Anchora ↗</strong><span><span class="t-pt">Estrutura para decisões e projetos.</span><span class="t-es">Estructura para decisiones y proyectos.</span><span class="t-en">Structure for decisions and projects.</span></span></a><a href="themis.html"><strong>Themis ↗</strong><span><span class="t-pt">Informação organizada para o trabalho jurídico.</span><span class="t-es">Información organizada para el trabajo jurídico.</span><span class="t-en">Organized information for legal work.</span></span></a><a href="famulus.html"><strong>Famulus ↗</strong><span><span class="t-pt">Tecnologia para rotinas de cuidado e atendimento.</span><span class="t-es">Tecnología para las rutinas de atención y servicio.</span><span class="t-en">Technology for care and service routines.</span></span></a></div><div style="margin-top:25px;text-align:right"><a class="text-link" href="sistemas.html"><span class="t-pt">Ver todos os produtos</span><span class="t-es">Ver todos los productos</span><span class="t-en">See all products</span> →</a></div></div></section>
-<section class="section immersion-section" id="maquina-decisoes" aria-labelledby="immersion-title">
-  <div class="wrap immersion-grid">
-    <div class="immersion-copy">
-      <div class="eyebrow"><span class="t-pt">Formação · IA para líderes</span><span class="t-es">Formación · IA para líderes</span><span class="t-en">Learning · AI for leaders</span></div>
-      <h2 class="serif" id="immersion-title" translate="no">Máquina de <em>Decisões</em></h2>
-      <p class="immersion-lead"><span class="t-pt">O próximo passo não é usar mais ferramentas. É decidir melhor com IA.</span><span class="t-es">El siguiente paso no es usar más herramientas. Es decidir mejor con IA.</span><span class="t-en">The next step is making better decisions with AI.</span></p>
-      <p><span class="t-pt">Uma imersão presencial com Rodrigo Moraes, fundador da Finder Lab, para líderes e empresários que querem repensar processos e aplicar IA a decisões reais do negócio.</span><span class="t-es">Una inmersión presencial con Rodrigo Moraes, fundador de Finder Lab, para líderes y empresarios que quieren repensar procesos y aplicar IA a decisiones reales de su negocio.</span><span class="t-en">An in-person immersion with Rodrigo Moraes, founder of Finder Lab, for leaders and business owners who want to rethink processes and apply AI to real business decisions.</span></p>
-      <p class="immersion-practice"><span class="t-pt">Da reflexão à prática: trabalhe uma decisão do seu negócio e construa seu próprio agente de IA durante a imersão.</span><span class="t-es">De la reflexión a la práctica: trabaja una decisión de tu negocio y construye tu propio agente de IA durante la inmersión.</span><span class="t-en">From reflection to practice: work on a decision from your business and build your own AI agent during the immersion.</span></p>
-      <a class="button immersion-cta" href="https://www.maquina.finderlab.com.br/"><span class="t-pt">Conhecer a imersão</span><span class="t-es">Conocer la inmersión</span><span class="t-en">Explore the immersion</span> <span aria-hidden="true">↗</span></a>
-      <span class="immersion-site-note"><span class="t-pt">Programa e inscrição no site da Máquina de Decisões.</span><span class="t-es">Programa e inscripción en el sitio de Máquina de Decisões.</span><span class="t-en">Program and registration on the Máquina de Decisões website.</span></span>
+
+<main id="topo">
+<section id="diagnostico" style="position:relative;overflow:hidden;padding:14px 0 36px;background:radial-gradient(900px 520px at 72% 18%,rgba(116,67,245,.16),transparent 62%),radial-gradient(700px 500px at 8% 70%,rgba(116,67,245,.10),transparent 60%),#F8F7FC">
+  <div class="wrap" style="max-width:1240px;margin:0 auto;padding:0 40px;position:relative;display:flex;flex-direction:column;gap:32px">
+    <div class="hero-row" style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;justify-content:space-between">
+      <div class="hero-left" style="flex:1 1 480px;min-width:0;display:flex;flex-direction:column;gap:16px;align-items:flex-start">
+        <span class="hero-pill" style="display:inline-block;align-self:flex-start;width:fit-content;background:var(--accent2);color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 6px 14px -6px rgba(91,47,208,.55)">Diagnóstico gratuito</span>
+        <h1 style="font-weight: 800; font-size: clamp(36px,4.6vw,66px); line-height: 1.04; letter-spacing: -2.2px; margin: 0; color: var(--ink); text-wrap: balance; font-family: DM Sans, sans-serif">Descubra onde a IA pode&nbsp;<span style="color: var(--accent2)">ajudar a sua operação</span></h1>
+        <p class="hero-sub" style="font-size: 18px; line-height: 1.7; color: var(--muted); margin: 0; max-width: 620px; text-wrap: pretty; font-size: 18px; max-width: 560px">A sua empresa ainda não sabe onde pode usar inteligência artificial para ganhar velocidade e eficiência? O Drigo, agente virtual da Finder Lab, vai te ajudar a descobrir.</p>
+        <div class="hero-char" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; max-width: 560px; margin-top: -6px">
+          <img class="hero-img" src="/assets/site/a1098776c8b619a386c375bf383b0447.png" alt="Drigo, fundador da Finder Lab, sentado numa poltrona com uma caneca" style="width: 228px; max-width: 100%; height: auto; display: block; filter: drop-shadow(0 0 50px rgba(116,67,245,.35))">
+          <p style="margin: 0; flex: 1 1 220px; color: var(--muted); font-size: 14.5px; line-height: 1.7; width: 327px; height: 198px">Você traz a decisão que está pesando, o Drigo pergunta até achar o ponto cego e devolve uma leitura direta: o que está em jogo, o que pesa a favor, o que pesa contra e o próximo passo certo.</p>
+        </div>
+      </div>
+      <div class="hero-chat" style="flex: 1 1 480px; min-width: 0; max-width: 640px; display: flex; flex-direction: column; gap: 12px">
+        <div style="border: 1px solid rgba(91,47,208,.28); border-radius: 22px; box-shadow: 0 2px 4px rgba(20,16,43,.08), 0 24px 48px rgba(91,47,208,.18), 0 50px 100px -10px rgba(91,47,208,.32); overflow: hidden; display: flex; flex-direction: column; background-image: linear-gradient(180deg,#FFFFFF,#F6F3FF)">
+          <div style="display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.08); width: 558px; height: 60px; background-color: #14102b; background-image: linear-gradient(135deg,#261B58,#14102B); position: relative; z-index: 1; box-shadow: 0 8px 18px -4px rgba(20,16,43,.35)">
+            <img src="/assets/site/d0c4c1da3570f7fb59588cd4cec11860.png" alt="" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);box-shadow:0 0 0 4px rgba(116,67,245,.25),0 6px 14px rgba(0,0,0,.45)">
+            <div><div style="font-weight: 700; font-size: 15.5px; color: #ffffff">Drigo</div><div style="color: #ffffff; font-size: 12.5px">Diagnóstico · Finder Lab</div></div>
+          </div>
+          <div style="height: 344px; overflow-y: auto; padding: 22px 20px 20px; display: flex; flex-direction: column; gap: 12px; width: 558px; background-image: linear-gradient(180deg,#F1EDFD,#FBFAFF 40%); box-shadow: inset 0 10px 16px -12px rgba(20,16,43,.25)">
+            <sc-for list="{{msgs}}" as="m" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-if value="{{m.me}}" hint-placeholder-val="{{ false }}">
+                  <div style="align-self:flex-end;max-width:80%;background:#D9FDD3;color:#14102B;padding:12px 16px;border-radius:16px 16px 4px 16px;font-size:14.5px;line-height:1.5;box-shadow:0 1px 2px rgba(20,16,43,.18)">{{m.text}}</div>
+                </sc-if>
+                <sc-if value="{{m.drigo}}" hint-placeholder-val="{{ true }}">
+                  <div style="align-self: flex-start; max-width: 88%; border: 1px solid rgba(20,16,43,.06); padding: 14px 16px; border-radius: 16px 16px 16px 4px; font-size: 14.5px; line-height: 1.6; color: var(--ink); background-color: #FFFFFF; box-shadow: 0 1px 2px rgba(20,16,43,.18)">
+                    <div style="color: #14102B">{{m.text}}</div>
+                    <sc-for list="{{m.parts}}" as="p" hint-placeholder-count="0">
+                      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(91,47,208,.12)"><span style="display:block;font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2);margin-bottom:2px">{{p.label}}</span>{{p.text}}</div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{typing}}" hint-placeholder-val="{{ false }}">
+              <div style="align-self:flex-start;background:#F1EEFB;border:1px solid rgba(91,47,208,.14);padding:14px 18px;border-radius:16px 16px 16px 4px;display:flex;gap:6px" aria-label="Drigo está digitando"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+            </sc-if>
+          </div>
+          <div style="padding: 16px 20px 20px; border-top: 1px solid rgba(91,47,208,.16); background-color: #ffffff; color: #ffffff">
+            <div class="hero-comp" style="display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:14px;min-height:124px;padding:18px 14px 14px 18px;border:1px solid rgba(91,47,208,.3);border-radius:14px;background:#FFFFFF;color:var(--muted);font-size:15.5px;box-shadow:inset 0 2px 6px rgba(20,16,43,.08),0 1px 0 #fff,0 8px 20px -8px rgba(91,47,208,.25)"><textarea value="{{draft}}" onInput="{{onInput}}" onKeyDown="{{onKey}}" placeholder="Ou escreva a sua decisão aqui…" rows="4" style="flex:1;min-width:0;align-self:stretch;border:0;outline:0;background:transparent;resize:none;font-family:inherit;font-size:15.5px;color:var(--ink);padding:0"></textarea><button onClick="{{send}}" aria-label="Enviar" style="cursor:pointer;border:0;padding:0;align-self:center;flex:none;width:44px;height:44px;border-radius:50%;background:var(--accent);background-image:linear-gradient(160deg,#8559FF,#6232E8);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 10px 20px rgba(116,67,245,.5),inset 0 1px 0 rgba(255,255,255,.35)">→</button></div>
+          </div>
+        </div>
+        <div class="hero-note" style="color:var(--muted);font-size:12.5px;padding:0 4px;margin-top:12px">Respostas de exemplo, só para mostrar como funciona. O diagnóstico completo é personalizado.</div>
+      </div>
     </div>
-    <figure class="immersion-speaker">
-      <img src="assets/img/maquina-rodrigo.png" alt="Rodrigo Moraes com microfone, facilitador da imersão Máquina de Decisões" width="1100" height="1100" loading="lazy">
-      <figcaption><strong translate="no">Rodrigo Moraes</strong><span><span class="t-pt">Fundador da Finder Lab · Facilitador da imersão</span><span class="t-es">Fundador de Finder Lab · Facilitador de la inmersión</span><span class="t-en">Finder Lab founder · Immersion facilitator</span></span></figcaption>
-    </figure>
+
   </div>
 </section>
-<section class="section section-dark"><div class="wrap method"><div class="method-mark method-system" role="img" aria-label="Contexto, construção e uso real: ciclo de produto da Finder Lab"><div class="method-system-head">FINDER LAB / PRODUCT PROCESS</div><div class="method-system-flow"><div class="flow-step"><span class="t-pt">Contexto</span><span class="t-es">Contexto</span><span class="t-en">Context</span></div><i aria-hidden="true">↓</i><div class="flow-step"><span class="t-pt">Construção</span><span class="t-es">Construcción</span><span class="t-en">Build</span></div><i aria-hidden="true">↓</i><div class="flow-step"><span class="t-pt">Uso real</span><span class="t-es">Uso real</span><span class="t-en">Real use</span></div></div><div class="method-system-foot">RESEARCH / SYSTEM / EVOLUTION</div></div><div><div class="eyebrow"><span class="t-pt">A Finder Lab</span><span class="t-es">Finder Lab</span><span class="t-en">About Finder Lab</span></div><h2 class="serif"><span class="t-pt">Da ideia ao uso real.</span><span class="t-es">De la idea al uso real.</span><span class="t-en">From idea to real use.</span></h2><p><span class="t-pt">Partimos de problemas concretos, desenhamos com atenção às pessoas e construímos produtos que precisam funcionar fora da apresentação.</span><span class="t-es">Partimos de problemas concretos, diseñamos con atención a las personas y creamos productos que deben funcionar más allá de la presentación.</span><span class="t-en">We start with real problems, design with people in mind and build products that must work beyond the presentation.</span></p><div class="method-items"><span><span class="t-pt">Contexto antes da solução</span><span class="t-es">Contexto antes de la solución</span><span class="t-en">Context before solution</span></span><span><span class="t-pt">Clareza no uso</span><span class="t-es">Claridad en uso</span><span class="t-en">Clarity in use</span></span><span><span class="t-pt">Evolução contínua</span><span class="t-es">Evolución continua</span><span class="t-en">Continuous improvement</span></span></div></div></div></section>
-<section class="section"><div class="wrap contact-strip"><div><div class="eyebrow"><span class="t-pt">Vamos conversar?</span><span class="t-es">¿Hablemos?</span><span class="t-en">Let's talk</span></div><h2 class="serif"><span class="t-pt">O próximo passo começa com uma conversa.</span><span class="t-es">El siguiente paso comienza con una conversación.</span><span class="t-en">The next step starts with a conversation.</span></h2></div><div><p><span class="t-pt">Quer conhecer um produto, discutir uma parceria ou trazer um desafio para a Finder Lab? Conte o que você tem em mente.</span><span class="t-es">¿Quieres conocer un producto, explorar una colaboración o compartir un desafío con Finder Lab? Cuéntanos qué tienes en mente.</span><span class="t-en">Want to explore a product, discuss a partnership or bring a challenge to Finder Lab? Tell us what you have in mind.</span></p><a class="button" href="contato.html"><span class="t-pt">Entrar em contato</span><span class="t-es">Ponte en contacto</span><span class="t-en">Get in touch</span> →</a></div></div></section>
-</main>
-<footer class="site-shell-footer">
-  <div class="site-shell-wrap">
-    <div class="site-shell-footer-grid">
-      <div class="site-shell-footer-brand">
-        <a class="logo" translate="no" href="index.html" aria-label="Finder Lab, início">FIND<span class="finder-e" aria-hidden="true"><i></i><i></i><i></i></span>R<span class="finder-lab">LAB</span></a>
-        <p class="site-shell-overline">Agentic Architecture Product House</p>
-        <p><span class="t-pt">Tecnologia aplicada a problemas reais. Pesquisa, arquitetura e produtos feitos para funcionar no dia a dia.</span><span class="t-es">Tecnología aplicada a problemas reales. Investigación, arquitectura y productos hechos para funcionar en la vida cotidiana.</span><span class="t-en">Technology applied to real problems. Research, architecture and products built for everyday use.</span></p>
-      </div>
-      <nav aria-label="Navegação do rodapé">
-        <h2><span class="t-pt">Navegação</span><span class="t-es">Navegación</span><span class="t-en">Navigation</span></h2>
-        <a href="sobre.html"><span class="t-pt">A Finder</span><span class="t-es">Sobre Finder</span><span class="t-en">About Finder</span></a>
-        <a href="https://www.maquina.finderlab.com.br/"><span class="t-pt">Máquina de Decisões</span><span class="t-es">Máquina de Decisões</span><span class="t-en">Máquina de Decisões</span></a>
-        <a href="research.html">Research</a>
-        <a href="servicos.html"><span class="t-pt">Capacidades</span><span class="t-es">Capacidades</span><span class="t-en">Capabilities</span></a>
-        <a href="sistemas.html"><span class="t-pt">Todos os produtos</span><span class="t-es">Todos los productos</span><span class="t-en">All products</span></a>
-      </nav>
-      <nav aria-label="Produtos Finder Lab">
-        <h2><span class="t-pt">Produtos</span><span class="t-es">Productos</span><span class="t-en">Products</span></h2>
-        <a href="zelus-health.html">Zelus Health</a>
-        <a href="zelus-pet.html">Zelus Pet</a>
-        <a href="zelus.html"><span class="t-pt">Ecossistema Zelus</span><span class="t-es">Ecosistema Zelus</span><span class="t-en">Zelus ecosystem</span></a>
-        <a href="edi-vita.html">EDI VITA</a>
-        <a href="anchora.html">Anchora</a>
-        <a href="themis.html">Themis</a>
-        <a href="famulus.html">Famulus</a>
-      </nav>
-      <div class="site-shell-footer-contact">
-        <h2><span class="t-pt">Contato</span><span class="t-es">Contacto</span><span class="t-en">Contact</span></h2>
-        <address>
-          <a href="mailto:contato@finderlab.com.br">contato@finderlab.com.br</a>
-          <a href="https://wa.me/551131643783" target="_blank" rel="noopener noreferrer">WhatsApp · +55 11 3164-3783 ↗</a>
-          <a href="https://www.linkedin.com/company/finderlab/" target="_blank" rel="noopener noreferrer">LinkedIn · Finder Lab ↗</a>
-        </address>
-        <a class="site-shell-footer-cta" href="contato.html"><span class="t-pt">Falar com a Finder</span><span class="t-es">Hablar con Finder Lab</span><span class="t-en">Talk to Finder</span> ↗</a>
-      </div>
+
+<section id="integracoes" style="background:#1A1233;padding:20px 0">
+  <div class="wrap" style="max-width:1240px;margin:0 auto;padding:0 40px;display:flex;flex-wrap:wrap;gap:40px 56px;align-items:center">
+    <div style="flex:1 1 400px;display:flex;flex-direction:column;gap:8px">
+      <h2 style="font-weight:800;font-size:clamp(24px,2.6vw,32px);line-height:1.1;letter-spacing:-.8px;margin:0;color:#fff;text-wrap:balance">Conectado à sua <span style="color:#B79CFF">operação.</span></h2>
+      <p style="margin:0;font-size:14.5px;line-height:1.5;color:#C4BDDC;max-width:400px;text-wrap:pretty">Integramos a IA às ferramentas que a sua equipe já usa, sem trocar o que funciona.</p>
     </div>
-    <div class="site-shell-footer-bottom">
-      <span>© 2026 Finder Lab · Agentic Architecture Product House</span>
-      <a href="index.html"><span class="t-pt">Voltar ao início</span><span class="t-es">Volver al inicio</span><span class="t-en">Back to home</span> ↑</a>
+    <div class="int-grid" style="flex:0 1 560px;min-width:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px">
+        <div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:5px 6px 5px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28);display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center">
+          <div style="margin-bottom:0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5B2FD0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M3 9h18M9 9v12"></path></svg></div>
+          <div style="font-weight:700;font-size:12.5px;color:var(--ink)">ERP</div>
+          <div style="font-size:10.5px;line-height:1.3;color:var(--muted)">Gestão</div>
+        </div>
+        <div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:5px 6px 5px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28);display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center">
+          <div style="margin-bottom:0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5B2FD0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"></path><circle cx="17.5" cy="9" r="2.4"></circle><path d="M17 14.6c2.3.2 4 1.8 4 4.4"></path></svg></div>
+          <div style="font-weight:700;font-size:12.5px;color:var(--ink)">CRM</div>
+          <div style="font-size:10.5px;line-height:1.3;color:var(--muted)">Relacionamento</div>
+        </div>
+        <div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:5px 6px 5px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28);display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center">
+          <div style="margin-bottom:0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5B2FD0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1.3-4A8.5 8.5 0 1 1 8 18.7L4 20z"></path><path d="M9.5 9.5c.4 2 2 3.6 4 4l1.2-1.2 1.6.8c-.2 1-1 1.7-2 1.7-3 0-6-3-6-6 0-1 .7-1.8 1.7-2l.8 1.6-1.3 1.1z"></path></svg></div>
+          <div style="font-weight:700;font-size:12.5px;color:var(--ink)">WhatsApp</div>
+          <div style="font-size:10.5px;line-height:1.3;color:var(--muted)">Atendimento</div>
+        </div>
+        <div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:5px 6px 5px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28);display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center">
+          <div style="margin-bottom:0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5B2FD0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v4h4M9 12h6M9 16h6"></path></svg></div>
+          <div style="font-weight:700;font-size:12.5px;color:var(--ink)">Documentos</div>
+          <div style="font-size:10.5px;line-height:1.3;color:var(--muted)">Conhecimento (RAG)</div>
+        </div>
+        <div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:5px 6px 5px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28);display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center">
+          <div style="margin-bottom:0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5B2FD0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><circle cx="12" cy="18" r="2.5"></circle><path d="M8.5 6h7M7.3 8.2l3.5 7.6M16.7 8.2l-3.5 7.6"></path></svg></div>
+          <div style="font-weight:700;font-size:12.5px;color:var(--ink)">APIs e n8n</div>
+          <div style="font-size:10.5px;line-height:1.3;color:var(--muted)">Automação</div>
+        </div>
     </div>
   </div>
+</section>
+
+<section id="desafios" style="padding:88px 0 72px;background:var(--bg)">
+  <div class="wrap" style="max-width:1240px;margin:0 auto;padding:0 40px;display:flex;flex-direction:column;gap:48px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:32px 56px">
+      <div style="display:flex;flex-direction:column;gap:18px;flex:1 1 480px;max-width:780px">
+        <div class="pill-desafios" style="display:inline-block;align-self:flex-start;width:fit-content;background:var(--accent2);color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 6px 14px -6px rgba(91,47,208,.55)">Onde a IA entra primeiro</div>
+        <h2 style="font-weight:800;font-size:clamp(32px,4.2vw,54px);line-height:1.08;letter-spacing:-1.5px;color:var(--ink);margin:0;text-wrap:balance">Todo negócio tem uma <span style="color:var(--accent2)">decisão que pesa mais</span> que as outras.</h2>
+        <p class="desafios-sub" style="font-size:18px;line-height:1.7;color:var(--muted);margin:0;max-width:640px;text-wrap:pretty">Começamos por ela: entendemos o contexto, testamos com dados reais e só então transformamos o método em sistema.</p>
+      </div>
+      <div style="flex:0 1 380px;min-width:280px;background:#1A1233;border-radius:22px;padding:30px 28px;display:flex;flex-direction:column;gap:14px;box-shadow:0 2px 4px rgba(20,16,43,.12),0 24px 48px -10px rgba(26,18,51,.45),0 40px 80px -20px rgba(91,47,208,.35)">
+        <div style="font-weight:800;font-size:22px;line-height:1.25;letter-spacing:-.4px;color:#fff">Vamos olhar para a <span style="color:#B79CFF">sua decisão?</span></div>
+        <p style="margin:0;font-size:15px;line-height:1.6;color:#C4BDDC">Agende uma conversa com a nossa equipe e descubra por onde a IA pode começar no seu negócio.</p>
+        <button onClick="{{openAgenda}}" style="cursor:pointer;border:0;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:10px;align-self:flex-start;background:var(--accent);background-image:linear-gradient(160deg,#8559FF,#6232E8);color:#fff;font-weight:700;font-size:15px;padding:14px 24px;border-radius:999px;box-shadow:0 10px 22px -4px rgba(116,67,245,.6)">Agendar reunião <span aria-hidden="true">→</span></button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px">
+      <div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28)">
+        <div style="font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)">Decisão</div>
+        <h3 style="font-weight:700;font-size:23px;line-height:1.25;letter-spacing:-.4px;color:var(--ink);margin:0;text-wrap:balance">O critério ainda vive na cabeça de uma pessoa.</h3>
+        <p style="font-size:15.5px;line-height:1.7;color:var(--muted);margin:0">Quando o raciocínio não está escrito, o negócio depende de quem lembra. Transformamos o critério em método que a equipe repete e mede.</p>
+      </div>
+      <div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28)">
+        <div style="font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)">Conhecimento</div>
+        <h3 style="font-weight:700;font-size:23px;line-height:1.25;letter-spacing:-.4px;color:var(--ink);margin:0;text-wrap:balance">O que a empresa sabe está espalhado.</h3>
+        <p style="font-size:15.5px;line-height:1.7;color:var(--muted);margin:0">Contratos, histórico e experiência ficam em pastas, e-mails e conversas. Organizamos esse acervo para o sistema responder com base no que é seu.</p>
+      </div>
+      <div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28)">
+        <div style="font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)">Execução</div>
+        <h3 style="font-weight:700;font-size:23px;line-height:1.25;letter-spacing:-.4px;color:var(--ink);margin:0;text-wrap:balance">O time gasta horas no que a máquina faria.</h3>
+        <p style="font-size:15.5px;line-height:1.7;color:var(--muted);margin:0">A rotina repetitiva consome quem deveria analisar. Entregamos agentes que executam o trabalho e chamam uma pessoa só quando importa.</p>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--line);padding-top:18px;font-size:14.5px;color:var(--muted)">Não é promessa de laboratório: é método que já roda em operações reais.</div>
+  </div>
+</section>
+
+<section id="metodo" style="padding:88px 0;background:#1A1233">
+  <div class="wrap" style="max-width:1240px;margin:0 auto;padding:0 40px;display:flex;flex-direction:column;gap:48px">
+    <div style="display:flex;flex-direction:column;gap:18px;max-width:780px">
+      <div class="pill-metodo" style="display:inline-block;align-self:flex-start;width:fit-content;background:var(--accent2);color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 6px 14px -6px rgba(91,47,208,.55)">Como trabalhamos</div>
+      <h2 style="font-weight:800;font-size:clamp(32px,4.2vw,54px);line-height:1.08;letter-spacing:-1.5px;color:#fff;margin:0;text-wrap:balance">Da pergunta ao <span style="color:#B79CFF">sistema em produção.</span></h2>
+    </div>
+    <div class="mflow">
+      <div class="mstep">
+        <div class="mnum" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">01</div>
+        <h3 style="font-weight:700;font-size:22px;line-height:1.25;letter-spacing:-.4px;color:var(--ink);margin:6px 0 0">Mapeamos a decisão</h3>
+        <p style="font-size:15.5px;line-height:1.7;color:var(--muted);margin:0;flex:1">Conversamos sobre a decisão que mais pesa no seu negócio e onde ela trava. Em uma sessão, definimos o que vale testar primeiro.</p>
+        <div style="border-top:1px solid var(--line);padding-top:14px;font-size:13px;font-weight:600;color:var(--accent2)">Ponto de partida: diagnóstico</div>
+      </div>
+      <div class="mstep">
+        <div class="mnum" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">02</div>
+        <h3 style="font-weight:700;font-size:22px;line-height:1.25;letter-spacing:-.4px;color:var(--ink);margin:6px 0 0">Testamos com dados reais</h3>
+        <p style="font-size:15.5px;line-height:1.7;color:var(--muted);margin:0;flex:1">Montamos um piloto curto com a sua informação e medimos o resultado, não a atividade. Só avança o que se prova.</p>
+        <div style="border-top:1px solid var(--line);padding-top:14px;font-size:13px;font-weight:600;color:var(--accent2)">Etapa de pesquisa aplicada</div>
+      </div>
+      <div class="mstep">
+        <div class="mnum" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">03</div>
+        <h3 style="font-weight:700;font-size:22px;line-height:1.25;letter-spacing:-.4px;color:var(--ink);margin:6px 0 0">Colocamos em produção</h3>
+        <p style="font-size:15.5px;line-height:1.7;color:var(--muted);margin:0;flex:1">O que funcionou vira sistema integrado à sua operação, com indicadores claros e acompanhamento da equipe.</p>
+        <div style="border-top:1px solid var(--line);padding-top:14px;font-size:13px;font-weight:600;color:var(--accent2)">Sistema rodando</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="entregaveis" style="padding:88px 0;background:#fff">
+  <div class="wrap" style="max-width:1240px;margin:0 auto;padding:0 40px;display:flex;flex-direction:column;gap:48px">
+    <div style="display:flex;flex-direction:column;gap:18px;max-width:780px">
+      <div class="pill-entreg" style="display:inline-block;align-self:flex-start;width:fit-content;background:var(--accent2);color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 6px 14px -6px rgba(91,47,208,.55)">O que você recebe</div>
+      <h2 style="font-weight:800;font-size:clamp(32px,4.2vw,54px);line-height:1.08;letter-spacing:-1.5px;color:var(--ink);margin:0;text-wrap:balance">Cada etapa termina em algo que você pode <span style="color:var(--accent2)">usar.</span></h2>
+    </div>
+    <div class="mflow" style="background:#FBFAFF;border:1px solid var(--line);box-shadow:0 1px 3px rgba(20,16,43,.08),0 14px 30px -8px rgba(91,47,208,.22),0 36px 70px -14px rgba(91,47,208,.28)">
+      <div class="mstep">
+        <div style="font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)">Diagnóstico</div>
+        <h3 style="font-weight:700;font-size:22px;line-height:1.25;letter-spacing:-.4px;color:var(--ink);margin:0 0 6px">Clareza sobre a decisão</h3>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px">
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Mapa da decisão e dos pontos em que ela trava</span></li>
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Prioridades ordenadas por impacto</span></li>
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Recomendação do que testar primeiro</span></li>
+        </ul>
+      </div>
+      <div class="mstep">
+        <div style="font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)">Piloto</div>
+        <h3 style="font-weight:700;font-size:22px;line-height:1.25;letter-spacing:-.4px;color:var(--ink);margin:0 0 6px">Prova com dados reais</h3>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px">
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Protótipo funcionando com a sua informação</span></li>
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Indicadores de resultado definidos antes de começar</span></li>
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Relato do que funcionou e do que não funcionou</span></li>
+        </ul>
+      </div>
+      <div class="mstep">
+        <div style="font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)">Sistema</div>
+        <h3 style="font-weight:700;font-size:22px;line-height:1.25;letter-spacing:-.4px;color:var(--ink);margin:0 0 6px">Operação rodando</h3>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px">
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Integração às ferramentas que você já usa</span></li>
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Treinamento e acompanhamento da equipe</span></li>
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Evolução contínua, medida por resultado</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="arquitetura" style="padding:96px 0;background:#1A1233">
+  <div class="wrap" style="max-width:1240px;margin:0 auto;padding:0 40px;display:flex;flex-direction:column;gap:48px">
+    <div style="display:flex;flex-direction:column;gap:18px;max-width:780px">
+      <div class="pill-arq" style="display:inline-block;align-self:flex-start;width:fit-content;background:var(--accent2);color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 6px 14px -6px rgba(91,47,208,.55)">Arquitetura</div>
+      <h2 style="font-weight:800;font-size:clamp(32px,4.2vw,54px);line-height:1.08;letter-spacing:-1.5px;color:#fff;margin:0;text-wrap:balance">Um sistema que pesquisa, decide, executa e <span style="color:#B79CFF">aprende.</span></h2>
+      <p style="margin:0;font-size:18px;line-height:1.7;color:#C4BDDC;max-width:660px;text-wrap:pretty">Não é um agente solto. É uma malha de agentes especialistas orquestrados, que fecham o ciclo e melhoram com o uso, sob governança. Toque em cada etapa para ver como ela funciona por dentro.</p>
+    </div>
+    <div class="arch-table">
+        <div class="arch-row arch-head" style="background:var(--bg);border-bottom:1px solid var(--line)"><div>Etapa</div><div>O que faz</div><div>Controle</div><div>Resultado</div></div>
+        <div class="arch-row">
+          <div style="display:flex;align-items:center;gap:14px"><span style="flex:none;width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">1</span><span style="font-weight:800;font-size:20px;letter-spacing:-.4px;color:var(--ink)">Pesquisa</span></div>
+          <div><span class="arch-lbl">O que faz</span>Coleta e entende o contexto: lê documentos, sistemas e dados da operação e separa fato de suposição.</div>
+          <div><span class="arch-lbl">Controle</span>Só acessa o que foi autorizado. Toda fonte consultada fica registrada.</div>
+          <div><span class="arch-lbl">Resultado</span>Contexto organizado, com a fonte de cada informação.</div>
+        </div>
+        <div class="arch-row">
+          <div style="display:flex;align-items:center;gap:14px"><span style="flex:none;width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">2</span><span style="font-weight:800;font-size:20px;letter-spacing:-.4px;color:var(--ink)">Decisão</span></div>
+          <div><span class="arch-lbl">O que faz</span>Pondera objetivos, riscos e alternativas e explica o raciocínio por trás da recomendação.</div>
+          <div><span class="arch-lbl">Controle</span>Decisões críticas passam por aprovação de uma pessoa.</div>
+          <div><span class="arch-lbl">Resultado</span>Recomendação justificada, com o que foi descartado.</div>
+        </div>
+        <div class="arch-row">
+          <div style="display:flex;align-items:center;gap:14px"><span style="flex:none;width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">3</span><span style="font-weight:800;font-size:20px;letter-spacing:-.4px;color:var(--ink)">Execução</span></div>
+          <div><span class="arch-lbl">O que faz</span>Transforma a decisão aprovada em ação, dentro das ferramentas que a equipe já usa.</div>
+          <div><span class="arch-lbl">Controle</span>Age só dentro dos limites combinados e chama uma pessoa quando foge do padrão.</div>
+          <div><span class="arch-lbl">Resultado</span>Tarefas concluídas e registros atualizados.</div>
+        </div>
+        <div class="arch-row">
+          <div style="display:flex;align-items:center;gap:14px"><span style="flex:none;width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">4</span><span style="font-weight:800;font-size:20px;letter-spacing:-.4px;color:var(--ink)">Aprendizado</span></div>
+          <div><span class="arch-lbl">O que faz</span>Mede o resultado e devolve o que aprendeu ao ciclo, para a próxima rodada começar melhor.</div>
+          <div><span class="arch-lbl">Controle</span>Mudanças são revisadas antes de valerem para toda a operação.</div>
+          <div><span class="arch-lbl">Resultado</span>Evidências registradas e método ajustado.</div>
+        </div>
+        <div style="padding:16px 28px;background:var(--bg);border-top:1px solid var(--line);font-size:14px;color:var(--muted)">↻ O aprendizado volta para a pesquisa: cada ciclo começa mais inteligente que o anterior.</div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.12);padding-top:28px;display:flex;flex-direction:column;gap:18px">
+      <div style="font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#B79CFF">Em todas as etapas, sob governança</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px">
+        <div style="display:flex;flex-direction:column;gap:6px;padding:4px 0">
+          <div style="font-weight:700;font-size:15px;color:#fff">Trilha de auditoria</div>
+          <div style="font-size:13.5px;line-height:1.5;color:#C4BDDC">Toda ação e toda fonte ficam registradas.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;padding:4px 0">
+          <div style="font-weight:700;font-size:15px;color:#fff">Aprovação humana</div>
+          <div style="font-size:13.5px;line-height:1.5;color:#C4BDDC">Decisões críticas passam por uma pessoa.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;padding:4px 0">
+          <div style="font-weight:700;font-size:15px;color:#fff">LGPD by design</div>
+          <div style="font-size:13.5px;line-height:1.5;color:#C4BDDC">Privacidade na arquitetura, não no remendo.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;padding:4px 0">
+          <div style="font-weight:700;font-size:15px;color:#fff">Evidência, não promessa</div>
+          <div style="font-size:13.5px;line-height:1.5;color:#C4BDDC">Cada resultado é medido e guardado.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="agentes" style="padding:88px 0;background:#fff">
+  <div class="wrap" style="max-width:1240px;margin:0 auto;padding:0 40px;display:flex;flex-direction:column;gap:48px">
+    <div style="display:flex;flex-direction:column;gap:18px;max-width:780px"><div class="pill-ag" style="display:inline-block;align-self:flex-start;width:fit-content;background:var(--accent2);color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 6px 14px -6px rgba(91,47,208,.55)">Agentes prontos</div><h2 style="font-weight:800;font-size:clamp(32px,4.2vw,54px);line-height:1.08;letter-spacing:-1.5px;color:var(--ink);margin:0;text-wrap:balance">Comece por um agente pronto, <span style="color:var(--accent2)">sob medida</span> para a sua rotina.</h2><p style="margin:0;font-size:18px;line-height:1.7;color:var(--muted);max-width:660px;text-wrap:pretty">Um catálogo de agentes com escopo definido, para a conversa começar concreta. Se o seu caso foge do padrão, a gente personaliza.</p></div>
+    <div style="display:flex;flex-direction:column;gap:14px"><div style="display:flex;flex-wrap:wrap;gap:20px 24px;background:#FBFAFF;border:1px solid var(--line);border-radius:22px;padding:28px 26px;box-shadow:0 1px 3px rgba(20,16,43,.06),0 12px 28px -10px rgba(91,47,208,.2)"><div style="flex:1 1 240px;display:flex;flex-direction:column;gap:8px;padding:6px 10px"><div style="font-weight:800;font-size:clamp(40px,4.6vw,56px);line-height:1;letter-spacing:-2px;color:var(--accent2)">52%</div><div style="font-size:15.5px;line-height:1.55;color:var(--muted)">dos pequenos negócios brasileiros usaram IA nas duas semanas anteriores à pesquisa.</div></div><div style="flex:1 1 240px;display:flex;flex-direction:column;gap:8px;padding:6px 10px"><div style="font-weight:800;font-size:clamp(40px,4.6vw,56px);line-height:1;letter-spacing:-2px;color:var(--accent2)">60%</div><div style="font-size:15.5px;line-height:1.55;color:var(--muted)">pretendem adotar ou ampliar o uso de IA no próximo semestre.</div></div><div style="flex:1 1 240px;display:flex;flex-direction:column;gap:8px;padding:6px 10px"><div style="font-weight:800;font-size:clamp(40px,4.6vw,56px);line-height:1;letter-spacing:-2px;color:var(--accent2)">38%</div><div style="font-size:15.5px;line-height:1.55;color:var(--muted)">de quem não pretende adotar diz que falta conhecimento sobre o que a IA pode fazer.</div></div></div><div style="font-size:13px;line-height:1.55;color:#7A7396">Fonte: <a href="https://agenciasebrae.com.br/dados/pequenos-negocios-do-brasil-usam-mais-ia-que-os-norte-americanos-aponta-sebrae/" target="_blank" rel="noopener" style="color:var(--accent2);text-decoration:underline">Sebrae e Meta Instituto de Pesquisa, Transformação Digital nos Pequenos Negócios, 2026</a> (7.182 entrevistados: MEIs, microempresas e empresas de pequeno porte).</div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:24px"><div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28);display:flex;flex-direction:column;gap:12px"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">1</div><h3 style="font-weight:800;font-size:21px;letter-spacing:-.3px;margin:6px 0 0;color:var(--ink)">Atendimento e triagem</h3><p style="margin:0;font-size:15.5px;line-height:1.65;color:var(--muted)">Responde dúvidas, resolve o primeiro contato e encaminha para a pessoa certa.</p></div><div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28);display:flex;flex-direction:column;gap:12px"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">2</div><h3 style="font-weight:800;font-size:21px;letter-spacing:-.3px;margin:6px 0 0;color:var(--ink)">Pós-venda e follow-up</h3><p style="margin:0;font-size:15.5px;line-height:1.65;color:var(--muted)">Acompanha a base de clientes e traz de volta quem esfriou.</p></div><div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28);display:flex;flex-direction:column;gap:12px"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">3</div><h3 style="font-weight:800;font-size:21px;letter-spacing:-.3px;margin:6px 0 0;color:var(--ink)">Vendas receptivo</h3><p style="margin:0;font-size:15.5px;line-height:1.65;color:var(--muted)">Converte quem chega interessado, sem deixar lead esperando.</p></div><div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28);display:flex;flex-direction:column;gap:12px"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">4</div><h3 style="font-weight:800;font-size:21px;letter-spacing:-.3px;margin:6px 0 0;color:var(--ink)">Diagnóstico e qualificação</h3><p style="margin:0;font-size:15.5px;line-height:1.65;color:var(--muted)">Lê e qualifica cada lead que entra, antes de chegar ao seu time.</p></div><div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28);display:flex;flex-direction:column;gap:12px"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">5</div><h3 style="font-weight:800;font-size:21px;letter-spacing:-.3px;margin:6px 0 0;color:var(--ink)">Vendas ativo</h3><p style="margin:0;font-size:15.5px;line-height:1.65;color:var(--muted)">Prospecção com inteligência, e não disparo em massa.</p></div><div class="dcard" style="background:#fff;border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28);display:flex;flex-direction:column;gap:12px"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">6</div><h3 style="font-weight:800;font-size:21px;letter-spacing:-.3px;margin:6px 0 0;color:var(--ink)">Sob medida</h3><p style="margin:0;font-size:15.5px;line-height:1.65;color:var(--muted)">Um processo seu, fora dos padrões, desenhado do zero com a gente.</p></div></div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px 28px;background:#FBFAFF;border:1px solid var(--line);border-radius:22px;padding:24px 26px;box-shadow:0 1px 3px rgba(20,16,43,.06),0 12px 28px -10px rgba(91,47,208,.2)"><div style="flex:1 1 240px;display:flex;flex-direction:column;gap:6px;padding:4px 8px"><div style="font-weight:800;font-size:16.5px;color:var(--ink);letter-spacing:-.2px">Mensalidade fixa, uso medido à parte</div><div style="font-size:14.5px;line-height:1.6;color:var(--muted)">Você sabe o que paga todo mês, e o custo de uso (modelo e canal) aparece separado, sem surpresa.</div></div><div style="flex:1 1 240px;display:flex;flex-direction:column;gap:6px;padding:4px 8px"><div style="font-weight:800;font-size:16.5px;color:var(--ink);letter-spacing:-.2px">Começa pequeno, escala o que dá retorno</div><div style="font-size:14.5px;line-height:1.6;color:var(--muted)">Entra por um agente, prova o resultado e só então expande.</div></div><div style="flex:1 1 240px;display:flex;flex-direction:column;gap:6px;padding:4px 8px"><div style="font-weight:800;font-size:16.5px;color:var(--ink);letter-spacing:-.2px">Proposta em até 48 h</div><div style="font-size:14.5px;line-height:1.6;color:var(--muted)">Depois de uma conversa de 30 minutos sobre a sua rotina.</div></div></div>
+  </div>
+</section>
+<section id="monte-agente" style="padding:88px 0;background:#1A1233">
+  <div class="wrap" style="max-width:1240px;margin:0 auto;padding:0 40px;display:flex;flex-direction:column;gap:44px">
+    <div style="display:flex;flex-direction:column;gap:18px;max-width:780px">
+      <div class="pill-ag" style="display:inline-block;align-self:flex-start;width:fit-content;background:var(--accent2);color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 6px 14px -6px rgba(91,47,208,.55)">Monte o seu agente</div>
+      <h2 style="font-weight:800;font-size:clamp(32px,4.2vw,54px);line-height:1.08;letter-spacing:-1.5px;color:#fff;margin:0;text-wrap:balance">Desenhe o agente que a sua operação <span style="color:#B79CFF">precisa.</span></h2>
+      <p class="a-sub" style="margin:0;font-size:18px;line-height:1.7;color:#C4BDDC;max-width:660px;text-wrap:pretty">Em seis passos você escolhe a rotina, o jeito de falar e o que ele deve saber do seu negócio, e vê uma prévia de como ele conversaria. Sem compromisso.</p>
+    </div>
+    <div style="background:#fff;border:1px solid rgba(183,156,255,.25);border-radius:26px;padding:34px;display:flex;flex-direction:column;gap:26px;box-shadow:0 24px 60px -16px rgba(116,67,245,.5);max-width:980px">
+      <sc-if value="{{bWizard}}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)"><span>Passo {{bStepLabel}} de 6</span></div>
+          <div style="height:6px;border-radius:99px;background:#EFE9FF;overflow:hidden"><div style="height:100%;width:{{bPct}};border-radius:99px;background:linear-gradient(90deg,#8559FF,#6232E8);transition:width .3s ease"></div></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{bs1}}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <h3 style="margin:0;font-weight:800;font-size:26px;letter-spacing:-.6px;color:var(--ink)">Qual rotina ele vai assumir?</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:12px">
+            <sc-for list="{{bAgentOpts}}" as="o" hint-placeholder-count="2"><button onClick="{{o.pick}}" style="cursor:pointer;text-align:left;font-family:inherit;display:flex;flex-direction:column;gap:4px;padding:16px 18px;border-radius:14px;background:{{o.bg}};border:1.5px solid {{o.bd}}"><span style="font-weight:800;font-size:16px;color:var(--ink)">{{o.label}}</span><span style="font-size:14px;line-height:1.5;color:var(--muted)">{{o.desc}}</span></button></sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{bs2}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <h3 style="margin:0;font-weight:800;font-size:26px;letter-spacing:-.6px;color:var(--ink)">Como ele se chama e fala?</h3>
+          <div><label for="b_agname" style="display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px">Nome do agente</label><input id="b_agname" value="{{bName}}" onInput="{{onBName}}" placeholder="Ex.: Luna, Teo, Maia" maxlength="24" style="width:100%;box-sizing:border-box;background:#F6F4FD;border:1px solid rgba(91,47,208,.22);border-radius:12px;padding:14px 16px;font-family:inherit;font-size:16px;color:var(--ink);outline:0"></div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px">Tom de voz</div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px"><sc-for list="{{bToneOpts}}" as="o" hint-placeholder-count="2"><button onClick="{{o.pick}}" style="cursor:pointer;font-family:inherit;font-weight:700;font-size:15px;color:var(--ink);padding:11px 20px;border-radius:999px;background:{{o.bg}};border:1.5px solid {{o.bd}}">{{o.label}}</button></sc-for></div></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{bs3}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <h3 style="margin:0;font-weight:800;font-size:26px;letter-spacing:-.6px;color:var(--ink)">Em quais canais ele atende?</h3><p style="margin:0;font-size:15px;color:var(--muted)">Escolha quantos quiser.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px"><sc-for list="{{bChannelOpts}}" as="o" hint-placeholder-count="2"><button onClick="{{o.pick}}" style="cursor:pointer;font-family:inherit;font-weight:700;font-size:15px;color:var(--ink);padding:12px 22px;border-radius:999px;background:{{o.bg}};border:1.5px solid {{o.bd}}">{{o.label}}</button></sc-for></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{bs4}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <h3 style="margin:0;font-weight:800;font-size:26px;letter-spacing:-.6px;color:var(--ink)">Quando ele chama uma pessoa?</h3>
+          <p style="margin:0;font-size:15px;color:var(--muted)">Escolha quantas quiser. É a sua governança: o agente sabe o limite dele.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px"><sc-for list="{{bEscOpts}}" as="o" hint-placeholder-count="2"><button onClick="{{o.pick}}" style="cursor:pointer;font-family:inherit;font-weight:700;font-size:15px;color:var(--ink);padding:12px 20px;border-radius:999px;background:{{o.bg}};border:1.5px solid {{o.bd}}">{{o.label}}</button></sc-for></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{bs5}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <h3 style="margin:0;font-weight:800;font-size:26px;letter-spacing:-.6px;color:var(--ink)">Como você mede o sucesso dele?</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:10px"><sc-for list="{{bMetricOpts}}" as="o" hint-placeholder-count="2"><button onClick="{{o.pick}}" style="cursor:pointer;font-family:inherit;font-weight:700;font-size:15px;color:var(--ink);padding:12px 20px;border-radius:999px;background:{{o.bg}};border:1.5px solid {{o.bd}}">{{o.label}}</button></sc-for></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{bs6}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <h3 style="margin:0;font-weight:800;font-size:26px;letter-spacing:-.6px;color:var(--ink)">Conte um pouco do seu negócio</h3>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:var(--muted)">É com isso que o agente responde de forma inteligente. Conte sobre o negócio, sem dados pessoais de clientes.</p>
+          <div><label for="b_company" style="display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px">Nome da empresa <span style="font-weight:500;color:var(--muted)">(opcional)</span></label><input id="b_company" value="{{bCompany}}" onInput="{{onBCompany}}" maxlength="60" style="width:100%;box-sizing:border-box;background:#F6F4FD;border:1px solid rgba(91,47,208,.22);border-radius:12px;padding:13px 16px;font-family:inherit;font-size:15.5px;color:var(--ink);outline:0"></div>
+          <div><label for="b_what" style="display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px">O que a sua empresa vende ou faz?</label><input id="b_what" value="{{bWhat}}" onInput="{{onBWhat}}" maxlength="140" style="width:100%;box-sizing:border-box;background:#F6F4FD;border:1px solid rgba(91,47,208,.22);border-radius:12px;padding:13px 16px;font-family:inherit;font-size:15.5px;color:var(--ink);outline:0"></div>
+          <div><label for="b_who" style="display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px">Para quem você vende?</label><input id="b_who" value="{{bWho}}" onInput="{{onBWho}}" maxlength="140" style="width:100%;box-sizing:border-box;background:#F6F4FD;border:1px solid rgba(91,47,208,.22);border-radius:12px;padding:13px 16px;font-family:inherit;font-size:15.5px;color:var(--ink);outline:0"></div>
+          <div><label for="b_q" style="display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px">Qual a dúvida que mais chega? <span style="font-weight:500;color:var(--muted)">(opcional)</span></label><input id="b_q" value="{{bQ}}" onInput="{{onBQ}}" maxlength="160" style="width:100%;box-sizing:border-box;background:#F6F4FD;border:1px solid rgba(91,47,208,.22);border-radius:12px;padding:13px 16px;font-family:inherit;font-size:15.5px;color:var(--ink);outline:0"></div>
+          <div><label for="b_extra" style="display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px">Algo mais que ele deveria saber? <span style="font-weight:500;color:var(--muted)">(opcional)</span></label><textarea id="b_extra" value="{{bExtra}}" onInput="{{onBExtra}}" rows="3" maxlength="400" style="width:100%;box-sizing:border-box;background:#F6F4FD;border:1px solid rgba(91,47,208,.22);border-radius:12px;padding:13px 16px;font-family:inherit;font-size:15.5px;color:var(--ink);outline:0;resize:vertical"></textarea></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{bWizard}}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+          <div><sc-if value="{{bBack}}" hint-placeholder-val="{{ false }}"><button onClick="{{bGoBack}}" style="cursor:pointer;font-family:inherit;background:none;border:0;font-weight:700;font-size:14.5px;color:var(--accent2);padding:10px 4px">← Voltar</button></sc-if></div>
+          <button onClick="{{bGoNext}}" style="cursor:pointer;border:0;font-family:inherit;font-weight:700;font-size:14px;letter-spacing:.5px;text-transform:uppercase;color:#fff;padding:15px 28px;border-radius:12px;background:{{bNextBg}};box-shadow:{{bNextShadow}}">{{bNextLabel}}</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{bs7}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:26px">
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)">Ficha do seu agente</div><h3 style="margin:0;font-weight:800;font-size:28px;letter-spacing:-.7px;color:var(--ink)">Conheça o {{fName}}.</h3></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:22px;align-items:start">
+            <div style="background:#FBFAFF;border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;gap:14px"><div style="flex:none;width:52px;height:52px;border-radius:50%;background:linear-gradient(160deg,#7443F5,#5B2FD0);color:#fff;font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -4px rgba(91,47,208,.55)">{{fInitial}}</div><div><div style="font-weight:800;font-size:19px;color:var(--ink)">{{fName}}</div><div style="font-size:14px;color:var(--muted)">{{fAgent}}</div></div></div>
+              <div style="font-size:14.5px;line-height:1.6;color:var(--muted)"><b style="color:var(--ink)">Tom:</b> {{fTone}}<br><b style="color:var(--ink)">Canais:</b> {{fChannel}}<br><b style="color:var(--ink)">Chama uma pessoa quando:</b> {{fEsc}}<br><b style="color:var(--ink)">Mede sucesso por:</b> {{fMetric}}<br><b style="color:var(--ink)">Contexto:</b> {{fWhat}}, para {{fWho}}.</div>
+            </div>
+            <div style="border:1px solid rgba(91,47,208,.22);border-radius:20px;overflow:hidden;background:#F1EDFD">
+              <div style="padding:12px 16px;background:#14102b;color:#fff;font-size:13.5px;font-weight:700">{{fName}} · prévia ilustrativa</div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{bPv}}" as="m" hint-placeholder-count="2">
+                  <div style="display:flex;flex-direction:column">
+                    <sc-if value="{{m.me}}" hint-placeholder-val="{{ false }}"><div style="align-self:flex-end;max-width:82%;background:#D9FDD3;color:#14102B;padding:10px 14px;border-radius:14px 14px 4px 14px;font-size:14.5px;line-height:1.5">{{m.text}}</div></sc-if>
+                    <sc-if value="{{m.agent}}" hint-placeholder-val="{{ true }}"><div style="align-self:flex-start;max-width:88%;background:#fff;color:#14102B;padding:10px 14px;border-radius:14px 14px 14px 4px;font-size:14.5px;line-height:1.5;box-shadow:0 1px 2px rgba(20,16,43,.15)">{{m.text}}</div></sc-if>
+                  </div>
+                </sc-for>
+                <div style="margin-top:6px;background:#fff;border:1px dashed rgba(91,47,208,.4);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+                  <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)">{{bCardTitle}}</div>
+                  <sc-for list="{{bCardRows}}" as="r" hint-placeholder-count="2"><div style="font-size:14px;line-height:1.5;color:var(--muted)"><b style="color:var(--ink)">{{r.k}}:</b> {{r.v}}</div></sc-for>
+                  <div style="font-size:12.5px;line-height:1.5;color:#7A7396;border-top:1px solid rgba(91,47,208,.14);padding-top:8px">Chama uma pessoa quando: {{bEscLine}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:13px;line-height:1.55;color:#7A7396">Prévia ilustrativa, montada com as suas respostas. O agente de verdade é treinado com o seu contexto e validado com você antes de ir ao ar.</div>
+          <sc-if value="{{bNotSent}}" hint-placeholder-val="{{ true }}">
+            <div style="background:linear-gradient(135deg,#6A3BE8,#4A23BC);border-radius:20px;padding:26px;display:flex;flex-direction:column;gap:14px">
+              <div style="font-weight:800;font-size:20px;color:#fff;letter-spacing:-.3px">Gostou? Envie a ficha para a Finder e a gente conversa.</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:12px">
+                <input id="b_nome" placeholder="Seu nome" style="box-sizing:border-box;width:100%;background:#fff;border:0;border-radius:12px;padding:13px 16px;font-family:inherit;font-size:15px;color:#14102B;outline:0">
+                <input id="b_email" type="email" placeholder="Seu e-mail" style="box-sizing:border-box;width:100%;background:#fff;border:0;border-radius:12px;padding:13px 16px;font-family:inherit;font-size:15px;color:#14102B;outline:0">
+                <input id="b_empresa" placeholder="Empresa (opcional)" style="box-sizing:border-box;width:100%;background:#fff;border:0;border-radius:12px;padding:13px 16px;font-family:inherit;font-size:15px;color:#14102B;outline:0">
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center"><button onClick="{{sendAgent}}" style="cursor:pointer;border:0;font-family:inherit;font-weight:800;font-size:14px;letter-spacing:.5px;text-transform:uppercase;background:#fff;color:#14102B;padding:15px 26px;border-radius:12px;box-shadow:0 12px 24px -8px rgba(20,16,43,.5)">{{bBtnLabel}}</button><span style="font-size:14px;color:{{bStatusColor}};background:{{bStatusBg}};border-radius:8px;padding:2px 8px">{{bStatus}}</span></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{bSent}}" hint-placeholder-val="{{ false }}">
+            <div style="background:#EAF7EF;border:1px solid #BFE6CF;border-radius:16px;padding:20px 22px;color:#1F6B43;font-weight:700;font-size:16px;line-height:1.5">Ficha enviada! A Finder retorna em breve para conversar sobre o {{fName}}.</div>
+          </sc-if>
+          <div><button onClick="{{bReset}}" style="cursor:pointer;font-family:inherit;background:none;border:0;font-weight:700;font-size:14.5px;color:var(--accent2);padding:6px 2px">↻ Montar outro agente</button></div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</section>
+<section id="diferencial" style="padding:96px 0;background:var(--soft);border-top:1px solid var(--line)">
+  <div class="wrap" style="max-width:1240px;margin:0 auto;padding:0 40px;display:flex;flex-direction:column;gap:56px">
+    <div style="display:flex;flex-direction:column;gap:20px;max-width:800px;margin-top:48px">
+      <div class="pill-dif" style="display:inline-block;align-self:flex-start;width:fit-content;background:var(--accent2);color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 6px 14px -6px rgba(91,47,208,.55)">Por que é difícil de copiar</div>
+      <h2 style="font-weight:800;font-size:clamp(32px,4.2vw,54px);line-height:1.08;letter-spacing:-1.5px;color:var(--ink);margin:0;text-wrap:balance">O nosso diferencial é <span style="color:var(--accent2)">arquitetural,</span> não cosmético.</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:24px">
+<div class="dfcard" style="background:var(--card);border:1px solid var(--line);border-radius:24px;padding:32px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 3px rgba(20,16,43,.08),0 10px 24px -8px rgba(91,47,208,.18)">
+  <div class="dfbar" style="width:44px;height:5px;border-radius:99px;background:var(--accent)"></div>
+  <h3 style="font-weight:800;font-size:21px;line-height:1.25;letter-spacing:-.3px;margin:8px 0 0;color:var(--ink)">Arquitetura agêntica proprietária</h3>
+  <p style="margin:0;color:var(--muted);font-size:15.5px;line-height:1.65">Orquestrador e agentes especialistas que conduzem processos, não IA colada por cima.</p>
+</div>
+<div class="dfcard" style="background:var(--card);border:1px solid var(--line);border-radius:24px;padding:32px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 3px rgba(20,16,43,.08),0 10px 24px -8px rgba(91,47,208,.18)">
+  <div class="dfbar" style="width:44px;height:5px;border-radius:99px;background:var(--accent)"></div>
+  <h3 style="font-weight:800;font-size:21px;line-height:1.25;letter-spacing:-.3px;margin:8px 0 0;color:var(--ink)">Método e ontologia validados</h3>
+  <p style="margin:0;color:var(--muted);font-size:15.5px;line-height:1.65">Ontologia de skills e método anti-alegoria destilados de anos de operação real.</p>
+</div>
+<div class="dfcard" style="background:var(--card);border:1px solid var(--line);border-radius:24px;padding:32px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 3px rgba(20,16,43,.08),0 10px 24px -8px rgba(91,47,208,.18)">
+  <div class="dfbar" style="width:44px;height:5px;border-radius:99px;background:var(--accent)"></div>
+  <h3 style="font-weight:800;font-size:21px;line-height:1.25;letter-spacing:-.3px;margin:8px 0 0;color:var(--ink)">Nativo, com governança by design</h3>
+  <p style="margin:0;color:var(--muted);font-size:15.5px;line-height:1.65">Concebido na era dos agentes desde a primeira linha, com LGPD e auditoria na arquitetura.</p>
+</div></div>
+  </div>
+</section>
+
+<section id="para-quem" style="padding:88px 0;background:#1A1233">
+  <div class="wrap" style="max-width:1240px;margin:0 auto;padding:0 40px;display:flex;flex-direction:column;gap:48px">
+    <div style="display:flex;flex-direction:column;gap:18px;max-width:820px"><div class="pill-ag" style="display:inline-block;align-self:flex-start;width:fit-content;background:var(--accent2);color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 6px 14px -6px rgba(91,47,208,.55)">Para quem</div><h2 style="font-weight:800;font-size:clamp(32px,4.2vw,54px);line-height:1.08;letter-spacing:-1.5px;color:#fff;margin:0;text-wrap:balance">O mercado vende <span style="color:#B79CFF">velocidade.</span> Nós vendemos <span style="color:#B79CFF">inteligência.</span></h2><p style="margin:0;font-size:18px;line-height:1.7;color:#C4BDDC;max-width:660px;text-wrap:pretty">O agente não só faz mais rápido: ele devolve dado para você decidir melhor. Por isso escolhemos bem com quem trabalhar.</p></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:24px"><div style="background:#fff;border:1px solid var(--line);border-radius:24px;padding:32px;display:flex;flex-direction:column;gap:16px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28)"><div style="font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)">Foi feito para você se</div><h3 style="font-weight:800;font-size:24px;letter-spacing:-.4px;margin:0;color:var(--ink)">O alvo certo</h3><ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px"><li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Tem uma rotina repetitiva que dói: prospecção, pós-venda, atendimento ou triagem</span></li><li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Hoje alguém faz isso na mão, ou ninguém dá conta</span></li><li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Decide rápido e pensa em retorno</span></li><li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Quer começar pequeno e medir o resultado</span></li></ul></div><div style="background:#fff;border:1px solid var(--line);border-radius:24px;padding:32px;display:flex;flex-direction:column;gap:16px;box-shadow:0 1px 3px rgba(20,16,43,.1),0 8px 18px rgba(91,47,208,.12),0 22px 44px -8px rgba(91,47,208,.28)"><div style="font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9B94B8">Talvez não seja para você se</div><h3 style="font-weight:800;font-size:24px;letter-spacing:-.4px;margin:0;color:var(--ink)">Melhor ser sincero</h3><ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px"><li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:#F1EEFB;color:#9B94B8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">×</span><span>Quer “IA porque está na moda”, sem uma dor clara</span></li><li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:#F1EEFB;color:#9B94B8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">×</span><span>Depende de integração profunda com um sistema fechado de terceiros</span></li><li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:#F1EEFB;color:#9B94B8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">×</span><span>Compara só por preço com um chatbot básico</span></li><li style="display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:#F1EEFB;color:#9B94B8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">×</span><span>Precisa de um processo de compra longo e burocrático</span></li></ul></div></div>
+  </div>
+</section>
+<section id="faq" style="padding:88px 0;background:var(--bg)">
+  <div class="wrap" style="max-width:1240px;margin:0 auto;padding:0 40px;display:flex;flex-direction:column;gap:40px">
+    <div style="display:flex;flex-direction:column;gap:18px;max-width:780px"><div class="pill-ag" style="display:inline-block;align-self:flex-start;width:fit-content;background:var(--accent2);color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 6px 14px -6px rgba(91,47,208,.55)">Perguntas frequentes</div><h2 style="font-weight:800;font-size:clamp(32px,4.2vw,54px);line-height:1.08;letter-spacing:-1.5px;color:var(--ink);margin:0;text-wrap:balance">As dúvidas que <span style="color:var(--accent2)">todo mundo tem</span> antes de começar.</h2></div>
+    <div style="display:flex;flex-direction:column;gap:14px;max-width:920px"><details class="faq-i" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:0;box-shadow:0 1px 3px rgba(20,16,43,.06),0 10px 24px -12px rgba(91,47,208,.2)"><summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;font-weight:800;font-size:17.5px;line-height:1.35;letter-spacing:-.2px;color:var(--ink)"><span>Está caro. Não é melhor contratar uma pessoa?</span><span class="faq-pl" aria-hidden="true" style="flex:none;width:28px;height:28px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;line-height:1">+</span></summary><div style="padding:0 24px 22px;font-size:15.5px;line-height:1.7;color:var(--muted);max-width:820px">Uma pessoa tem encargo, rotatividade e teto de horas, e entrega só braço. O agente soma braço e inteligência (objeções, padrões, o que calibrar) a um custo que uma contratação não entrega. E você começa por um agente de entrada e mede o resultado antes de escalar.</div></details><details class="faq-i" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:0;box-shadow:0 1px 3px rgba(20,16,43,.06),0 10px 24px -12px rgba(91,47,208,.2)"><summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;font-weight:800;font-size:17.5px;line-height:1.35;letter-spacing:-.2px;color:var(--ink)"><span>Já vi ferramenta pronta por poucos reais ao mês. Qual a diferença?</span><span class="faq-pl" aria-hidden="true" style="flex:none;width:28px;height:28px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;line-height:1">+</span></summary><div style="padding:0 24px 22px;font-size:15.5px;line-height:1.7;color:var(--muted);max-width:820px">Ferramenta pronta é self-serve: você monta e mantém sozinho. A Finder entrega pronto, sob medida, e começa pela decisão que importa. São serviços diferentes, para quem quer o resultado e não mais uma tarefa.</div></details><details class="faq-i" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:0;box-shadow:0 1px 3px rgba(20,16,43,.06),0 10px 24px -12px rgba(91,47,208,.2)"><summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;font-weight:800;font-size:17.5px;line-height:1.35;letter-spacing:-.2px;color:var(--ink)"><span>E o custo de modelo de IA e de WhatsApp?</span><span class="faq-pl" aria-hidden="true" style="flex:none;width:28px;height:28px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;line-height:1">+</span></summary><div style="padding:0 24px 22px;font-size:15.5px;line-height:1.7;color:var(--muted);max-width:820px">Transparência total: a mensalidade é fixa e o uso (modelo de IA e canal) é medido à parte, sempre visível. Começamos pequeno, para você enxergar o custo real antes de crescer.</div></details><details class="faq-i" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:0;box-shadow:0 1px 3px rgba(20,16,43,.06),0 10px 24px -12px rgba(91,47,208,.2)"><summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;font-weight:800;font-size:17.5px;line-height:1.35;letter-spacing:-.2px;color:var(--ink)"><span>Não sei o que automatizar. Por onde começar?</span><span class="faq-pl" aria-hidden="true" style="flex:none;width:28px;height:28px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;line-height:1">+</span></summary><div style="padding:0 24px 22px;font-size:15.5px;line-height:1.7;color:var(--muted);max-width:820px">Pela conversa de 30 minutos. Perguntamos qual rotina ou decisão consome você hoje, com que frequência acontece, quanto custa quando atrasa ou sai errada, o que falta para acertar mais e como você mede sucesso. Dali sai o primeiro agente.</div></details><details class="faq-i" style="background:#fff;border:1px solid var(--line);border-radius:18px;padding:0;box-shadow:0 1px 3px rgba(20,16,43,.06),0 10px 24px -12px rgba(91,47,208,.2)"><summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;font-weight:800;font-size:17.5px;line-height:1.35;letter-spacing:-.2px;color:var(--ink)"><span>E se o agente errar?</span><span class="faq-pl" aria-hidden="true" style="flex:none;width:28px;height:28px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;line-height:1">+</span></summary><div style="padding:0 24px 22px;font-size:15.5px;line-height:1.7;color:var(--muted);max-width:820px">Decisões críticas passam por aprovação de uma pessoa, e toda ação e toda fonte ficam registradas. O agente chama alguém quando foge do padrão, e o resultado é medido, não presumido.</div></details></div>
+  </div>
+</section>
+<section id="proximo-passo" style="position:relative;overflow:hidden;padding:84px 0;background-color:#5B2FD0;background-image:linear-gradient(135deg,#6A3BE8,#4A23BC)">
+  <div aria-hidden="true" style="position:absolute;right:-140px;top:-120px;width:520px;height:520px;border-radius:120px;transform:rotate(18deg);background:rgba(255,255,255,.07)"></div>
+  <div aria-hidden="true" style="position:absolute;right:120px;bottom:-200px;width:380px;height:380px;border-radius:90px;transform:rotate(-12deg);background:rgba(255,255,255,.06)"></div>
+  <div class="wrap" style="position:relative;max-width:1240px;margin:0 auto;padding:0 40px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:40px 56px">
+    <div style="flex:1 1 480px;max-width:720px;display:flex;flex-direction:column;gap:22px">
+      <div class="pill-prox" style="display:inline-block;align-self:flex-start;width:fit-content;background:#1A1233;color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 6px 14px -6px rgba(26,18,51,.6)">Seu próximo passo</div>
+      <h2 style="font-weight:800;font-size:clamp(32px,4.4vw,56px);line-height:1.08;letter-spacing:-1.5px;color:#fff;margin:0;text-wrap:balance">Qual decisão está esperando <span style="color:#1A1233">por uma resposta?</span></h2>
+      <p style="margin:0;font-size:18px;line-height:1.7;color:#E6DEFF;max-width:560px;text-wrap:pretty">Marque um horário com a equipe da Finder Lab ou comece agora pelo Drigo, o nosso agente, direto no WhatsApp.</p>
+      <div style="display:flex;flex-wrap:wrap;align-items:stretch;gap:14px 16px;margin-top:6px">
+        <button class="cta-btn" onClick="{{openAgenda}}" style="cursor:pointer;border:0;font-family:inherit;display:inline-flex;align-items:center;gap:14px;background:#fff;color:#14102B;padding:12px 26px 12px 14px;border-radius:999px;text-align:left;box-shadow:0 14px 28px -8px rgba(20,16,43,.5)">
+          <span style="flex:none;width:44px;height:44px;border-radius:50%;background:#EFE9FF;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B2FD0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path><path d="M8 15h3"></path></svg></span>
+          <span style="display:flex;flex-direction:column;line-height:1.25"><span style="font-weight:800;font-size:16px">Agendar reunião</span><span style="font-size:12.5px;color:var(--muted)">Escolha um horário na agenda</span></span>
+        </button>
+        <a class="cta-btn" href="https://wa.me/551150399353" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:14px;background:#128C4A;color:#fff;padding:12px 26px 12px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.28);box-shadow:0 14px 28px -8px rgba(5,60,30,.6)">
+          <span style="flex:none;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1.3-4A8.5 8.5 0 1 1 8 18.7L4 20z"></path><path d="M9.5 9.5c.4 2 2 3.6 4 4l1.2-1.2 1.6.8c-.2 1-1 1.7-2 1.7-3 0-6-3-6-6 0-1 .7-1.8 1.7-2l.8 1.6-1.3 1.1z"></path></svg></span>
+          <span style="display:flex;flex-direction:column;line-height:1.25"><span style="font-weight:800;font-size:16px">Falar com o Drigo</span><span style="font-size:12.5px;color:#D5F5E3">Direto no WhatsApp</span></span>
+        </a>
+      </div>
+    </div>
+    <div class="prox-av" style="flex:0 1 300px;display:flex;justify-content:center">
+      <img src="/assets/site/a1098776c8b619a386c375bf383b0447.png" alt="Drigo, agente virtual da Finder Lab" style="width:280px;max-width:100%;height:auto;display:block;filter:drop-shadow(0 24px 40px rgba(20,16,43,.45))">
+    </div>
+  </div>
+</section>
+
+</main>
+
+<sc-if value="{{contactOpen}}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{closeContact}}" style="position:fixed;inset:0;z-index:100;background:rgba(20,16,43,.72);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto">
+    <div onClick="{{stop}}" style="position:relative;width:min(1020px,100%);max-height:calc(100vh - 32px);overflow-y:auto;background:var(--bg);border-radius:20px;box-shadow:0 40px 100px -10px rgba(0,0,0,.6)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 22px;background:#1A1233">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <img src="/assets/site/ba17e5fe5d7f586c4b5c649ba1c52ab0.png" alt="Finder Lab" style="height:28px;width:auto;display:block">
+          <div style="width:1px;height:24px;background:rgba(255,255,255,.2)"></div>
+          <div style="color:#fff;font-weight:800;font-size:16px;letter-spacing:-.3px">Vamos conversar sobre <span style="color:#B79CFF">o que você precisa.</span></div>
+        </div>
+        <button onClick="{{closeContact}}" aria-label="Fechar" style="cursor:pointer;border:0;flex:none;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:15px;line-height:1">✕</button>
+      </div>
+      <div class="cgrid" style="display:grid;grid-template-columns:350px 1fr;gap:16px;padding:16px">
+        <div style="background:#1A1233;border-radius:16px;padding:22px 20px;display:flex;flex-direction:column;gap:16px">
+          <div style="font-weight:800;font-size:22px;letter-spacing:-.6px;color:#fff">Fale <span style="color:#B79CFF">direto</span></div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <a class="flink" href="mailto:contato@finderlab.com.br" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;color:#fff;font-size:14px"><span style="flex:none;width:38px;height:38px;border-radius:11px;border:1px solid rgba(168,139,255,.35);background:rgba(116,67,245,.16);display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B79CFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3.5 7l8.5 6 8.5-6"></path></svg></span>contato@finderlab.com.br</a>
+            <a class="flink" href="https://www.linkedin.com/company/finderlab" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;color:#fff;font-size:14px"><span style="flex:none;width:38px;height:38px;border-radius:11px;border:1px solid rgba(168,139,255,.35);background:rgba(116,67,245,.16);display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B79CFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M8 11v5M8 8v.01M12 16v-5M12 13c0-1.5 1-2 2-2s2 .8 2 2.2V16"></path></svg></span>linkedin.com/company/finderlab</a>
+            <a class="flink" href="https://wa.me/551150399353" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;color:#fff;font-size:14px"><span style="flex:none;width:38px;height:38px;border-radius:11px;border:1px solid rgba(168,139,255,.35);background:rgba(116,67,245,.16);display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B79CFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1.3-4A8.5 8.5 0 1 1 8 18.7L4 20z"></path><path d="M9.5 9.5c.4 2 2 3.6 4 4l1.2-1.2 1.6.8c-.2 1-1 1.7-2 1.7-3 0-6-3-6-6 0-1 .7-1.8 1.7-2l.8 1.6-1.3 1.1z"></path></svg></span>WhatsApp (11) 5039-9353</a>
+          </div>
+          <div style="margin-top:auto;border:1px solid rgba(168,139,255,.3);background:rgba(116,67,245,.12);border-radius:12px;padding:12px 14px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#B79CFF;margin-bottom:5px">Contato comercial</div>
+            <div style="font-size:12.5px;line-height:1.5;color:#C4BDDC">Para projetos, produtos e parcerias. Não envie exames nem informações de saúde por aqui.</div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:10px">
+          <div><label for="f_interesse" style="display:block;font-size:12.5px;font-weight:700;color:#14102B;margin-bottom:4px">Como podemos ajudar?</label><select id="f_interesse" onChange="{{onInteresse}}" style="width:100%;background:#F6F4FD;border:1px solid rgba(91,47,208,.2);border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;color:#14102B;outline:0"><option value="">Selecione um assunto</option><option value="Aplicar IA na minha operação">Aplicar IA na minha operação</option><option value="Zelus">Zelus · escolher produto</option><option value="EDI VITA">EDI VITA · gestão condominial</option><option value="Anchora">Anchora</option><option value="Famulus">Famulus</option><option value="Outros produtos">Outros produtos</option><option value="Parcerias e projetos">Parcerias e projetos</option></select></div>
+          <sc-if value="{{showZelus}}" hint-placeholder-val="{{ false }}">
+            <div><label for="f_zelus" style="display:block;font-size:12.5px;font-weight:700;color:#14102B;margin-bottom:4px">Sobre qual produto Zelus?</label><select id="f_zelus" style="width:100%;background:#F6F4FD;border:1px solid rgba(91,47,208,.2);border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;color:#14102B;outline:0"><option value="">Selecione</option><option value="Zelus Health">Zelus Health</option><option value="Zelus Pet">Zelus Pet</option><option value="Zelus Health e Zelus Pet">Ambos</option><option value="Zelus - ainda não sei">Ainda não sei</option></select></div>
+          </sc-if>
+          <div class="crow" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><label for="f_nome" style="display:block;font-size:12.5px;font-weight:700;color:#14102B;margin-bottom:4px">Nome</label><input id="f_nome" autocomplete="name" style="width:100%;background:#F6F4FD;border:1px solid rgba(91,47,208,.2);border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;color:#14102B;outline:0"></div>
+            <div><label for="f_email" style="display:block;font-size:12.5px;font-weight:700;color:#14102B;margin-bottom:4px">E-mail</label><input id="f_email" type="email" autocomplete="email" style="width:100%;background:#F6F4FD;border:1px solid rgba(91,47,208,.2);border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;color:#14102B;outline:0"></div>
+          </div>
+          <div><label for="f_empresa" style="display:block;font-size:12.5px;font-weight:700;color:#14102B;margin-bottom:4px">Empresa</label><input id="f_empresa" autocomplete="organization" style="width:100%;background:#F6F4FD;border:1px solid rgba(91,47,208,.2);border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;color:#14102B;outline:0"></div>
+          <div><label for="f_msg" style="display:block;font-size:12.5px;font-weight:700;color:#14102B;margin-bottom:4px">Conte o que você precisa</label><textarea id="f_msg" rows="3" style="width:100%;background:#F6F4FD;border:1px solid rgba(91,47,208,.2);border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;color:#14102B;outline:0;resize:none"></textarea></div>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px">
+            <button onClick="{{sendContact}}" class="cta-btn" style="cursor:pointer;border:0;font-family:inherit;background:var(--accent);background-image:linear-gradient(160deg,#8559FF,#6232E8);color:#fff;font-weight:700;font-size:14px;padding:12px 26px;border-radius:999px;box-shadow:0 10px 22px -6px rgba(116,67,245,.6)">{{btnLabel}}</button>
+            <p role="status" aria-live="polite" style="margin:0;flex:1 1 200px;font-size:12.5px;line-height:1.4;color:{{statusColor}}">{{statusText}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<footer style="position:relative;overflow:hidden;background:#0D0A1A;color:#E6DEFF">
+  <div aria-hidden="true" style="position:absolute;left:50%;top:-180px;width:900px;height:420px;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(116,67,245,.28),transparent)"></div>
+  <div class="wrap" style="position:relative;max-width:1240px;margin:0 auto;padding:72px 40px 0">
+    <div class="foot-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:48px 40px">
+      <div style="grid-column:span 1;min-width:240px;display:flex;flex-direction:column;gap:22px;align-items:flex-start">
+        <img src="/assets/site/ba17e5fe5d7f586c4b5c649ba1c52ab0.png" alt="Finder Lab" style="height:40px;width:auto;display:block">
+        <p style="margin:0;font-size:15.5px;line-height:1.65;color:#C4BDDC;max-width:340px">Applied Intelligence Lab. Pesquisa que vira sistema, para decisões e operações que não podem esperar.</p>
+        <button class="cta-btn" onClick="{{openAgenda}}" style="cursor:pointer;border:0;font-family:inherit;background:var(--accent);background-image:linear-gradient(160deg,#8559FF,#6232E8);color:#fff;font-weight:700;font-size:14px;letter-spacing:.5px;text-transform:uppercase;padding:15px 26px;border-radius:12px;box-shadow:0 12px 26px -6px rgba(116,67,245,.65)">Agendar reunião →</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px"><div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#A88BFF;margin-bottom:6px">Navegação</div><a class="flink" href="#desafios" style="color:#E6DEFF;font-size:15.5px">Desafios</a><a class="flink" href="#metodo" style="color:#E6DEFF;font-size:15.5px">Método</a><a class="flink" href="#entregaveis" style="color:#E6DEFF;font-size:15.5px">Entregas</a><a class="flink" href="#arquitetura" style="color:#E6DEFF;font-size:15.5px">Arquitetura</a><a class="flink" href="#diferencial" style="color:#E6DEFF;font-size:15.5px">Diferencial</a></div>
+      <div style="display:flex;flex-direction:column;gap:12px"><div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#A88BFF;margin-bottom:6px">Sistemas</div><a class="flink" href="https://finderlab.com.br/anchora.html" target="_blank" rel="noopener" style="color:#E6DEFF;font-size:15.5px">Anchora</a><a class="flink" href="https://www.zelus-health.com.br/" target="_blank" rel="noopener" style="color:#E6DEFF;font-size:15.5px">Zelus Health</a><a class="flink" href="https://zelus-pet.ia.br/" target="_blank" rel="noopener" style="color:#E6DEFF;font-size:15.5px">Zelus Pet</a><a class="flink" href="https://www.edivita.com.br/" target="_blank" rel="noopener" style="color:#E6DEFF;font-size:15.5px">Edi Vita</a><a class="flink" href="https://finderlab.com.br/famulus.html" target="_blank" rel="noopener" style="color:#E6DEFF;font-size:15.5px">Famulus</a></div>
+      <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start"><div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#A88BFF;margin-bottom:6px">Contato</div>
+        <p style="margin:0;font-size:15px;line-height:1.6;color:#C4BDDC">Quer conversar sobre a sua operação?</p>
+        <a class="flink" href="mailto:contato@finderlab.com.br" style="color:#fff;font-size:14.5px">contato@finderlab.com.br</a>
+        <button class="flink" onClick="{{openContact}}" style="cursor:pointer;background:none;border:0;padding:0;font-family:inherit;color:#B79CFF;font-size:14.5px;font-weight:700;text-decoration:underline;text-underline-offset:4px">Enviar uma mensagem →</button>
+        <a class="flink" href="https://wa.me/551150399353" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:12px;color:#fff;font-size:14.5px;font-weight:700"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A88BFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1.3-4A8.5 8.5 0 1 1 8 18.7L4 20z"></path><path d="M9.5 9.5c.4 2 2 3.6 4 4l1.2-1.2 1.6.8c-.2 1-1 1.7-2 1.7-3 0-6-3-6-6 0-1 .7-1.8 1.7-2l.8 1.6-1.3 1.1z"></path></svg>WhatsApp (11) 5039-9353</a>
+        <div style="display:flex;gap:12px;margin-top:8px"><a class="flink-ic" href="[INSTAGRAM]" aria-label="Instagram" target="_blank" rel="noopener" style="width:44px;height:44px;border-radius:12px;border:1px solid rgba(168,139,255,.35);background:rgba(116,67,245,.12);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r=".6"></circle></svg></a><a class="flink-ic" href="https://wa.me/551150399353" aria-label="WhatsApp do Drigo" target="_blank" rel="noopener" style="width:44px;height:44px;border-radius:12px;border:1px solid rgba(168,139,255,.35);background:rgba(116,67,245,.12);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1.3-4A8.5 8.5 0 1 1 8 18.7L4 20z"></path><path d="M9.5 9.5c.4 2 2 3.6 4 4l1.2-1.2 1.6.8c-.2 1-1 1.7-2 1.7-3 0-6-3-6-6 0-1 .7-1.8 1.7-2l.8 1.6-1.3 1.1z"></path></svg></a><a class="flink-ic" href="[LINKEDIN]" aria-label="LinkedIn" target="_blank" rel="noopener" style="width:44px;height:44px;border-radius:12px;border:1px solid rgba(168,139,255,.35);background:rgba(116,67,245,.12);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M8 11v5M8 8v.01M12 16v-5M12 13c0-1.5 1-2 2-2s2 .8 2 2.2V16"></path></svg></a></div>
+      </div>
+    </div>
+    <div class="foot-bar" style="margin-top:56px;border-top:1px solid rgba(255,255,255,.1);padding:26px 0 40px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;font-size:13px;line-height:1.6;color:#9C95B8">
+      <div>© 2026 Finder Lab. Todos os direitos reservados.<br>FINDER CONSULTORIA EM TI LTDA · CNPJ 53.291.349/0001-96</div>
+      <div class="foot-r" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap"><div class="foot-legal" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap"><span>LGPD by design</span><button class="flink" onClick="{{tab_privacidade}}" style="cursor:pointer;background:none;border:0;padding:0;font-family:inherit;font-size:13px;color:#E6DEFF">Privacidade</button><button class="flink" onClick="{{tab_termos}}" style="cursor:pointer;background:none;border:0;padding:0;font-family:inherit;font-size:13px;color:#E6DEFF">Termos</button><button class="flink" onClick="{{tab_cookies}}" style="cursor:pointer;background:none;border:0;padding:0;font-family:inherit;font-size:13px;color:#E6DEFF">Cookies</button></div><a class="flink foot-top" href="#topo" style="color:#E6DEFF">Voltar ao topo ↑</a></div>
+    </div>
+  </div>
+  <div aria-hidden="true" style="position:relative;height:150px;overflow:hidden;text-align:center;font-weight:800;font-size:clamp(110px,18vw,260px);line-height:1;letter-spacing:-6px;color:rgba(116,67,245,.12);white-space:nowrap;user-select:none">Finder Lab</div>
 </footer>
-<script src="assets/site-language.js?v=20260924es" defer></script>
-<script src="assets/motion.js" defer></script><script src="assets/language-segmented.js" defer></script></body></html>
+<sc-if value="{{agendaOpen}}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{closeAgenda}}" style="position:fixed;inset:0;z-index:100;background:rgba(20,16,43,.72);display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto">
+    <div onClick="{{stop}}" style="position:relative;width:min(1060px,100%);max-height:94vh;background:#fff;border-radius:24px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 40px 100px -10px rgba(0,0,0,.6)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 28px;background:#1A1233">
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <img src="/assets/site/ba17e5fe5d7f586c4b5c649ba1c52ab0.png" alt="Finder Lab" style="height:34px;width:auto;display:block">
+          <div style="width:1px;height:28px;background:rgba(255,255,255,.2)"></div>
+          <div style="color:#fff"><div style="font-weight:800;font-size:18px;letter-spacing:-.3px">Vamos conversar sobre a <span style="color:#B79CFF">sua decisão.</span></div><div style="font-size:13px;color:#C4BDDC">Conversa online com a equipe da Finder Lab</div></div>
+        </div>
+        <button onClick="{{closeAgenda}}" aria-label="Fechar" style="cursor:pointer;border:0;flex:none;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:18px;line-height:1">✕</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;flex:1;min-height:0;overflow-y:auto">
+        <div style="flex:1 1 300px;max-width:340px;background:var(--bg);padding:30px 28px;display:flex;flex-direction:column;gap:18px;border-right:1px solid var(--line)">
+          <div style="display:inline-block;align-self:flex-start;background:var(--accent2);color:#fff;padding:7px 14px;border-radius:999px;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase">Por que conversar</div>
+          <div style="font-weight:800;font-size:22px;line-height:1.25;letter-spacing:-.4px;color:var(--ink)">Uma conversa para achar por onde começar.</div>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px"><li style="display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Entender a decisão que mais pesa no seu negócio hoje</span></li><li style="display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Mapear onde a inteligência artificial pode ajudar primeiro</span></li><li style="display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:1.55;color:var(--muted)"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(116,67,245,.14);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:2px">✓</span><span>Sair com os primeiros caminhos para o seu caso, sem compromisso</span></li></ul>
+          <div style="margin-top:auto;padding:14px 16px;border-radius:14px;background:#fff;border:1px solid var(--line);font-size:13.5px;line-height:1.55;color:var(--muted)"><strong style="color:var(--ink)">Para aproveitar melhor:</strong> pense em uma decisão ou rotina que hoje consome o seu tempo.</div>
+        </div>
+        <div style="flex:2 1 520px;min-width:0;display:flex;flex-direction:column;min-height:560px">
+          <iframe src="https://cal.com/rodrigomoraes/diagnostico?embed=true&amp;theme=light" title="Agenda" style="flex:1;width:100%;min-height:520px;border:0;background:#fff"></iframe>
+          <div style="padding:12px 20px;text-align:center;font-size:13px;color:var(--muted);border-top:1px solid var(--line)">Prefere abrir em outra aba? <a href="https://cal.com/rodrigomoraes/diagnostico" target="_blank" rel="noopener" style="color:var(--accent2);text-decoration:underline;font-weight:600">Abrir agenda</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{legalOpen}}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{closeLegal}}" style="position:fixed;inset:0;z-index:110;background:rgba(20,16,43,.72);display:flex;align-items:center;justify-content:center;padding:16px">
+    <div onClick="{{stop}}" style="position:relative;width:min(900px,100%);height:calc(100vh - 32px);display:flex;flex-direction:column;background:var(--bg);border-radius:20px;box-shadow:0 40px 100px -10px rgba(0,0,0,.6);overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 22px;background:#1A1233;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <img src="/assets/site/ba17e5fe5d7f586c4b5c649ba1c52ab0.png" alt="Finder Lab" style="height:28px;width:auto;display:block">
+          <div style="width:1px;height:24px;background:rgba(255,255,255,.2)"></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap"><button onClick="{{tab_privacidade}}" style="cursor:pointer;border:0;font-family:inherit;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;background:{{bg_privacidade}};color:{{fg_privacidade}}">Privacidade</button><button onClick="{{tab_termos}}" style="cursor:pointer;border:0;font-family:inherit;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;background:{{bg_termos}};color:{{fg_termos}}">Termos</button><button onClick="{{tab_cookies}}" style="cursor:pointer;border:0;font-family:inherit;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;background:{{bg_cookies}};color:{{fg_cookies}}">Cookies</button></div>
+        </div>
+        <button onClick="{{closeLegal}}" aria-label="Fechar" style="cursor:pointer;border:0;flex:none;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:15px;line-height:1">✕</button>
+      </div>
+      <div style="flex:1;overflow-y:auto">
+      <sc-if value="{{legal_privacidade}}" hint-placeholder-val="{{ true }}">
+        <div style="padding:26px 30px 34px;display:flex;flex-direction:column;gap:18px;max-width:820px;margin:0 auto">
+          <div style="font-weight:800;font-size:28px;letter-spacing:-1px;color:var(--ink)">Política de <span style="color:#B79CFF">Privacidade</span></div>
+          <div style="font-size:12.5px;color:#7C7696">Vigência: 16 de outubro de 2026 · FINDER CONSULTORIA EM TI LTDA</div>
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">1.</span> Quem somos e a quem este texto se aplica</div><div style="font-size:14px;line-height:1.7;color:#4A4466">A Finder Lab é a marca da FINDER CONSULTORIA EM TI LTDA (CNPJ 53.291.349/0001-96), laboratório de inteligência aplicada que transforma pesquisa em sistemas (Anchora, Zelus Health, Zelus Pet, Edi Vita e Famulus). Esta política explica como tratamos dados pessoais de quem visita finderlab.com.br, fala com a gente por formulário, e-mail, WhatsApp ou agenda uma reunião. Ela não substitui os contratos e avisos específicos de cada projeto ou sistema.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">2.</span> Dados que coletamos</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Dados que você nos informa: nome, e-mail, empresa, interesse, mensagem e, se quiser, telefone ou perfil profissional, ao usar o formulário de contato, o agendamento ou o chat com o Drigo. Dados de contato e conversa: o que você escrever por e-mail ou WhatsApp. Dados técnicos e de navegação: endereço IP, tipo de navegador e dispositivo, páginas acessadas e origem do acesso, gerados pela conexão, pela hospedagem e pelo Google Analytics. Não pedimos documentos, exames nem informações de saúde por este site (veja a seção 7).</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">3.</span> Para que usamos</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Responder à sua mensagem e avaliar se podemos ajudar; agendar e conduzir reuniões e diagnósticos; enviar propostas e acompanhar a conversa comercial; manter o site seguro e funcionando; cumprir obrigações legais e regulatórias; e exercer direitos em eventuais disputas. Não vendemos dados pessoais e não os usamos para publicidade de terceiros.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">4.</span> Bases legais (LGPD)</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Tratamos dados com base em: execução de procedimentos preliminares a um contrato, quando você pede contato ou proposta; legítimo interesse, para operar e proteger o site e responder a contatos profissionais; cumprimento de obrigação legal ou regulatória; exercício regular de direitos; e consentimento, nos casos em que ele for necessário, que pode ser retirado a qualquer momento.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">5.</span> Com quem compartilhamos</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Apenas com prestadores necessários para operar o site e o atendimento: o serviço que entrega as mensagens do formulário (Web3Forms), a agenda de reuniões (Cal.com), a hospedagem do site, o Google Analytics (métricas de audiência do site), o WhatsApp para conversas iniciadas por você e os provedores de e-mail que usamos. Também podemos compartilhar com autoridades quando houver exigência legal. Esses prestadores tratam os dados conforme nossas instruções e as próprias políticas. Alguns podem estar fora do Brasil; nesses casos, buscamos salvaguardas adequadas, como previsto na LGPD.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">6.</span> Por quanto tempo guardamos</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Mantemos os dados pelo tempo necessário para cumprir as finalidades acima. Contatos sem andamento comercial são eliminados ou anonimizados em prazo razoável [PRAZO A DEFINIR]; dados ligados a contratos e obrigações fiscais seguem os prazos legais.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">7.</span> Dados de saúde e dados de clientes</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Por este site, pedimos que você não envie exames, laudos, prontuários ou outras informações sensíveis de saúde. Nos projetos e sistemas que desenvolvemos (como o Zelus Health), a Finder Lab normalmente atua como operadora, tratando dados em nome do cliente, que é o controlador, conforme contrato e instruções dele. Nesses casos, quem responde às solicitações de titulares é o controlador, e nós o apoiamos no que for necessário.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">8.</span> Segurança</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Adotamos medidas técnicas e organizacionais proporcionais ao risco: conexão criptografada (HTTPS), controle de acesso, registro de atividades e privacidade pensada desde a arquitetura dos sistemas. Nenhum ambiente é totalmente livre de risco; em caso de incidente relevante, comunicaremos as pessoas e a ANPD quando a lei exigir.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">9.</span> Seus direitos</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Pela LGPD, você pode pedir confirmação de que tratamos seus dados, acesso, correção, anonimização, bloqueio ou eliminação de dados desnecessários, portabilidade, informação sobre compartilhamentos, revogação de consentimento e revisão de decisões automatizadas. Para exercer qualquer um deles, escreva para dpo@finderlab.com.br. Podemos pedir informações para confirmar a sua identidade. Você também pode reclamar à ANPD (gov.br/anpd).</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">10.</span> Cookies</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Explicamos como usamos cookies e tecnologias semelhantes na Política de Cookies.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">11.</span> Encarregado e contato</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Encarregado pelo tratamento de dados (DPO): dpo@finderlab.com.br. Controladora: FINDER CONSULTORIA EM TI LTDA, CNPJ 53.291.349/0001-96, Rua Custódio Serrão, 712, Vila Jaguara, São Paulo/SP, CEP 05116-011. WhatsApp: (11) 5039-9353.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">12.</span> Atualizações</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Podemos atualizar esta política para refletir mudanças no site, nos serviços ou na lei. A data de vigência fica no topo e mudanças relevantes serão destacadas aqui.</div></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{legal_termos}}" hint-placeholder-val="{{ false }}">
+        <div style="padding:26px 30px 34px;display:flex;flex-direction:column;gap:18px;max-width:820px;margin:0 auto">
+          <div style="font-weight:800;font-size:28px;letter-spacing:-1px;color:var(--ink)">Termos de <span style="color:#B79CFF">Uso</span></div>
+          <div style="font-size:12.5px;color:#7C7696">Vigência: 16 de outubro de 2026 · FINDER CONSULTORIA EM TI LTDA</div>
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">1.</span> Aceitação</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Ao acessar finderlab.com.br você concorda com estes termos. Se não concordar, por favor não utilize o site. Eles valem para o site institucional; serviços e sistemas contratados seguem contrato próprio, que prevalece em caso de conflito.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">2.</span> O que é o site</div><div style="font-size:14px;line-height:1.7;color:#4A4466">O site apresenta a Finder Lab, seu método, entregas e sistemas, e oferece canais de contato: formulário, agenda de reuniões, WhatsApp e o chat com o Drigo. O conteúdo tem caráter informativo e não constitui proposta comercial, promessa de resultado nem consultoria profissional.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">3.</span> O Drigo e as respostas automáticas</div><div style="font-size:14px;line-height:1.7;color:#4A4466">O Drigo é um assistente que ajuda a orientar o primeiro contato e a organizar o seu desafio. Suas respostas são geradas ou roteirizadas automaticamente, podem conter imprecisões e não substituem análise profissional, orientação médica, jurídica ou financeira. Para decisões importantes, converse com a nossa equipe.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">4.</span> Uso permitido</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Você se compromete a usar o site de forma lícita e de boa-fé, fornecendo informações verdadeiras. É proibido tentar acessar áreas restritas, interferir no funcionamento ou na segurança do site, usar robôs para coleta em massa de conteúdo, enviar spam ou conteúdo ilícito, ofensivo ou que viole direitos de terceiros.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">5.</span> Informações sensíveis</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Não envie pelo site, e-mail ou chat dados de saúde, documentos pessoais, senhas ou informações confidenciais de terceiros. Se algo assim for necessário em um projeto, combinaremos o canal adequado e as proteções por contrato.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">6.</span> Propriedade intelectual</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Marcas, logotipos, textos, layout, imagens, métodos e sistemas apresentados (incluindo Finder Lab, Drigo, Anchora, Zelus, Edi Vita e Famulus) pertencem à Finder Lab ou a seus licenciantes. É permitido compartilhar links e citar trechos com crédito; qualquer outro uso exige autorização prévia por escrito.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">7.</span> Links e serviços de terceiros</div><div style="font-size:14px;line-height:1.7;color:#4A4466">O site pode usar ou apontar para serviços externos (como agenda, WhatsApp e redes sociais). Eles têm termos e políticas próprios, e não somos responsáveis pelo seu conteúdo ou funcionamento.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">8.</span> Disponibilidade e responsabilidade</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Buscamos manter o site disponível e correto, mas ele é oferecido no estado em que se encontra, sem garantia de funcionamento ininterrupto ou livre de erros. Na extensão permitida pela lei, a Finder Lab não responde por danos indiretos decorrentes do uso do site ou da confiança em seu conteúdo. Isso não afasta responsabilidades que a lei não permite limitar.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">9.</span> Privacidade e cookies</div><div style="font-size:14px;line-height:1.7;color:#4A4466">O tratamento de dados pessoais é descrito na Política de Privacidade e na Política de Cookies, que fazem parte destes termos.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">10.</span> Alterações</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Podemos atualizar estes termos a qualquer momento. A versão vigente é sempre a publicada no site, com a data no topo.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">11.</span> Lei e foro</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Estes termos são regidos pelas leis do Brasil. Fica eleito o foro da comarca de São Paulo/SP, salvo regra legal que determine outro foro, como a proteção do consumidor.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">12.</span> Contato</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Dúvidas sobre estes termos: contato@finderlab.com.br ou WhatsApp (11) 5039-9353. FINDER CONSULTORIA EM TI LTDA · CNPJ 53.291.349/0001-96.</div></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{legal_cookies}}" hint-placeholder-val="{{ false }}">
+        <div style="padding:26px 30px 34px;display:flex;flex-direction:column;gap:18px;max-width:820px;margin:0 auto">
+          <div style="font-weight:800;font-size:28px;letter-spacing:-1px;color:var(--ink)">Política de <span style="color:#B79CFF">Cookies</span></div>
+          <div style="font-size:12.5px;color:#7C7696">Vigência: 16 de outubro de 2026 · FINDER CONSULTORIA EM TI LTDA</div>
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">1.</span> O que são cookies</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Cookies são pequenos arquivos que o navegador guarda quando você visita um site. Tecnologias parecidas, como armazenamento local, cumprem funções semelhantes. Aqui chamamos tudo isso de cookies.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">2.</span> Como usamos</div><div style="font-size:14px;line-height:1.7;color:#4A4466">O site da Finder Lab foi pensado para usar o mínimo possível: não usamos cookies de publicidade nem vendemos perfis de navegação. Utilizamos cookies técnicos, necessários para o site carregar e manter a segurança, e cookies de métricas de audiência (Google Analytics), descritos abaixo.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">3.</span> Serviços de terceiros incorporados</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Alguns recursos carregam conteúdo de terceiros, que podem definir seus próprios cookies quando você os usa: a agenda de reuniões (Cal.com), o envio do formulário (Web3Forms), as fontes tipográficas (Google Fonts), o WhatsApp e os links para redes sociais. Essas empresas têm políticas próprias, que recomendamos consultar.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">4.</span> Métricas de uso</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Usamos o Google Analytics, do Google, para entender de forma agregada como o site é acessado: páginas visitadas, tempo de navegação, origem do acesso, tipo de dispositivo e navegador, e localização aproximada. Ele define cookies próprios e envia essas informações ao Google. Usamos esses dados apenas para melhorar o site e a comunicação, não para identificar você nem para vender perfis. Você pode recusar ou desativar esse monitoramento nas configurações do navegador ou com o complemento oficial de desativação do Google Analytics (tools.google.com/dlpage/gaoptout).</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">5.</span> Como gerenciar</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Você pode apagar ou bloquear cookies nas configurações do seu navegador (Chrome, Safari, Firefox, Edge e outros). Bloquear cookies técnicos pode afetar alguns recursos do site, como a agenda e o formulário.</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:800;font-size:15.5px;color:var(--ink);letter-spacing:-.2px"><span style="color:var(--accent2)">6.</span> Mais informações</div><div style="font-size:14px;line-height:1.7;color:#4A4466">Veja também a Política de Privacidade. Dúvidas: contato@finderlab.com.br.</div></div>
+        </div>
+      </sc-if>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<a class="drigo-fab" href="https://wa.me/551150399353?text=Oi%2C%20Drigo!%20Vim%20pelo%20site%20da%20Finder%20Lab." target="_blank" rel="noopener" aria-label="Falar com o Drigo no WhatsApp" style="position:fixed;right:24px;bottom:24px;z-index:90;width:82px;height:82px;border-radius:50%;display:block;background:none;filter:drop-shadow(0 8px 14px rgba(18,140,74,.45))">
+  <svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true" style="position:absolute;inset:0"><path d="M32 8.5A23.5 23.5 0 0 0 11.6 43.6L8.5 55.5l12.2-3.2A23.5 23.5 0 1 0 32 8.5z" fill="#25D366" stroke="#fff" stroke-width="4.2" stroke-linejoin="round"/></svg>
+  <span style="position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;overflow:hidden;background:#25D366;display:block"><img src="/assets/site/d0c4c1da3570f7fb59588cd4cec11860.png" alt="" style="position:absolute;left:50%;top:50%;width:45px;height:45px;margin:-22.5px 0 0 -22.5px;object-fit:contain;display:block"></span>
+</a>
+</div>
+<helmet><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap"></helmet></x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#7443F5","options":["#7443F5","#2F6BFF","#0FA37F","#E0527A"]},"$preview":{"width":1440,"height":13000}}'>
+const INTRO = 'Oi, tudo bem? Eu sou o Drigo. Bora fazer um diagnóstico rápido da decisão que mais pesa pra você no negócio agora? Escreva a sua abaixo.';
+const CHIPS = [
+  { label: 'Contratar mais gente ou automatizar?', intro: 'Dá para olhar isso por quatro ângulos:', parts: [
+    { label: 'Em jogo', text: 'Crescer a capacidade sem inchar o custo fixo.' },
+    { label: 'A favor', text: 'Automatizar o repetitivo libera o time para decidir.' },
+    { label: 'Contra', text: 'Automação sem processo claro só acelera o erro.' },
+    { label: 'Próximo passo', text: 'Mapear as três tarefas que mais consomem horas e medir o resultado, não a atividade.' } ] },
+  { label: 'Vale investir em IA agora?', intro: 'Vamos separar o que é aposta do que é evidência:', parts: [
+    { label: 'Em jogo', text: 'Ganho de produtividade contra custo e risco de errar a aposta.' },
+    { label: 'A favor', text: 'O custo de testar caiu e dá para começar pequeno.' },
+    { label: 'Contra', text: 'IA sem dado organizado e sem dono vira experimento sem fim.' },
+    { label: 'Próximo passo', text: 'Escolher um processo, definir a métrica de resultado e rodar um piloto curto.' } ] },
+  { label: 'Lançar um produto novo?', intro: 'Antes de construir, olha isto:', parts: [
+    { label: 'Em jogo', text: 'Tempo e caixa investidos numa hipótese ainda não validada.' },
+    { label: 'A favor', text: 'Demanda observada em clientes reais.' },
+    { label: 'Contra', text: 'Construir antes de validar custa mais do que perguntar.' },
+    { label: 'Próximo passo', text: 'Validar com cinco clientes antes de escrever a primeira linha.' } ] },
+  { label: 'Como organizar a operação?', intro: 'Costuma doer em um fluxo específico. Minha leitura inicial:', parts: [
+    { label: 'Em jogo', text: 'Dependência de pessoas-chave e retrabalho.' },
+    { label: 'A favor', text: 'Processo claro reduz erro e facilita delegar.' },
+    { label: 'Contra', text: 'Processo demais engessa, e sem medir ninguém sabe se melhorou.' },
+    { label: 'Próximo passo', text: 'Documentar o fluxo que mais dói e definir um indicador de resultado.' } ] }
+];
+const B_AGENTS = [
+  { id: 'atend', label: 'Atendimento e triagem', desc: 'Responde dúvidas e resolve o primeiro contato.' },
+  { id: 'pos', label: 'Pós-venda e follow-up', desc: 'Acompanha a base de clientes e traz de volta quem esfriou.' },
+  { id: 'rec', label: 'Vendas receptivo', desc: 'Converte quem chega interessado.' },
+  { id: 'diag', label: 'Diagnóstico e qualificação', desc: 'Lê e qualifica cada lead que entra.' },
+  { id: 'ativo', label: 'Vendas ativo', desc: 'Prospecção com inteligência, sem disparo em massa.' },
+  { id: 'custom', label: 'Sob medida', desc: 'Um processo seu, fora dos padrões.' }
+];
+const B_TONES = [
+  { id: 'Direto', open: 'Oi! Vou direto ao ponto.' },
+  { id: 'Acolhedor', open: 'Oi, que bom falar com você!' },
+  { id: 'Consultivo', open: 'Olá! Para te orientar bem, deixa eu entender o seu caso.' },
+  { id: 'Descontraído', open: 'E aí! Bora resolver isso?' }
+];
+const B_CHANNELS = ['WhatsApp', 'Site', 'E-mail'];
+const B_ESC = ['Cliente insatisfeito ou reclamação', 'Pedido fora do padrão', 'Decisão de preço ou desconto', 'Dúvida que o agente não sabe responder', 'Sempre que o cliente pedir uma pessoa'];
+const B_METRICS = ['Tempo de resposta', 'Leads qualificados', 'Vendas fechadas', 'Horas liberadas do time', 'Satisfação do cliente'];
+const freshB = () => ({ step: 1, agent: '', name: '', tone: '', channel: [], esc: [], metric: '', company: '', what: '', who: '', q: '', extra: '', sending: false, sent: false, status: '', statusColor: '#7C7696' });
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { b: freshB(), msgs: [{ me: false, drigo: true, text: INTRO, parts: [] }], typing: false, draft: '', agenda: false, contact: false, sysMenu: false, legal: '', zelus: false, sending: false, statusText: 'Retornamos após analisar a sua mensagem.', statusColor: '#7C7696' };
+  }
+  ask(c) {
+    if (this.state.typing) return;
+    this.setState({ msgs: [...this.state.msgs, { me: true, drigo: false, text: c.label, parts: [] }], typing: true });
+    setTimeout(() => {
+      this.setState({ msgs: [...this.state.msgs, { me: false, drigo: true, text: c.intro, parts: c.parts }], typing: false });
+    }, 1200);
+  }
+  say(text, intro, parts) {
+    this.setState({ msgs: [...this.state.msgs, { me: false, drigo: true, text: intro, parts: parts }], typing: false });
+  }
+  send() {
+    const t = (this.state.draft || '').trim();
+    if (!t || this.state.typing) return;
+    const low = t.toLowerCase();
+    const KEYS = [['contrat|equipe|time|gente|automat|pessoa', 0], ['ia |inteligência|investir|ai ', 1], ['produto|lançar|lancar|ideia', 2], ['operação|operacao|process|organiz|rotina', 3]];
+    let hit = null;
+    for (const k of KEYS) { if (new RegExp(k[0]).test(low + ' ')) { hit = CHIPS[k[1]]; break; } }
+    this.setState({ msgs: [...this.state.msgs, { me: true, drigo: false, text: t, parts: [] }], typing: true, draft: '' });
+    setTimeout(() => { if (hit) this.say(t, hit.intro, hit.parts); else this.say(t, 'Ainda não consegui entender a decisão por trás disso. Me conta em uma frase: o que você está tentando decidir no negócio, e o que te faz hesitar?', []); }, 1300);
+  }
+  onInteresse(e) { this.setState({ zelus: e.target.value === 'Zelus' }); }
+  async sendContact() {
+    if (this.state.sending) return;
+    const g = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+    const interesse = g('f_interesse'), zel = g('f_zelus'), n = g('f_nome'), em = g('f_email'), ep = g('f_empresa'), m = g('f_msg');
+    const say = (t, c) => this.setState({ statusText: t, statusColor: c });
+    if (!interesse) return say('Escolha o assunto da conversa.', '#B7791F');
+    if (interesse === 'Zelus' && !zel) return say('Escolha o produto Zelus.', '#B7791F');
+    if (!n || !m) return say('Preencha o nome e conte o que você precisa.', '#B7791F');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return say('E-mail inválido.', '#B7791F');
+    const assunto = interesse === 'Zelus' ? zel : interesse;
+    this.setState({ sending: true, statusText: 'Enviando...', statusColor: '#7C7696' });
+    try {
+      const r = await fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ access_key: '583f7bc1-8249-43b1-ad76-6426e076a745', subject: 'Novo contato via site Finder Lab — ' + assunto, from_name: 'Site Finder Lab', name: n, email: em, interesse: interesse, produto_zelus: zel || '-', empresa: ep || '-', message: m }) });
+      const d = await r.json();
+      if (d && d.success) {
+        ['f_interesse', 'f_zelus', 'f_nome', 'f_email', 'f_empresa', 'f_msg'].forEach((id) => { const el = document.getElementById(id); if (el) el.value = ''; });
+        this.setState({ sending: false, zelus: false, statusText: 'Mensagem enviada! Retornamos em breve.', statusColor: '#2F8F5B' });
+      } else {
+        this.setState({ sending: false, statusText: 'Não foi possível enviar. Tente de novo ou escreva para contato@finderlab.com.br.', statusColor: '#C0392B' });
+      }
+    } catch (err) {
+      this.setState({ sending: false, statusText: 'Falha de conexão. Escreva para contato@finderlab.com.br.', statusColor: '#C0392B' });
+    }
+  }
+  setB(p) { this.setState({ b: Object.assign({}, this.state.b, p) }); }
+  bValid() {
+    const b = this.state.b;
+    if (b.step === 1) return !!b.agent;
+    if (b.step === 2) return !!b.name.trim() && !!b.tone;
+    if (b.step === 3) return b.channel.length > 0;
+    if (b.step === 4) return b.esc.length > 0;
+    if (b.step === 5) return !!b.metric;
+    if (b.step === 6) return !!b.what.trim() && !!b.who.trim();
+    return true;
+  }
+  bEscText() {
+    const e = this.state.b.esc.map((x) => x.toLowerCase());
+    return e.length ? e.slice(0, 2).join(' ou ') : 'algo fora do combinado';
+  }
+  bPreview() {
+    const b = this.state.b;
+    const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+    const nm = cap(b.name.trim() || 'Agente');
+    const emp = b.company.trim();
+    const intro = emp ? nm + ', da ' + emp : nm;
+    const what = b.what.trim(), whatL = what.charAt(0).toLowerCase() + what.slice(1), who = b.who.trim();
+    const OPEN = { 'Direto': 'Olá! Aqui é ' + intro + '. Me diz o que você precisa e eu resolvo.', 'Acolhedor': 'Oi, tudo bem? Aqui é ' + intro + '. Fico feliz em te ajudar!', 'Consultivo': 'Olá! Aqui é ' + intro + '. Para te orientar bem, vou entender o seu caso primeiro.', 'Descontraído': 'E aí! Aqui é ' + intro + '. Conta pra mim o que você precisa!' };
+    const OPEN2 = { 'Direto': 'Olá! Aqui é ' + intro + '.', 'Acolhedor': 'Oi, tudo bem? Aqui é ' + intro + '.', 'Consultivo': 'Olá! Aqui é ' + intro + '.', 'Descontraído': 'E aí! Aqui é ' + intro + '.' };
+    const open = OPEN[b.tone] || OPEN['Direto'];
+    const openP = OPEN2[b.tone] || OPEN2['Direto'];
+    const A = (t) => ({ me: false, agent: true, text: t });
+    const C = (t) => ({ me: true, agent: false, text: t });
+    const R = (k, v) => ({ k: k, v: v });
+    const q = b.q.trim();
+    if (b.agent === 'atend') return { msgs: [C(q || 'Oi, queria saber mais sobre ' + whatL + '.'), A(open), A('Boa pergunta, essa é das que mais chegam. Vou conferir a informação mais atual e já te respondo. Para agilizar, me diz a sua cidade?')], title: 'Resumo que o ' + nm + ' entrega ao seu time', rows: [R('Assunto', q || whatL), R('Interesse', what), R('Público', who), R('Prioridade', 'Normal'), R('Próximo passo', 'Confirmar a informação e responder ao cliente')] };
+    if (b.agent === 'pos') return { msgs: [A(openP), A('Passando para saber como foi a sua experiência com ' + whatL + '. Tem algo que a gente possa melhorar?'), C('Foi bom, mas fiquei com uma dúvida no final.'), A('Obrigado por contar. Registrei o seu retorno e vou acompanhar até a dúvida ficar resolvida.')], title: 'Registro de acompanhamento', rows: [R('Produto', what), R('Perfil do cliente', who), R('Satisfação', 'Positiva, com dúvida pendente'), R('Próxima ação', 'Retomar o contato em 7 dias')] };
+    if (b.agent === 'rec') return { msgs: [C('Oi, vi vocês e queria saber mais sobre ' + whatL + '.'), A(open), A('Para te indicar a melhor opção, me conta: é para você ou para a sua empresa, e para quando você precisa?'), C('É para mim, e preciso para as próximas semanas.'), A('Perfeito. Já separo as melhores opções para você e, se quiser fechar, eu cuido do próximo passo.')], title: 'Lead registrado', rows: [R('Interesse', what), R('Perfil', who), R('Prazo', 'Próximas semanas'), R('Temperatura', 'Quente'), R('Próximo passo', 'Enviar opções e propor o fechamento')] };
+    if (b.agent === 'diag') return { msgs: [C('Quero uma proposta de ' + whatL + '.'), A(open), A('Antes de montar, três perguntas rápidas: qual a necessidade principal, qual o prazo e quem participa da decisão?'), C('Preciso em 30 dias, e a decisão é minha e do meu sócio.'), A('Anotado. Vou qualificar o seu pedido e já entrego um resumo ao time comercial, sem você precisar repetir nada.')], title: 'Qualificação do lead', rows: [R('Necessidade', what), R('Prazo', '30 dias'), R('Decisores', '2 pessoas'), R('Fit com o perfil', who), R('Resultado', 'Qualificado')] };
+    if (b.agent === 'ativo') return { msgs: [A(openP), A('Vi que o seu perfil combina com ' + whatL + '. Faz sentido uma conversa rápida de 10 minutos?'), C('Pode ser, me conta mais.'), A('Combinado. Preparo um resumo curto e já deixo um horário sugerido para você.')], title: 'Registro da prospecção', rows: [R('Perfil abordado', who), R('Gancho', what), R('Resposta', 'Positiva'), R('Próximo passo', 'Agendar conversa de 10 minutos')] };
+    return { msgs: [C('Preciso de ajuda com um processo nosso.'), A(open), A('Já conheço o fluxo que desenhamos juntos para ' + whatL + ' e sigo cada etapa. O que você precisa agora?')], title: 'Processo executado', rows: [R('Fluxo', 'Desenhado com a Finder'), R('Contexto', what), R('Público', who), R('Próximo passo', 'Executar e registrar cada etapa')] };
+  }
+  bFichaText() {
+    const b = this.state.b;
+    const ag = (B_AGENTS.find((a) => a.id === b.agent) || {}).label || '';
+    return ['AGENTE MONTADO NO SITE', 'Rotina: ' + ag, 'Nome: ' + b.name.trim(), 'Tom: ' + b.tone, 'Canais: ' + b.channel.join(', '), 'Chama uma pessoa quando: ' + b.esc.join('; '), 'Mede sucesso por: ' + b.metric, 'Empresa: ' + (b.company.trim() || '-'), 'O que vende: ' + b.what.trim(), 'Para quem: ' + b.who.trim(), 'Dúvida mais comum: ' + (b.q.trim() || '-'), 'Algo mais: ' + (b.extra.trim() || '-')].join('\n');
+  }
+  async sendAgent() {
+    const b = this.state.b;
+    if (b.sending) return;
+    const g = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+    const n = g('b_nome'), em = g('b_email'), ep = g('b_empresa');
+    const say = (t, c) => this.setB({ status: t, statusColor: c });
+    if (!n) return say('Diga o seu nome.', '#B7791F');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return say('E-mail inválido.', '#B7791F');
+    this.setB({ sending: true, status: 'Enviando...', statusColor: '#7C7696' });
+    const ag = (B_AGENTS.find((a) => a.id === b.agent) || {}).label || '';
+    try {
+      const r = await fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ access_key: '583f7bc1-8249-43b1-ad76-6426e076a745', subject: 'Agente montado no site Finder Lab — ' + ag, from_name: 'Site Finder Lab', name: n, email: em, interesse: 'Agente montado no site', empresa: ep || '-', message: this.bFichaText() }) });
+      const d = await r.json();
+      if (d && d.success) this.setB({ sending: false, sent: true });
+      else this.setB({ sending: false, status: 'Não foi possível enviar. Tente de novo ou escreva para contato@finderlab.com.br.', statusColor: '#C0392B' });
+    } catch (err) {
+      this.setB({ sending: false, status: 'Falha de conexão. Escreva para contato@finderlab.com.br.', statusColor: '#C0392B' });
+    }
+  }
+  renderVals() {
+    return {
+      ...(() => {
+        const b = this.state.b;
+        const opt = (label, desc, on, pick) => ({ label: label, desc: desc, pick: pick, bg: on ? 'rgba(116,67,245,.12)' : '#FFFFFF', bd: on ? '#7443F5' : 'rgba(91,47,208,.22)', hasDesc: !!desc });
+        const ag = B_AGENTS.find((a) => a.id === b.agent) || {};
+        const ok = this.bValid();
+        const tone = B_TONES.find((t) => t.id === b.tone) || {};
+        return {
+          bs1: b.step === 1, bs2: b.step === 2, bs3: b.step === 3, bs4: b.step === 4, bs5: b.step === 5, bs6: b.step === 6, bs7: b.step === 7,
+          bWizard: b.step < 7,
+          bStepLabel: String(Math.min(b.step, 6)), bPct: Math.round(Math.min(b.step, 6) / 6 * 100) + '%',
+          bAgentOpts: B_AGENTS.map((a) => opt(a.label, a.desc, b.agent === a.id, () => this.setB({ agent: a.id }))),
+          bToneOpts: B_TONES.map((t) => opt(t.id, '', b.tone === t.id, () => this.setB({ tone: t.id }))),
+          bChannelOpts: B_CHANNELS.map((c) => opt(c, '', b.channel.includes(c), () => this.setB({ channel: b.channel.includes(c) ? b.channel.filter((x) => x !== c) : [...b.channel, c] }))),
+          bEscOpts: B_ESC.map((c) => opt(c, '', b.esc.includes(c), () => this.setB({ esc: b.esc.includes(c) ? b.esc.filter((x) => x !== c) : [...b.esc, c] }))),
+          bMetricOpts: B_METRICS.map((c) => opt(c, '', b.metric === c, () => this.setB({ metric: c }))),
+          bName: b.name, bCompany: b.company, bWhat: b.what, bWho: b.who, bQ: b.q, bExtra: b.extra,
+          onBName: (e) => this.setB({ name: e.target.value }),
+          onBCompany: (e) => this.setB({ company: e.target.value }),
+          onBWhat: (e) => this.setB({ what: e.target.value }),
+          onBWho: (e) => this.setB({ who: e.target.value }),
+          onBQ: (e) => this.setB({ q: e.target.value }),
+          onBExtra: (e) => this.setB({ extra: e.target.value }),
+          bBack: b.step > 1 && b.step < 7,
+          bGoBack: () => this.setB({ step: b.step - 1 }),
+          bGoNext: () => { if (this.bValid()) this.setB({ step: b.step + 1 }); },
+          bNextLabel: b.step === 6 ? 'Ver o meu agente' : 'Continuar',
+          bNextBg: ok ? 'linear-gradient(160deg,#8559FF,#6232E8)' : '#CFC9E6',
+          bNextShadow: ok ? '0 12px 26px -6px rgba(116,67,245,.6)' : 'none',
+          bReset: () => this.setState({ b: freshB() }),
+          fAgent: ag.label || '', fName: b.name.trim(), fTone: b.tone, fChannel: b.channel.join(', '), fEsc: b.esc.join(', '), fMetric: b.metric,
+          fWhat: b.what.trim(), fWho: b.who.trim(), fQ: b.q.trim(), fHasQ: !!b.q.trim(),
+          fInitial: (b.name.trim().charAt(0) || 'A').toUpperCase(),
+          ...(() => { const pv = b.step === 7 ? this.bPreview() : { msgs: [], title: '', rows: [] }; return { bPv: pv.msgs, bCardTitle: pv.title, bCardRows: pv.rows, bEscLine: b.esc.join(', ') }; })(),
+          bNotSent: !b.sent, bSent: b.sent,
+          bBtnLabel: b.sending ? 'Enviando...' : 'Quero contratar este agente',
+          bStatus: b.status, bStatusBg: b.status ? '#fff' : 'transparent', bStatusColor: b.statusColor,
+          sendAgent: () => this.sendAgent()
+        };
+      })(),
+      accent: this.props.accent ?? '#7443F5',
+      msgs: this.state.msgs,
+      typing: this.state.typing,
+      draft: this.state.draft,
+      showZelus: this.state.zelus,
+      btnLabel: this.state.sending ? 'Enviando...' : 'Enviar mensagem',
+      statusText: this.state.statusText,
+      statusColor: this.state.statusColor,
+      onInteresse: (e) => this.onInteresse(e),
+      sendContact: () => this.sendContact(),
+      contactOpen: this.state.contact,
+      openContact: () => this.setState({ contact: true }),
+      closeContact: () => this.setState({ contact: false }),
+      agendaOpen: this.state.agenda,
+      openAgenda: () => this.setState({ agenda: true }),
+      closeAgenda: () => this.setState({ agenda: false }),
+      stop: (e) => e.stopPropagation(),
+      sysOpen: this.state.sysMenu,
+      toggleSys: () => this.setState({ sysMenu: !this.state.sysMenu }),
+      closeSys: () => this.setState({ sysMenu: false }),
+      legalOpen: !!this.state.legal,
+      closeLegal: () => this.setState({ legal: '' }),
+      legal_privacidade: this.state.legal === 'privacidade',
+      tab_privacidade: () => this.setState({ legal: 'privacidade' }),
+      bg_privacidade: this.state.legal === 'privacidade' ? '#7443F5' : 'rgba(255,255,255,.12)',
+      fg_privacidade: '#fff',
+      legal_termos: this.state.legal === 'termos',
+      tab_termos: () => this.setState({ legal: 'termos' }),
+      bg_termos: this.state.legal === 'termos' ? '#7443F5' : 'rgba(255,255,255,.12)',
+      fg_termos: '#fff',
+      legal_cookies: this.state.legal === 'cookies',
+      tab_cookies: () => this.setState({ legal: 'cookies' }),
+      bg_cookies: this.state.legal === 'cookies' ? '#7443F5' : 'rgba(255,255,255,.12)',
+      fg_cookies: '#fff',
+      onInput: (e) => this.setState({ draft: e.target.value }),
+      onKey: (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(); } },
+      send: () => this.send(),
+      chips: CHIPS.map((c) => ({ label: c.label, pick: () => this.ask(c) }))
+    };
+  }
+}
+</script>
+</body>
+</html>
