@@ -2677,6 +2677,7 @@ const demoLimiter = rateLimit({
   message: { error: 'Muitas mensagens. Espera um pouco e tenta de novo.' },
 });
 let demoJanela = { inicio: Date.now(), n: 0 };
+app.options('/agente-demo', publicCors);
 app.post('/agente-demo', publicCors, demoLimiter, async (req, res) => {
   try {
     if (!anthropic) return res.status(503).json({ error: 'Indisponível no momento.' });
