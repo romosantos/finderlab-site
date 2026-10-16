@@ -2667,6 +2667,54 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
   }
 });
 
+// ---------- /agente-demo: "Monte o seu agente" (site principal) ----------
+const { DEMO_MAX_TURNS, normalizaFicha, montaPrompt } = require('./lib/agente-demo');
+const demoLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Muitas mensagens. Espera um pouco e tenta de novo.' },
+});
+let demoJanela = { inicio: Date.now(), n: 0 };
+app.post('/agente-demo', publicCors, demoLimiter, async (req, res) => {
+  try {
+    if (!anthropic) return res.status(503).json({ error: 'Indisponível no momento.' });
+    if (!SITE_PRINCIPAL_ORIGINS.includes(req.headers.origin || '')) return res.status(403).json({ error: 'Origem não permitida.' });
+    // Teto global por hora, para a demonstração nunca virar custo sem controle.
+    if (Date.now() - demoJanela.inicio > 3600 * 1000) demoJanela = { inicio: Date.now(), n: 0 };
+    if (++demoJanela.n > 600) return res.status(429).json({ error: 'Muitas demonstrações agora. Tenta de novo em alguns minutos.' });
+
+    const b = req.body || {};
+    const ficha = normalizaFicha(b.ficha, clean);
+    const abertura = b.abertura === true;
+    const hist = (Array.isArray(b.history) ? b.history : [])
+      .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+      .slice(-12)
+      .map((m) => ({ role: m.role, content: clean(m.content, 600) }))
+      .filter((m) => m.content);
+    const turnosUsados = hist.filter((m) => m.role === 'user').length;
+    let messages;
+    if (abertura) {
+      messages = [{ role: 'user', content: '[início da conversa]' }];
+    } else {
+      const msg = clean(b.message, 600);
+      if (!msg) return res.status(400).json({ error: 'Mensagem vazia.' });
+      if (turnosUsados >= DEMO_MAX_TURNS) return res.json({ limite: true, reply: '', restantes: 0 });
+      messages = hist.concat([{ role: 'user', content: msg }]);
+      while (messages.length && messages[0].role !== 'user') messages.shift();
+    }
+    const resp = await anthropic.messages.create({ model: ANTHROPIC_MODEL, max_tokens: 350, system: montaPrompt(ficha), messages });
+    const reply = stripInternalReasoning((resp.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('')).slice(0, 1200);
+    if (!reply) return res.status(502).json({ error: 'Sem resposta.' });
+    const usados = abertura ? 0 : turnosUsados + 1;
+    res.json({ reply, restantes: Math.max(0, DEMO_MAX_TURNS - usados), limite: !abertura && usados >= DEMO_MAX_TURNS });
+  } catch (err) {
+    console.error('POST /agente-demo', err && err.message ? err.message : err);
+    res.status(500).json({ error: 'Não consegui responder agora.' });
+  }
+});
+
 // ---------- /voice/transcribe: áudio -> texto (Gemini), cai no /chat normal depois ----------
 app.options('/voice/transcribe', publicCors);
 app.post(

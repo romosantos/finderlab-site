@@ -435,7 +435,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent2);outline-of
               <div style="font-size:14.5px;line-height:1.6;color:var(--muted)"><b style="color:var(--ink)">Tom:</b> {{fTone}}<br><b style="color:var(--ink)">Canais:</b> {{fChannel}}<br><b style="color:var(--ink)">Chama uma pessoa quando:</b> {{fEsc}}<br><b style="color:var(--ink)">Mede sucesso por:</b> {{fMetric}}<br><b style="color:var(--ink)">Contexto:</b> {{fWhat}}, para {{fWho}}.</div>
             </div>
             <div style="border:1px solid rgba(91,47,208,.22);border-radius:20px;overflow:hidden;background:#F1EDFD">
-              <div style="padding:12px 16px;background:#14102b;color:#fff;font-size:13.5px;font-weight:700">{{fName}} · prévia ilustrativa</div>
+              <div style="padding:12px 16px;background:#14102b;color:#fff;font-size:13.5px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:12px"><span>{{fName}} · teste ao vivo</span><span style="font-weight:600;font-size:12px;color:#B9A6FF">{{bLeftLabel}}</span></div>
               <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
                 <sc-for list="{{bPv}}" as="m" hint-placeholder-count="2">
                   <div style="display:flex;flex-direction:column">
@@ -443,15 +443,32 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent2);outline-of
                     <sc-if value="{{m.agent}}" hint-placeholder-val="{{ true }}"><div style="align-self:flex-start;max-width:88%;background:#fff;color:#14102B;padding:10px 14px;border-radius:14px 14px 14px 4px;font-size:14.5px;line-height:1.5;box-shadow:0 1px 2px rgba(20,16,43,.15)">{{m.text}}</div></sc-if>
                   </div>
                 </sc-for>
+                <sc-if value="{{bLiveTyping}}" hint-placeholder-val="{{ false }}">
+                  <div style="align-self:flex-start;background:#fff;border:1px solid rgba(91,47,208,.14);padding:12px 16px;border-radius:14px 14px 14px 4px;display:flex;gap:6px" aria-label="Digitando"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+                </sc-if>
+                <sc-if value="{{bCanType}}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+                    <input id="b_live" value="{{bLiveDraft}}" onInput="{{onBLive}}" onKeyDown="{{onBLiveKey}}" placeholder="Escreva como se fosse o seu cliente…" maxlength="400" style="flex:1;min-width:0;box-sizing:border-box;background:#fff;border:1px solid rgba(91,47,208,.3);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:14.5px;color:#14102B;outline:0">
+                    <button onClick="{{bLiveSend}}" aria-label="Enviar" style="flex:none;cursor:pointer;border:0;width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#8559FF,#6232E8);color:#fff;font-size:20px;line-height:1;font-family:inherit">→</button>
+                  </div>
+                </sc-if>
+                <sc-if value="{{bLiveEnded}}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:4px;background:#14102b;color:#fff;border-radius:14px;padding:14px 16px;font-size:14.5px;line-height:1.55">Esse foi o seu teste de 4 mensagens. Para ter o {{fName}} atendendo de verdade, deixe o seu contato logo abaixo e a Finder Lab conversa com você.</div>
+                </sc-if>
+                <sc-if value="{{bLiveFailed}}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12.5px;line-height:1.5;color:#7A7396">Não consegui ligar o teste ao vivo agora, então esta é uma prévia ilustrativa.</div>
+                </sc-if>
+                <sc-if value="{{bShowCard}}" hint-placeholder-val="{{ false }}">
                 <div style="margin-top:6px;background:#fff;border:1px dashed rgba(91,47,208,.4);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
                   <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)">{{bCardTitle}}</div>
                   <sc-for list="{{bCardRows}}" as="r" hint-placeholder-count="2"><div style="font-size:14px;line-height:1.5;color:var(--muted)"><b style="color:var(--ink)">{{r.k}}:</b> {{r.v}}</div></sc-for>
                   <div style="font-size:12.5px;line-height:1.5;color:#7A7396;border-top:1px solid rgba(91,47,208,.14);padding-top:8px">Chama uma pessoa quando: {{bEscLine}}</div>
                 </div>
+                </sc-if>
               </div>
             </div>
           </div>
-          <div style="font-size:13px;line-height:1.55;color:#7A7396">Prévia ilustrativa, montada com as suas respostas. O agente de verdade é treinado com o seu contexto e validado com você antes de ir ao ar.</div>
+          <div style="font-size:13px;line-height:1.55;color:#7A7396">Teste ao vivo, feito só com o que você preencheu: o agente não conhece o seu negócio além disso e, por isso, vai dizer que confirma o que não souber. Na versão contratada ele é treinado com o seu contexto e validado com você antes de ir ao ar. As mensagens do teste não ficam guardadas.</div>
           <sc-if value="{{bNotSent}}" hint-placeholder-val="{{ true }}">
             <div style="background:linear-gradient(135deg,#6A3BE8,#4A23BC);border-radius:20px;padding:26px;display:flex;flex-direction:column;gap:14px">
               <div style="font-weight:800;font-size:20px;color:#fff;letter-spacing:-.3px">Gostou? Envie a ficha para a Finder e a gente conversa.</div>
@@ -717,11 +734,12 @@ const B_TONES = [
 const B_CHANNELS = ['WhatsApp', 'Site', 'E-mail'];
 const B_ESC = ['Cliente insatisfeito ou reclamação', 'Pedido fora do padrão', 'Decisão de preço ou desconto', 'Dúvida que o agente não sabe responder', 'Sempre que o cliente pedir uma pessoa'];
 const B_METRICS = ['Tempo de resposta', 'Leads qualificados', 'Vendas fechadas', 'Horas liberadas do time', 'Satisfação do cliente'];
+const freshLive = () => ({ msgs: [], typing: false, draft: '', left: 4, ended: false, failed: false, started: false });
 const freshB = () => ({ step: 1, agent: '', name: '', tone: '', channel: [], esc: [], metric: '', company: '', what: '', who: '', q: '', extra: '', sending: false, sent: false, status: '', statusColor: '#7C7696' });
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { b: freshB(), msgs: [{ me: false, drigo: true, text: INTRO, parts: [] }], typing: false, draft: '', agenda: false, contact: false, sysMenu: false, legal: '', zelus: false, sending: false, statusText: 'Retornamos após analisar a sua mensagem.', statusColor: '#7C7696' };
+    this.state = { b: freshB(), live: freshLive(), msgs: [{ me: false, drigo: true, text: INTRO, parts: [] }], typing: false, draft: '', agenda: false, contact: false, sysMenu: false, legal: '', zelus: false, sending: false, statusText: 'Retornamos após analisar a sua mensagem.', statusColor: '#7C7696' };
   }
   ask(c) { this.talk(c.label); }
   say(text, intro, parts) {
@@ -842,6 +860,48 @@ class Component extends DCLogic {
     if (b.agent === 'ativo') return { msgs: [A(openP), A('Vi que o seu perfil combina com ' + whatL + '. Faz sentido uma conversa rápida de 10 minutos?'), C('Pode ser, me conta mais.'), A('Combinado. Preparo um resumo curto e já deixo um horário sugerido para você.')], title: 'Registro da prospecção', rows: [R('Perfil abordado', who), R('Gancho', what), R('Resposta', 'Positiva'), R('Próximo passo', 'Agendar conversa de 10 minutos')] };
     return { msgs: [C('Preciso de ajuda com um processo nosso.'), A(open), A('Já conheço o fluxo que desenhamos juntos para ' + whatL + ' e sigo cada etapa. O que você precisa agora?')], title: 'Processo executado', rows: [R('Fluxo', 'Desenhado com a Finder'), R('Contexto', what), R('Público', who), R('Próximo passo', 'Executar e registrar cada etapa')] };
   }
+  liveFicha() {
+    const b = this.state.b;
+    const ag = B_AGENTS.find((a) => a.id === b.agent) || {};
+    return { nome: b.name.trim(), rotina: ag.label || '', rotinaDesc: ag.desc || '', tom: b.tone, canais: b.channel, escalar: b.esc, metrica: b.metric, empresa: b.company.trim(), oQue: b.what.trim(), paraQuem: b.who.trim(), perguntas: b.q.trim(), extra: b.extra.trim() };
+  }
+  async liveCall(body) {
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), 45000);
+    try {
+      const r = await fetch('https://www.maquina.finderlab.com.br/agente-demo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal, body: JSON.stringify(Object.assign({ ficha: this.liveFicha() }, body)) });
+      if (!r.ok) throw new Error('http ' + r.status);
+      return await r.json();
+    } finally { clearTimeout(to); }
+  }
+  async liveStart() {
+    this.hist2 = [];
+    this.setState({ live: Object.assign(freshLive(), { typing: true, started: true }) });
+    try {
+      const d = await this.liveCall({ abertura: true });
+      if (!d.reply) throw new Error('vazio');
+      this.hist2 = [{ role: 'assistant', content: d.reply }];
+      this.setState({ live: Object.assign(freshLive(), { started: true, msgs: [{ me: false, agent: true, text: d.reply }] }) });
+    } catch (e) {
+      this.setState({ live: Object.assign(freshLive(), { started: true, failed: true }) });
+    }
+  }
+  async liveSend() {
+    const L = this.state.live;
+    const t = (L.draft || '').trim();
+    if (!t || L.typing || L.ended || L.failed) return;
+    const msgs = L.msgs.concat([{ me: true, agent: false, text: t }]);
+    this.setState({ live: Object.assign({}, L, { msgs: msgs, typing: true, draft: '' }) });
+    try {
+      const d = await this.liveCall({ message: t, history: this.hist2 });
+      if (!d.reply) throw new Error('vazio');
+      this.hist2 = this.hist2.concat([{ role: 'user', content: t }, { role: 'assistant', content: d.reply }]);
+      const left = typeof d.restantes === 'number' ? d.restantes : Math.max(0, L.left - 1);
+      this.setState({ live: Object.assign({}, this.state.live, { msgs: msgs.concat([{ me: false, agent: true, text: d.reply }]), typing: false, left: left, ended: left <= 0 }) });
+    } catch (e) {
+      this.setState({ live: Object.assign({}, this.state.live, { msgs: msgs.concat([{ me: false, agent: true, text: 'Tive um problema para responder agora. Tenta de novo em instantes.' }]), typing: false }) });
+    }
+  }
   bFichaText() {
     const b = this.state.b;
     const ag = (B_AGENTS.find((a) => a.id === b.agent) || {}).label || '';
@@ -893,15 +953,15 @@ class Component extends DCLogic {
           onBExtra: (e) => this.setB({ extra: e.target.value }),
           bBack: b.step > 1 && b.step < 7,
           bGoBack: () => this.setB({ step: b.step - 1 }),
-          bGoNext: () => { if (this.bValid()) this.setB({ step: b.step + 1 }); },
+          bGoNext: () => { if (this.bValid()) { this.setB({ step: b.step + 1 }); if (b.step + 1 === 7) this.liveStart(); } },
           bNextLabel: b.step === 6 ? 'Ver o meu agente' : 'Continuar',
           bNextBg: ok ? 'linear-gradient(160deg,#8559FF,#6232E8)' : '#CFC9E6',
           bNextShadow: ok ? '0 12px 26px -6px rgba(116,67,245,.6)' : 'none',
-          bReset: () => this.setState({ b: freshB() }),
+          bReset: () => { this.live = null; this.hist2 = []; this.setState({ b: freshB(), live: freshLive() }); },
           fAgent: ag.label || '', fName: b.name.trim(), fTone: b.tone, fChannel: b.channel.join(', '), fEsc: b.esc.join(', '), fMetric: b.metric,
           fWhat: b.what.trim(), fWho: b.who.trim(), fQ: b.q.trim(), fHasQ: !!b.q.trim(),
           fInitial: (b.name.trim().charAt(0) || 'A').toUpperCase(),
-          ...(() => { const pv = b.step === 7 ? this.bPreview() : { msgs: [], title: '', rows: [] }; return { bPv: pv.msgs, bCardTitle: pv.title, bCardRows: pv.rows, bEscLine: b.esc.join(', ') }; })(),
+          ...(() => { const L = this.state.live || freshLive(); const pv = b.step === 7 && L.failed ? this.bPreview() : { msgs: [], title: '', rows: [] }; return { bPv: L.failed ? pv.msgs : L.msgs, bCardTitle: pv.title, bCardRows: pv.rows, bEscLine: b.esc.join(', '), bShowCard: L.failed, bLiveTyping: L.typing, bCanType: L.started && !L.failed && !L.ended, bLiveEnded: L.ended, bLiveFailed: L.failed, bLeftLabel: L.failed || !L.started ? '' : (L.ended ? 'teste concluído' : L.left + (L.left === 1 ? ' mensagem restante' : ' mensagens restantes')), bLiveDraft: L.draft, onBLive: (e) => this.setState({ live: Object.assign({}, this.state.live, { draft: e.target.value }) }), onBLiveKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.liveSend(); } }, bLiveSend: () => this.liveSend() }; })(),
           bNotSent: !b.sent, bSent: b.sent,
           bBtnLabel: b.sending ? 'Enviando...' : 'Quero contratar este agente',
           bStatus: b.status, bStatusBg: b.status ? '#fff' : 'transparent', bStatusColor: b.statusColor,
