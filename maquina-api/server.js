@@ -3342,7 +3342,7 @@ app.patch('/admin/api/crm/:id', async (req, res) => {
          observacoes=$10,
          optout_em = CASE WHEN $7 = 'nao_quer_receber' AND status <> 'nao_quer_receber' THEN now() WHEN $7 <> 'nao_quer_receber' THEN NULL ELSE optout_em END,
          optout_texto = CASE WHEN $7 = 'nao_quer_receber' AND status <> 'nao_quer_receber' THEN 'marcado manualmente no CRM' WHEN $7 <> 'nao_quer_receber' THEN '' ELSE optout_texto END,
-         ultima_interacao = CASE WHEN $11 THEN now() ELSE ultima_interacao END,
+         ultima_interacao = CASE WHEN $11 THEN (CASE WHEN $7 = 'novo' THEN NULL ELSE now() END) ELSE ultima_interacao END, -- voltar para Novo = ainda sem conversa
          updated_at = now()
        WHERE id=$1 RETURNING ${CRM_COLS}`,
       [id, c.nome, c.email, c.whats, c.empresa, c.cargo, c.status, c.origem, c.consentimento, c.observacoes, mudouStatus]
