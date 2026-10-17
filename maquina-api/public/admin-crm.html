@@ -87,6 +87,50 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
 .msg{margin-top:14px;font-size:13px;line-height:1.6;color:#FFB86B;overflow-wrap:anywhere}
 .msg.ok{color:#5CD8A6}
 .hint{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px}
+dialog.det{width:min(1100px,calc(100vw - 24px));max-height:calc(100vh - 24px);padding:0;overflow:hidden}
+dialog.det[open]{display:flex;flex-direction:column}
+.dh{padding:22px 26px 18px;border-bottom:1px solid rgba(124,84,245,.3);background:rgba(20,12,46,.5)}
+.dh .top{display:flex;gap:14px;align-items:flex-start;justify-content:space-between}
+.dh h2{margin:0;font-size:24px;line-height:1.2;overflow-wrap:anywhere}
+.dh .sb{margin-top:4px;color:var(--muted);font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.dh .x{flex:none;width:44px;height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:transparent;color:#D2CEE6;font-size:20px;line-height:1}
+.dh .x:hover{border-color:#A88BFF;color:#fff}
+.dh .ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px}
+.dh .ctl .sel{width:auto;min-width:190px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:99px;margin-right:8px;vertical-align:baseline;background:var(--c,#8B63FF)}
+.dbody{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);min-height:0;flex:1}
+.dl1{padding:20px 22px 24px;border-right:1px solid rgba(124,84,245,.25);overflow-y:auto;max-height:calc(100vh - 190px)}
+.dr1{padding:16px 22px 24px;overflow-y:auto;max-height:calc(100vh - 190px);min-width:0}
+.dl1 h3,.dr1 h3{margin:0 0 10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent2);font-weight:600}
+.kv{display:grid;grid-template-columns:100px minmax(0,1fr);gap:8px 12px;margin:0 0 22px;font-size:14px;line-height:1.5}
+.kv dt{color:var(--muted);font-size:12px;padding-top:2px}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.kv a{color:#E4E0F4;text-decoration:none}.kv a:hover{color:var(--accent2);text-decoration:underline}
+.kv.sm2{grid-template-columns:120px minmax(0,1fr);margin:0}
+.alert{border:1px solid rgba(255,106,61,.55);background:rgba(255,106,61,.12);color:#FFB394;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.55;margin:0 0 20px;overflow-wrap:anywhere}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px;position:sticky;top:-16px;background:#0C0919;padding:16px 0 8px;z-index:2}
+.msgs{display:flex;flex-direction:column;gap:6px}
+.dia{align-self:center;margin:12px 0 4px;font-size:11px;color:var(--muted);letter-spacing:.02em}
+.bub{max-width:82%;padding:9px 13px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.bub small{display:block;margin-top:4px;font-size:11px;opacity:.65}
+.bub.in{align-self:flex-start;background:rgba(255,255,255,.08);border-bottom-left-radius:4px}
+.bub.out{align-self:flex-end;background:rgba(116,67,245,.5);border-bottom-right-radius:4px}
+.bub .who{display:block;font-size:11px;font-weight:600;color:var(--accent2);margin-bottom:2px}
+.janela{border-radius:10px;padding:9px 12px;font-size:12.5px;line-height:1.55;margin:0 0 12px;border:1px solid rgba(124,84,245,.4);color:#D2CEE6}
+.janela.on{border-color:rgba(30,158,106,.5);background:rgba(30,158,106,.12);color:#8FE4C2}
+.reg{border:1px solid rgba(124,84,245,.35);background:rgba(20,12,46,.5);border-radius:12px;padding:14px 16px;margin:0 0 12px}
+.reg h4{margin:0 0 10px;font-size:14px}
+.reg details{margin-top:10px;font-size:13px;line-height:1.6}
+.reg summary{cursor:pointer;color:var(--accent2);font-weight:600}
+.reg details p{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0;color:#D2CEE6}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;padding:10px 0;border-bottom:1px solid rgba(124,84,245,.18);font-size:14px;line-height:1.5}
+.tl li span{color:var(--muted);font-size:12px;padding-top:2px}
+.tl li div{overflow-wrap:anywhere}
+.vazio{border:1px dashed rgba(124,84,245,.4);border-radius:12px;padding:28px 18px;text-align:center;color:var(--muted);font-size:14px;line-height:1.6}
+.dl1 textarea.in{min-height:110px}
+.dl1 .sm{min-height:40px;margin-top:8px}
+@media(max-width:820px){dialog.det{max-height:calc(100vh - 12px)}.dbody{display:block;overflow-y:auto;max-height:calc(100vh - 210px)}.dl1,.dr1{max-height:none;overflow:visible;border-right:0}.dl1{border-bottom:1px solid rgba(124,84,245,.25)}.tabs{position:static}.tl li{grid-template-columns:1fr;gap:2px}.bub{max-width:92%}.dh{padding:18px}}
 @media(max-width:1100px){.wrap{padding-left:28px;padding-right:28px}.row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 20px}}
 @media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.col{flex:0 0 78vw}.wrap{padding:28px 16px 72px}.stat{padding:18px}.stat b{font-size:28px}.row{grid-template-columns:1fr;padding:18px}.grid{grid-template-columns:1fr}}
@@ -130,6 +174,20 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
   <div class="list" id="list" aria-live="polite"></div>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="dDet" class="det" aria-labelledby="detNome">
+  <div class="dh">
+    <div class="top">
+      <div style="min-width:0"><h2 id="detNome">Contato</h2><div class="sb" id="detSub"></div></div>
+      <button type="button" class="x" id="detX" aria-label="Fechar">×</button>
+    </div>
+    <div class="ctl" id="detCtl"></div>
+  </div>
+  <div class="dbody">
+    <div class="dl1" id="detEsq"></div>
+    <div class="dr1" id="detDir"></div>
+  </div>
+</dialog>
 
 <dialog id="dConf">
   <form method="dialog" id="fConf">
@@ -305,8 +363,8 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
       });
       row.appendChild(sel);
 
-      var ed = el('button', 'sm', 'Editar'); ed.type = 'button';
-      ed.addEventListener('click', function () { abrirForm(d); });
+      var ed = el('button', 'sm', 'Abrir'); ed.type = 'button';
+      ed.addEventListener('click', function () { abrirDetalhe(d); });
       row.appendChild(ed);
 
       var del = el('button', 'sm del' + (armed === d.id ? ' arm' : ''), armed === d.id ? 'Confirmar' : 'Remover');
@@ -357,6 +415,7 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
     $('fSalvar').disabled = true;
     api(editId ? 'PATCH' : 'POST', '/admin/api/crm' + (editId ? '/' + editId : ''), body)
       .then(function () { $('dForm').close(); return load(); })
+      .then(function () { var x = $('dDet').open && detItem(); if (x) { pintaCabeca(x); pintaEsq(x); carregaDetalhe(); } })
       .catch(function (err) { $('fMsg').className = 'msg'; $('fMsg').textContent = err.message; })
       .then(function () { $('fSalvar').disabled = false; });
   });
@@ -445,6 +504,199 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
   });
 
 
+  // ----- janela de detalhes do contato
+  var detId = null, detData = null, detTab = 'whats';
+  function detItem() { return items.filter(function (x) { return x.id === detId; })[0]; }
+  function kv(dl, rotulo, valor, href) {
+    if (valor == null || valor === '') return;
+    dl.appendChild(el('dt', null, rotulo));
+    var dd = el('dd');
+    if (href) { var a = el('a', null, valor); a.href = href; if (/^https?:/.test(href)) { a.target = '_blank'; a.rel = 'noopener'; } dd.appendChild(a); }
+    else dd.textContent = valor;
+    dl.appendChild(dd);
+  }
+  function diaLabel(d) { return new Date(d).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }); }
+  function hora(d) { return new Date(d).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
+
+  function pintaCabeca(d) {
+    $('detNome').textContent = d.nome || '(sem nome)';
+    $('detSub').textContent = [d.cargo, d.empresa].filter(Boolean).join(' @ ') || 'Sem empresa e cargo informados.';
+    var ctl = $('detCtl'); ctl.textContent = '';
+    var dot = el('span', 'dot'); dot.style.setProperty('--c', COR[d.status]);
+    var lab = el('label', null); lab.setAttribute('for', 'detStatus'); lab.style.margin = '0'; lab.appendChild(dot); lab.appendChild(document.createTextNode('Status'));
+    ctl.appendChild(lab);
+    var sel = el('select', 'sel'); sel.id = 'detStatus'; fillStatus(sel); sel.value = d.status;
+    sel.addEventListener('change', function () {
+      tentaMover(d, sel.value).then(function () { var x = detItem(); if (x) { pintaCabeca(x); pintaEsq(x); if (detData) pintaDir(); } });
+    });
+    ctl.appendChild(sel);
+    if (d.whats) { var w = el('a', 'btn ghost', 'Abrir no WhatsApp'); w.href = 'https://wa.me/' + d.whats; w.target = '_blank'; w.rel = 'noopener'; w.style.minHeight = '44px'; ctl.appendChild(w); }
+    if (d.email) { var m = el('a', 'btn ghost', 'Enviar e-mail'); m.href = 'mailto:' + d.email; m.style.minHeight = '44px'; ctl.appendChild(m); }
+    var ed = el('button', 'btn ghost', 'Editar dados'); ed.type = 'button'; ed.style.minHeight = '44px';
+    ed.addEventListener('click', function () { abrirForm(d); });
+    ctl.appendChild(ed);
+  }
+
+  function pintaEsq(d) {
+    var box = $('detEsq'), keep = box.scrollTop; box.textContent = '';
+    if (d.optout_em) box.appendChild(el('div', 'alert', 'Pediu para sair em ' + fmt(d.optout_em) + (d.optout_texto ? ': "' + d.optout_texto + '"' : '') + '. Não envie mais mensagens.'));
+    else if (d.consentimento === 'nao') box.appendChild(el('div', 'alert', 'Marcado como NÃO autorizou receber mensagem.'));
+    box.appendChild(el('h3', null, 'Dados'));
+    var dl = el('dl', 'kv');
+    kv(dl, 'WhatsApp', d.whats ? fmtFone(d.whats) : '', d.whats ? 'https://wa.me/' + d.whats : '');
+    kv(dl, 'E-mail', d.email, d.email ? 'mailto:' + d.email : '');
+    kv(dl, 'Empresa', d.empresa);
+    kv(dl, 'Cargo', d.cargo);
+    kv(dl, 'Origem', d.origem);
+    kv(dl, 'Autorização', d.consentimento === 'sim' ? 'Autorizou' + (d.consentimento_em ? ' em ' + fmt(d.consentimento_em) : '') : d.consentimento === 'nao' ? 'Não autorizou' : 'Não informada');
+    kv(dl, 'Cadastro', fmt(d.created_at));
+    kv(dl, 'Última interação', d.ultima_interacao ? fmt(d.ultima_interacao) : 'ainda não houve');
+    box.appendChild(dl);
+
+    box.appendChild(el('h3', null, 'Observações'));
+    var ta = el('textarea', 'in'); ta.maxLength = 2000; ta.value = d.observacoes || ''; ta.setAttribute('aria-label', 'Observações');
+    box.appendChild(ta);
+    var sv = el('button', 'sm', 'Salvar observações'); sv.type = 'button';
+    sv.addEventListener('click', function () {
+      sv.disabled = true;
+      api('PATCH', '/admin/api/crm/' + d.id, { observacoes: ta.value }).then(function (novo) {
+        Object.keys(novo).forEach(function (k) { d[k] = novo[k]; });
+        toast('Observações salvas');
+      }).catch(function (e) { toast('Não salvou: ' + e.message, true); }).then(function () { sv.disabled = false; });
+    });
+    box.appendChild(sv);
+
+    var rm = el('button', 'sm del', 'Remover contato'); rm.type = 'button'; rm.style.display = 'block'; rm.style.marginTop = '28px';
+    rm.addEventListener('click', function () {
+      confirma('Remover este contato?', (d.nome || 'Este contato') + ' sai do CRM. As conversas e inscrições continuam guardadas nas outras telas do admin.', 'Remover').then(function (ok) {
+        if (!ok) return;
+        api('DELETE', '/admin/api/crm/' + d.id).then(function () { $('dDet').close(); toast('Contato removido'); return load(); }).catch(function (e) { toast('Não removeu: ' + e.message, true); });
+      });
+    });
+    box.appendChild(rm);
+    box.scrollTop = keep;
+  }
+
+  function bolhas(box, lista) {
+    var wrap = el('div', 'msgs'), ultimoDia = '';
+    lista.forEach(function (m) {
+      var dia = new Date(m.em).toDateString();
+      if (dia !== ultimoDia) { ultimoDia = dia; wrap.appendChild(el('div', 'dia', diaLabel(m.em))); }
+      var b = el('div', 'bub ' + (m.de === 'in' ? 'in' : 'out'));
+      if (m.quem) b.appendChild(el('span', 'who', m.quem));
+      b.appendChild(document.createTextNode(m.texto));
+      b.appendChild(el('small', null, hora(m.em)));
+      wrap.appendChild(b);
+    });
+    box.appendChild(wrap);
+  }
+
+  function pintaDir() {
+    var d = detItem(), box = $('detDir'); box.textContent = '';
+    var r = detData;
+    var tabs = el('div', 'tabs');
+    var defs = [['whats', 'WhatsApp' + (r ? ' (' + r.whatsapp.length + ')' : '')], ['chat', 'Chat no site' + (r ? ' (' + r.chat.length + ')' : '')],
+      ['site', 'Registros do site' + (r ? ' (' + (r.leads.length + r.diagnosticos.length + r.lista.length + r.servicos.length) + ')' : '')], ['hist', 'Atividade' + (r ? ' (' + r.eventos.length + ')' : '')]];
+    defs.forEach(function (t) {
+      var b = el('button', 'chip' + (detTab === t[0] ? ' on' : ''), t[1]); b.type = 'button';
+      b.addEventListener('click', function () { detTab = t[0]; pintaDir(); });
+      tabs.appendChild(b);
+    });
+    box.appendChild(tabs);
+    if (!r) { box.appendChild(el('div', 'vazio', 'Carregando…')); return; }
+    var corpo = el('div');
+
+    if (detTab === 'whats') {
+      var wa = r.whatsapp;
+      if (!d.whats) corpo.appendChild(el('div', 'vazio', 'Este contato não tem WhatsApp cadastrado.'));
+      else if (!wa.length) corpo.appendChild(el('div', 'vazio', 'Ainda não há mensagens de WhatsApp com este número.'));
+      else {
+        var ult = null; wa.forEach(function (m) { if (m.direction === 'in') ult = m; });
+        if (ult) {
+          var fim = new Date(new Date(ult.created_at).getTime() + 24 * 3600 * 1000), aberta = fim > new Date();
+          corpo.appendChild(el('div', 'janela' + (aberta ? ' on' : ''), aberta ? 'Janela de 24h aberta até ' + fmt(fim) + '. O Drigo pode responder livremente.' : 'Janela de 24h fechada (a última mensagem dele foi em ' + fmt(ult.created_at) + '). Para escrever primeiro só com template aprovado pela Meta.'));
+        } else corpo.appendChild(el('div', 'janela', 'Ele ainda não respondeu: só há mensagens enviadas por nós.'));
+        bolhas(corpo, wa.map(function (m) { return { de: m.direction, texto: m.body, em: m.created_at, quem: m.direction === 'in' ? (m.profile_name || '') : 'Drigo' }; }));
+        if (wa.length >= 300) corpo.appendChild(el('p', 'hint', 'Mostrando as 300 mensagens mais recentes. A conversa completa está em Conversas WhatsApp.'));
+      }
+    } else if (detTab === 'chat') {
+      if (!r.chat.length) corpo.appendChild(el('div', 'vazio', 'Sem conversa no chat do site ligada a este contato. Ela aparece quando a pessoa fez o diagnóstico ou pediu contato por lá.'));
+      else {
+        var seq = [];
+        r.chat.forEach(function (c) {
+          if (c.user_msg) seq.push({ de: 'in', texto: c.user_msg, em: c.created_at });
+          if (c.reply_msg) seq.push({ de: 'out', texto: c.reply_msg, em: c.created_at, quem: 'Drigo' });
+        });
+        bolhas(corpo, seq);
+      }
+    } else if (detTab === 'site') {
+      var tem = false;
+      r.leads.forEach(function (l) {
+        tem = true;
+        var reg = el('div', 'reg'); reg.appendChild(el('h4', null, 'Inscrição na imersão'));
+        var dl = el('dl', 'kv sm2');
+        kv(dl, 'Data', fmt(l.created_at)); kv(dl, 'Turma', l.turma); kv(dl, 'Ingresso', l.ingresso); kv(dl, 'Pessoas', l.pessoas != null ? String(l.pessoas) : '');
+        kv(dl, 'Situação', l.status); kv(dl, 'Pagamento', l.pagamento_status ? l.pagamento_status + (l.pagamento_valor != null ? ' · R$ ' + String(l.pagamento_valor).replace('.', ',') : '') : 'sem cobrança gerada');
+        reg.appendChild(dl); corpo.appendChild(reg);
+      });
+      r.diagnosticos.forEach(function (g) {
+        tem = true;
+        var reg = el('div', 'reg'); reg.appendChild(el('h4', null, 'Diagnóstico'));
+        var dl = el('dl', 'kv sm2');
+        kv(dl, 'Data', fmt(g.created_at)); kv(dl, 'Temperatura', g.temperatura); kv(dl, 'Faixa', g.faixa); kv(dl, 'Rota', g.rota);
+        kv(dl, 'Decisão', g.decisao); kv(dl, 'Tipo de negócio', g.tipo_negocio); kv(dl, 'Área', g.area); kv(dl, 'Time', g.porte_time); kv(dl, 'Faturamento', g.faturamento); kv(dl, 'Problema', g.problema);
+        reg.appendChild(dl);
+        if (g.nota_interna) { var n1 = el('details'); n1.appendChild(el('summary', null, 'Nota interna do Drigo')); n1.appendChild(el('p', null, g.nota_interna)); reg.appendChild(n1); }
+        if (g.leitura) { var n2 = el('details'); n2.appendChild(el('summary', null, 'Leitura entregue')); n2.appendChild(el('p', null, g.leitura)); reg.appendChild(n2); }
+        corpo.appendChild(reg);
+      });
+      r.lista.forEach(function (l) {
+        tem = true;
+        var reg = el('div', 'reg'); reg.appendChild(el('h4', null, 'Lista de prioridade'));
+        var dl = el('dl', 'kv sm2'); kv(dl, 'Data', fmt(l.created_at)); kv(dl, 'Origem', l.origem); kv(dl, 'Campanha', l.campanha); kv(dl, 'Decisão', l.decisao);
+        reg.appendChild(dl); corpo.appendChild(reg);
+      });
+      r.servicos.forEach(function (s) {
+        tem = true;
+        var reg = el('div', 'reg'); reg.appendChild(el('h4', null, 'Pedido de contato (serviços)'));
+        var dl = el('dl', 'kv sm2'); kv(dl, 'Data', fmt(s.created_at)); kv(dl, 'Necessidade', s.necessidade); kv(dl, 'Origem', s.origem);
+        kv(dl, 'Reunião', s.reuniao_inicio ? fmt(s.reuniao_inicio) + (s.reuniao_status ? ' · ' + s.reuniao_status : '') : '');
+        reg.appendChild(dl); corpo.appendChild(reg);
+      });
+      if (!tem) corpo.appendChild(el('div', 'vazio', 'Nenhum registro do site encontrado para este WhatsApp ou e-mail (inscrição, diagnóstico, lista de prioridade ou pedido de contato).'));
+    } else {
+      if (!r.eventos.length) corpo.appendChild(el('div', 'vazio', 'Sem atividade registrada.'));
+      else {
+        var ul = el('ul', 'tl');
+        r.eventos.forEach(function (e) { var li = el('li'); li.appendChild(el('span', null, fmt(e.em))); li.appendChild(el('div', null, e.texto)); ul.appendChild(li); });
+        corpo.appendChild(ul);
+      }
+    }
+    box.appendChild(corpo);
+    if (detTab === 'whats' || detTab === 'chat') box.scrollTop = box.scrollHeight; // conversa começa no fim, na mensagem mais nova
+  }
+
+  function carregaDetalhe() {
+    var id = detId;
+    return api('GET', '/admin/api/crm/' + id + '/detalhe').then(function (r) {
+      if (detId !== id) return;
+      detData = r; pintaDir();
+    }).catch(function (e) {
+      if (detId !== id) return;
+      var box = $('detDir'); box.textContent = ''; box.appendChild(el('div', 'vazio', 'Não foi possível carregar os detalhes: ' + e.message));
+    });
+  }
+  function abrirDetalhe(d) {
+    detId = d.id; detData = null; detTab = 'whats';
+    pintaCabeca(d); pintaEsq(d); pintaDir();
+    $('detEsq').scrollTop = 0;
+    if (!$('dDet').open) $('dDet').showModal();
+    carregaDetalhe();
+  }
+  $('detX').addEventListener('click', function () { $('dDet').close(); });
+  $('dDet').addEventListener('click', function (e) { if (e.target === $('dDet')) $('dDet').close(); });
+  $('dDet').addEventListener('close', function () { detId = null; detData = null; render(); });
+
   // ----- quadro (kanban)
   function passaBusca(d) {
     var t = q.trim().toLowerCase();
@@ -471,22 +723,28 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
   function mover(d, destino) {
     var antes = d.status;
     d.status = destino; render();
-    api('PATCH', '/admin/api/crm/' + d.id, { status: destino }).then(function (novo) {
+    return api('PATCH', '/admin/api/crm/' + d.id, { status: destino }).then(function (novo) {
       Object.keys(novo).forEach(function (k) { d[k] = novo[k]; });
       render(); toast((d.nome || 'Contato') + ' foi para ' + SLABEL[destino]);
+      return true;
     }).catch(function (e) {
       d.status = antes; render(); toast('Não consegui mover: ' + e.message, true);
+      return false;
     });
+  }
+  // muda o status pedindo confirmação nos dois casos sensíveis (sair da lista / voltar de "Não quer receber")
+  function tentaMover(d, destino) {
+    var nome = d.nome || 'este contato';
+    var ask = Promise.resolve(true);
+    if (destino === 'nao_quer_receber') ask = confirma('Marcar como "Não quer receber"?', nome + ' ficará sem autorização para receber mensagens e não entra em nenhum disparo.', 'Marcar');
+    else if (d.status === 'nao_quer_receber') ask = confirma('Reativar este contato?', nome + ' pediu para sair em ' + (d.optout_em ? fmt(d.optout_em) : 'uma data não registrada') + '. Mover para outra coluna apaga esse registro. Só faça isso se a pessoa pediu para voltar.', 'Reativar');
+    return ask.then(function (ok) { return ok ? mover(d, destino) : false; });
   }
   function soltar(destino) {
     var d = items.filter(function (x) { return x.id === dragId; })[0];
     dragId = null;
     if (!d || d.status === destino) { render(); return; }
-    var nome = d.nome || 'este contato';
-    var ask = Promise.resolve(true);
-    if (destino === 'nao_quer_receber') ask = confirma('Marcar como "Não quer receber"?', nome + ' ficará sem autorização para receber mensagens e não entra em nenhum disparo.', 'Marcar');
-    else if (d.status === 'nao_quer_receber') ask = confirma('Reativar este contato?', nome + ' pediu para sair em ' + (d.optout_em ? fmt(d.optout_em) : 'uma data não registrada') + '. Mover para outra coluna apaga esse registro. Só faça isso se a pessoa pediu para voltar.', 'Reativar');
-    ask.then(function (ok) { if (ok) mover(d, destino); else render(); });
+    tentaMover(d, destino).then(function (feito) { if (!feito) render(); });
   }
   function renderBoard() {
     var board = $('board');
@@ -522,8 +780,8 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
         if (tags.childNodes.length) c.appendChild(tags);
         c.addEventListener('dragstart', function (e) { dragId = d.id; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(d.id)); setTimeout(function () { c.classList.add('drag'); }, 0); });
         c.addEventListener('dragend', function () { c.classList.remove('drag'); dragId = null; Array.prototype.forEach.call(board.querySelectorAll('.col.over'), function (x) { x.classList.remove('over'); }); });
-        c.addEventListener('click', function () { abrirForm(d); });
-        c.addEventListener('keydown', function (e) { if (e.key === 'Enter') abrirForm(d); });
+        c.addEventListener('click', function () { abrirDetalhe(d); });
+        c.addEventListener('keydown', function (e) { if (e.key === 'Enter') abrirDetalhe(d); });
         body.appendChild(c);
       });
       col.appendChild(body);

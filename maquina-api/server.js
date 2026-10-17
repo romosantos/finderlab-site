@@ -3337,6 +3337,83 @@ app.delete('/admin/api/crm/:id', async (req, res) => {
   res.status(rowCount ? 200 : 404).json({ ok: !!rowCount });
 });
 
+// ----- Detalhe do contato (janela do card): tudo que o sistema sabe sobre a pessoa, cruzando WhatsApp e e-mail.
+// Chave de telefone = DDD + últimos 8 dígitos (ignora 55 e o nono dígito), igual ao restante do CRM.
+function crmChaveFone(w) {
+  let d = String(w || '').replace(/\D/g, '');
+  if (d.length >= 12 && d.startsWith('55')) d = d.slice(2);
+  return d.length >= 10 ? d.slice(0, 2) + d.slice(-8) : null;
+}
+function crmChaveSql(col) {
+  const d = `regexp_replace(COALESCE(${col}::text,''),'\\D','','g')`;
+  const l = `(CASE WHEN length(${d})>=12 AND left(${d},2)='55' THEN substr(${d},3) ELSE ${d} END)`;
+  return `(CASE WHEN length(${l})>=10 THEN left(${l},2)||right(${l},8) ELSE NULL END)`;
+}
+app.get('/admin/api/crm/:id/detalhe', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Pedido inválido.' });
+  try {
+    const c = (await pool.query(`SELECT ${CRM_COLS} FROM crm_contatos WHERE id=$1`, [id])).rows[0];
+    if (!c) return res.status(404).json({ error: 'Contato não encontrado.' });
+    const chave = crmChaveFone(c.whats);
+    const email = String(c.email || '').trim().toLowerCase();
+    const quem = (colFone, colMail) => `(($1::text IS NOT NULL AND ${crmChaveSql(colFone)} = $1) OR ($2 <> '' AND lower(${colMail}) = $2))`;
+    const args = [chave, email];
+    const [msgs, leads, diag, lista, serv] = await Promise.all([
+      chave ? pool.query(
+        `SELECT direction, body, profile_name, created_at FROM whatsapp_messages
+          WHERE ${crmChaveSql('phone')} = $1 ORDER BY created_at DESC LIMIT 300`, [chave]) : { rows: [] },
+      pool.query(
+        `SELECT l.id, l.nome, l.empresa, l.cargo, l.status, l.turma, l.ingresso, l.pessoas, l.created_at,
+                p.status AS pagamento_status, p.value AS pagamento_valor, p.updated_at AS pagamento_em
+           FROM leads l
+           LEFT JOIN LATERAL (SELECT status, value, updated_at FROM payments p WHERE p.lead_id = l.id ORDER BY created_at DESC LIMIT 1) p ON true
+          WHERE ${quem('l.whats', 'l.email')} ORDER BY l.created_at DESC LIMIT 20`, args),
+      pool.query(
+        `SELECT session_id, nome, empresa, cargo, decisao, tipo_negocio, area, porte_time, faturamento, problema,
+                leitura, faixa, temperatura, rota, nota_interna, created_at
+           FROM diagnostico_leads WHERE ${quem('whats', 'email')} ORDER BY created_at DESC LIMIT 10`, args),
+      pool.query(
+        `SELECT nome, empresa, cargo, decisao, origem, campanha, created_at
+           FROM lista_interesse WHERE ${quem('whats', 'email')} ORDER BY created_at DESC LIMIT 10`, args),
+      pool.query(
+        `SELECT nome, empresa, cargo, necessidade, origem, session_id, reuniao_inicio, reuniao_status, created_at
+           FROM contatos_servico WHERE ${quem('whats', 'email')} ORDER BY created_at DESC LIMIT 10`, args)
+    ]);
+    const sessoes = [...new Set([...diag.rows, ...serv.rows].map(r => r.session_id).filter(Boolean))];
+    const chat = sessoes.length
+      ? (await pool.query(`SELECT session_id, user_msg, reply_msg, created_at FROM chat_logs WHERE session_id = ANY($1::text[]) ORDER BY created_at ASC LIMIT 300`, [sessoes])).rows
+      : [];
+
+    const ev = [];
+    ev.push({ em: c.created_at, tipo: 'cadastro', texto: 'Entrou no CRM' + (c.origem ? ' (origem: ' + c.origem + ')' : '') });
+    if (c.consentimento === 'sim' && c.consentimento_em) ev.push({ em: c.consentimento_em, tipo: 'autorizacao', texto: 'Autorizou receber mensagem' });
+    if (c.optout_em) ev.push({ em: c.optout_em, tipo: 'saida', texto: 'Pediu para sair' + (c.optout_texto ? ': "' + c.optout_texto + '"' : '') });
+    lista.rows.forEach(r => ev.push({ em: r.created_at, tipo: 'lista', texto: 'Entrou na lista de prioridade' + (r.campanha ? ' (' + r.campanha + ')' : '') }));
+    leads.rows.forEach(r => {
+      ev.push({ em: r.created_at, tipo: 'inscricao', texto: 'Iniciou inscrição' + (r.turma ? ' na turma ' + r.turma : '') + (r.ingresso ? ', ingresso ' + r.ingresso : '') });
+      if (r.pagamento_status) ev.push({ em: r.pagamento_em || r.created_at, tipo: 'pagamento', texto: 'Pagamento: ' + r.pagamento_status + (r.pagamento_valor != null ? ' (R$ ' + r.pagamento_valor + ')' : '') });
+    });
+    diag.rows.forEach(r => ev.push({ em: r.created_at, tipo: 'diagnostico', texto: 'Fez o diagnóstico' + (r.temperatura ? ' (' + r.temperatura + ')' : '') }));
+    serv.rows.forEach(r => {
+      ev.push({ em: r.created_at, tipo: 'contato', texto: 'Pediu contato' + (r.necessidade ? ': ' + String(r.necessidade).slice(0, 160) : '') });
+      if (r.reuniao_inicio) ev.push({ em: r.reuniao_inicio, tipo: 'reuniao', texto: 'Reunião ' + (r.reuniao_status || 'agendada') });
+    });
+    const wa = msgs.rows.slice().reverse(); // do mais antigo para o mais novo
+    if (wa.length) {
+      ev.push({ em: wa[0].created_at, tipo: 'whatsapp', texto: 'Primeira mensagem no WhatsApp' });
+      const ultimaIn = msgs.rows.find(m => m.direction === 'in');
+      if (ultimaIn) ev.push({ em: ultimaIn.created_at, tipo: 'whatsapp', texto: 'Última mensagem recebida dele no WhatsApp' });
+    }
+    ev.sort((a, b) => new Date(b.em) - new Date(a.em));
+
+    res.json({ contato: c, whatsapp: wa, leads: leads.rows, diagnosticos: diag.rows, lista: lista.rows, servicos: serv.rows, chat, eventos: ev });
+  } catch (e) {
+    console.error('crm detalhe:', e.message);
+    res.status(500).json({ error: 'Não foi possível carregar o detalhe.' });
+  }
+});
+
 // Importação em lotes (o navegador manda no máximo ~50 por vez, por causa do limite do corpo da requisição).
 // Duplicado (mesmo WhatsApp ou e-mail) é ignorado, nunca sobrescreve o que já está no CRM.
 app.post('/admin/api/crm/importar', async (req, res) => {
