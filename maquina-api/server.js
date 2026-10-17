@@ -3286,11 +3286,12 @@ app.get('/admin/api/crm', async (_req, res) => {
     const quem = (colFone, colMail) => `((${kc} IS NOT NULL AND ${crmChaveSql(colFone)} = ${kc}) OR (c.email <> '' AND lower(${colMail}) = lower(c.email)))`;
     const { rows } = await pool.query(
       `WITH wa AS (
-         SELECT k, max(created_at) FILTER (WHERE direction = 'in') AS wa_in, max(created_at) FILTER (WHERE direction = 'out') AS wa_out
+         SELECT k, max(created_at) FILTER (WHERE direction = 'in') AS wa_in, max(created_at) FILTER (WHERE direction = 'out') AS wa_out,
+                count(*)::int AS wa_n
            FROM (SELECT ${crmChaveSql('phone')} AS k, direction, created_at FROM whatsapp_messages) m
           WHERE k IS NOT NULL GROUP BY k)
        SELECT ${CRM_COLS.split(', ').map(x => 'c.' + x).join(', ')},
-              wa.wa_in, wa.wa_out,
+              wa.wa_in, wa.wa_out, COALESCE(wa.wa_n, 0) AS wa_n,
               (SELECT COALESCE(p.status, 'sem_cobranca') FROM leads l LEFT JOIN payments p ON p.lead_id = l.id
                 WHERE ${quem('l.whats', 'l.email')}
                 ORDER BY (p.status IN ('CONFIRMED','RECEIVED','RECEIVED_IN_CASH','PAYMENT_CONFIRMED','PAYMENT_RECEIVED')) DESC NULLS LAST, l.created_at DESC LIMIT 1) AS insc,
