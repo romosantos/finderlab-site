@@ -1041,6 +1041,27 @@ async function migrate() {
     );
     CREATE INDEX IF NOT EXISTS contatos_servico_email_idx ON contatos_servico ((lower(email)), created_at DESC);
     ALTER TABLE contatos_servico ADD COLUMN IF NOT EXISTS reuniao_uid TEXT, ADD COLUMN IF NOT EXISTS reuniao_inicio TIMESTAMPTZ, ADD COLUMN IF NOT EXISTS reuniao_status TEXT;
+
+    -- CRM simples dos empresários (admin /admin/crm). WhatsApp guardado só com dígitos (com 55),
+    -- um registro por número e por e-mail.
+    CREATE TABLE IF NOT EXISTS crm_contatos (
+      id                SERIAL PRIMARY KEY,
+      nome              TEXT NOT NULL DEFAULT '',
+      email             TEXT NOT NULL DEFAULT '',
+      whats             TEXT NOT NULL DEFAULT '',
+      empresa           TEXT NOT NULL DEFAULT '',
+      cargo             TEXT NOT NULL DEFAULT '',
+      status            TEXT NOT NULL DEFAULT 'novo',
+      origem            TEXT NOT NULL DEFAULT '',
+      consentimento     TEXT NOT NULL DEFAULT 'nao_informado',
+      consentimento_em  TIMESTAMPTZ,
+      observacoes       TEXT NOT NULL DEFAULT '',
+      ultima_interacao  TIMESTAMPTZ,
+      created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS crm_contatos_whats_uidx ON crm_contatos (whats) WHERE whats <> '';
+    CREATE UNIQUE INDEX IF NOT EXISTS crm_contatos_email_uidx ON crm_contatos ((lower(email))) WHERE email <> '';
   `);
 }
 
@@ -3128,6 +3149,156 @@ app.get('/admin/api/lista.csv', async (_req, res) => {
   );
   res.set('Content-Type', 'text/csv; charset=utf-8');
   res.set('Content-Disposition', 'attachment; filename="lista-prioridade-maquina-de-decisoes.csv"');
+  res.send('﻿' + lines.join('\r\n'));
+});
+
+// ---------- CRM simples dos empresários ----------
+const CRM_STATUS = ['novo', 'convite_enviado', 'respondeu', 'interessado', 'inscrito', 'sem_interesse', 'nao_quer_receber'];
+const CRM_CONSENT = ['sim', 'nao', 'nao_informado'];
+const CRM_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const CRM_COLS = 'id, nome, email, whats, empresa, cargo, status, origem, consentimento, consentimento_em, observacoes, ultima_interacao, created_at, updated_at';
+
+// Guarda só dígitos, sempre com o 55 na frente. Devolve '' quando não dá para confiar no número.
+function crmNormalizaWhats(raw) {
+  let d = String(raw == null ? '' : raw).replace(/\D/g, '');
+  if (!d) return '';
+  d = d.replace(/^0+/, '');
+  if (d.length === 10 && /[6-9]/.test(d[2])) d = d.slice(0, 2) + '9' + d.slice(2); // celular antigo sem o 9
+  if (d.length === 10 || d.length === 11) d = '55' + d;
+  if (d.length < 12 || d.length > 15) return '';
+  return d;
+}
+
+// Lê e valida um contato vindo do formulário ou da importação. { v } ok, { erro } inválido.
+function crmLimpa(b, { exigeNome }) {
+  const nome = clean(b.nome, 160);
+  const email = clean(b.email, 200).toLowerCase();
+  const whatsBruto = clean(b.whats, 40);
+  const whats = crmNormalizaWhats(whatsBruto);
+  if (exigeNome && !nome) return { erro: 'Informe o nome.' };
+  if (whatsBruto && !whats) return { erro: 'WhatsApp inválido (use DDD + número).' };
+  if (email && !CRM_EMAIL_RE.test(email)) return { erro: 'E-mail inválido.' };
+  if (!whats && !email) return { erro: 'Informe o WhatsApp ou o e-mail.' };
+  const status = CRM_STATUS.includes(b.status) ? b.status : 'novo';
+  const consentimento = CRM_CONSENT.includes(b.consentimento) ? b.consentimento : 'nao_informado';
+  return {
+    v: {
+      nome, email, whats, status, consentimento,
+      empresa: clean(b.empresa, 160), cargo: clean(b.cargo, 120),
+      origem: clean(b.origem, 120), observacoes: clean(b.observacoes, 2000),
+    },
+  };
+}
+
+app.get('/admin/crm', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-crm.html')));
+
+app.get('/admin/api/crm', async (_req, res) => {
+  const { rows } = await pool.query(`SELECT ${CRM_COLS} FROM crm_contatos ORDER BY created_at DESC, id DESC`);
+  res.json(rows);
+});
+
+app.post('/admin/api/crm', async (req, res) => {
+  const r = crmLimpa(req.body || {}, { exigeNome: true });
+  if (r.erro) return res.status(400).json({ error: r.erro });
+  const c = r.v;
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO crm_contatos (nome, email, whats, empresa, cargo, status, origem, consentimento, consentimento_em, observacoes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8, CASE WHEN $8 = 'sim' THEN now() END, $9) RETURNING ${CRM_COLS}`,
+      [c.nome, c.email, c.whats, c.empresa, c.cargo, c.status, c.origem, c.consentimento, c.observacoes]
+    );
+    res.status(201).json(rows[0]);
+  } catch (e) {
+    if (e.code === '23505') return res.status(409).json({ error: 'Já existe um contato com esse WhatsApp ou e-mail.' });
+    console.error('crm create:', e.message);
+    res.status(500).json({ error: 'Não foi possível salvar.' });
+  }
+});
+
+app.patch('/admin/api/crm/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Pedido inválido.' });
+  const atual = await pool.query(`SELECT ${CRM_COLS} FROM crm_contatos WHERE id=$1`, [id]);
+  if (!atual.rows[0]) return res.status(404).json({ error: 'Contato não encontrado.' });
+  const r = crmLimpa({ ...atual.rows[0], ...(req.body || {}) }, { exigeNome: true });
+  if (r.erro) return res.status(400).json({ error: r.erro });
+  const c = r.v;
+  const mudouStatus = c.status !== atual.rows[0].status;
+  try {
+    const { rows } = await pool.query(
+      `UPDATE crm_contatos SET nome=$2, email=$3, whats=$4, empresa=$5, cargo=$6, status=$7, origem=$8,
+         consentimento=$9,
+         consentimento_em = CASE WHEN $9 = 'sim' AND consentimento <> 'sim' THEN now() WHEN $9 <> 'sim' THEN NULL ELSE consentimento_em END,
+         observacoes=$10,
+         ultima_interacao = CASE WHEN $11 THEN now() ELSE ultima_interacao END,
+         updated_at = now()
+       WHERE id=$1 RETURNING ${CRM_COLS}`,
+      [id, c.nome, c.email, c.whats, c.empresa, c.cargo, c.status, c.origem, c.consentimento, c.observacoes, mudouStatus]
+    );
+    res.json(rows[0]);
+  } catch (e) {
+    if (e.code === '23505') return res.status(409).json({ error: 'Já existe outro contato com esse WhatsApp ou e-mail.' });
+    console.error('crm update:', e.message);
+    res.status(500).json({ error: 'Não foi possível salvar.' });
+  }
+});
+
+app.delete('/admin/api/crm/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Pedido inválido.' });
+  const { rowCount } = await pool.query('DELETE FROM crm_contatos WHERE id=$1', [id]);
+  res.status(rowCount ? 200 : 404).json({ ok: !!rowCount });
+});
+
+// Importação em lotes (o navegador manda no máximo ~50 por vez, por causa do limite do corpo da requisição).
+// Duplicado (mesmo WhatsApp ou e-mail) é ignorado, nunca sobrescreve o que já está no CRM.
+app.post('/admin/api/crm/importar', async (req, res) => {
+  const lista = Array.isArray(req.body && req.body.contatos) ? req.body.contatos.slice(0, 100) : [];
+  const padrao = req.body || {};
+  let criados = 0, duplicados = 0;
+  const invalidos = [];
+  for (let i = 0; i < lista.length; i++) {
+    const item = lista[i] || {};
+    const r = crmLimpa(
+      { ...item, origem: item.origem || padrao.origem, consentimento: item.consentimento || padrao.consentimento, status: 'novo' },
+      { exigeNome: false }
+    );
+    if (r.erro) { invalidos.push({ linha: item._linha || i + 1, nome: clean(item.nome, 80), motivo: r.erro }); continue; }
+    const c = r.v;
+    const ja = await pool.query(
+      `SELECT 1 FROM crm_contatos WHERE ($1 <> '' AND whats = $1) OR ($2 <> '' AND lower(email) = $2) LIMIT 1`,
+      [c.whats, c.email]
+    );
+    if (ja.rowCount) { duplicados++; continue; }
+    try {
+      await pool.query(
+        `INSERT INTO crm_contatos (nome, email, whats, empresa, cargo, status, origem, consentimento, consentimento_em, observacoes)
+         VALUES ($1,$2,$3,$4,$5,'novo',$6,$7, CASE WHEN $7 = 'sim' THEN now() END, $8)`,
+        [c.nome, c.email, c.whats, c.empresa, c.cargo, c.origem, c.consentimento, c.observacoes]
+      );
+      criados++;
+    } catch (e) {
+      if (e.code === '23505') duplicados++; // repetido dentro do próprio lote
+      else invalidos.push({ linha: item._linha || i + 1, nome: clean(item.nome, 80), motivo: 'Erro ao salvar.' });
+    }
+  }
+  res.json({ criados, duplicados, invalidos });
+});
+
+app.get('/admin/api/crm.csv', async (_req, res) => {
+  const { rows } = await pool.query(`SELECT ${CRM_COLS} FROM crm_contatos ORDER BY created_at ASC, id ASC`);
+  const esc = (v) => {
+    let s = String(v == null ? '' : v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // evita injeção de fórmula no Excel
+    return '"' + s.replace(/"/g, '""') + '"';
+  };
+  const iso = (d) => (d ? new Date(d).toISOString() : '');
+  const head = ['Nome', 'Email', 'WhatsApp', 'Empresa', 'Cargo', 'Status', 'Origem', 'Consentimento', 'Consentimento em', 'Observações', 'Última interação', 'Cadastrado em'];
+  const lines = [head.map(esc).join(';')].concat(
+    rows.map((d) => [d.nome, d.email, d.whats, d.empresa, d.cargo, d.status, d.origem, d.consentimento, iso(d.consentimento_em), d.observacoes, iso(d.ultima_interacao), iso(d.created_at)].map(esc).join(';'))
+  );
+  res.set('Content-Type', 'text/csv; charset=utf-8');
+  res.set('Content-Disposition', 'attachment; filename="crm-empresarios.csv"');
   res.send('﻿' + lines.join('\r\n'));
 });
 

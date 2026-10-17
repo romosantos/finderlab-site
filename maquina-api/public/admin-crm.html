@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin · CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap">
+<style>
+:root{--accent:#7443F5;--accent2:#A88BFF;--muted:#AEA9C5}
+*{box-sizing:border-box}
+body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;
+  background-image:radial-gradient(ellipse 900px 700px at 20% -10%,rgba(116,67,245,.28),transparent 65%)}
+.wrap{max-width:1240px;margin:0 auto;padding:40px 56px 96px}
+.pill{display:inline-flex;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:10px 18px;border-radius:8px}
+h1{margin:24px 0 0;font-size:clamp(34px,4vw,54px);font-weight:700;letter-spacing:-.04em;line-height:1;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
+.sub{margin:16px 0 0;color:var(--muted);font-size:16px;line-height:1.7;max-width:680px}
+.nav{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.nav a{display:inline-flex;align-items:center;min-height:42px;padding:0 16px;border-radius:9px;border:1px solid rgba(124,84,245,.4);color:#D2CEE6;font-size:13px;font-weight:600;text-decoration:none}
+.nav a.on{background:rgba(116,67,245,.35);border-color:#8B63FF;color:#fff}
+button,select,input,textarea{font-family:inherit}
+button{cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:36px}
+.stat{border:1px solid rgba(124,84,245,.5);background:rgba(20,12,46,.6);box-shadow:inset 0 0 24px rgba(116,67,245,.25),0 0 24px rgba(116,67,245,.12);border-radius:16px;padding:22px 24px}
+.stat b{display:block;font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.stat span{display:block;margin-top:8px;font-size:13px;color:var(--muted)}
+.bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:32px}
+.search{flex:1 1 280px;min-width:0;height:48px;padding:0 18px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.7);color:#F1EEFB;font-size:15px}
+.search::placeholder{color:#8F8AA8}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.chip{min-height:40px;padding:0 14px;border-radius:10px;border:1px solid rgba(124,84,245,.4);background:transparent;color:#D2CEE6;font-size:13px;font-weight:600}
+.chip.on{background:rgba(116,67,245,.35);border-color:#8B63FF;color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:0;background:var(--accent);color:#fff;font-size:14px;font-weight:700;min-height:46px;padding:0 22px;border-radius:10px;box-shadow:0 4px 24px rgba(116,67,245,.28);text-decoration:none}
+.btn:hover{box-shadow:0 12px 44px rgba(116,67,245,.55)}
+.btn.ghost{background:transparent;border:1px solid rgba(124,84,245,.5);box-shadow:none;color:#E4E0F4}
+:focus-visible{outline:2px solid #A88BFF;outline-offset:3px}
+.list{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.row{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.5fr) 190px auto auto;gap:18px;align-items:center;border:1px solid rgba(124,84,245,.4);background:rgba(20,12,46,.55);border-radius:16px;padding:18px 22px}
+.n{font-size:16px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.s{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
+.tags{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:600;color:#D2CEE6;border:1px solid rgba(124,84,245,.4);border-radius:7px;padding:3px 8px;white-space:nowrap}
+.tag.ok{border-color:rgba(30,158,106,.5);color:#5CD8A6;background:rgba(30,158,106,.14)}
+.tag.no{border-color:rgba(255,106,61,.55);color:#FF9B73;background:rgba(255,106,61,.14)}
+.row a.l{display:block;font-size:14px;color:#E4E0F4;line-height:1.7;text-decoration:none;overflow-wrap:anywhere}
+.row a.l:hover{color:var(--accent2)}
+.sel{width:100%;min-height:44px;padding:0 12px;border-radius:9px;border:1px solid rgba(124,84,245,.45);background:rgba(8,6,20,.8);color:#F1EEFB;font-size:13px;font-weight:600}
+.sm{min-height:44px;padding:0 14px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:transparent;color:#D2CEE6;font-size:12px;font-weight:600}
+.sm:hover{border-color:#A88BFF;color:#fff}
+.del:hover{border-color:#FFB86B;color:#FFB86B}
+.del.arm{border-color:#FF7A7A;color:#FF9A9A;background:rgba(255,80,80,.12)}
+.empty{margin-top:28px;border:1px dashed rgba(124,84,245,.45);border-radius:16px;padding:48px 24px;text-align:center;color:var(--muted);line-height:1.7}
+dialog{border:1px solid rgba(124,84,245,.55);background:#0C0919;color:#F1EEFB;border-radius:18px;padding:28px;width:min(640px,calc(100vw - 32px));box-shadow:0 24px 80px rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(3,2,10,.78)}
+dialog h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}
+dialog p.h{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.6}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid .full{grid-column:1/-1}
+label{display:block;font-size:12px;font-weight:600;color:#D2CEE6;margin-bottom:6px}
+.in{width:100%;min-height:46px;padding:10px 14px;border-radius:9px;border:1px solid rgba(124,84,245,.4);background:rgba(8,6,20,.8);color:#F1EEFB;font-size:14px}
+textarea.in{min-height:96px;resize:vertical;line-height:1.5}
+.acts{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+.msg{margin-top:14px;font-size:13px;line-height:1.6;color:#FFB86B;overflow-wrap:anywhere}
+.msg.ok{color:#5CD8A6}
+.hint{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px}
+@media(max-width:1100px){.wrap{padding-left:40px;padding-right:40px}.row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 20px}}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.wrap{padding:28px 20px 72px}.stat{padding:18px}.stat b{font-size:28px}.row{grid-template-columns:1fr;padding:18px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pill">Área administrativa</div>
+  <h1>CRM</h1>
+  <p class="sub">Cadastro dos empresários: contato, empresa, cargo, em que pé está a conversa e se autorizou receber mensagem. Marque "Não quer receber" em quem pedir para sair, para não entrar de novo em nenhum disparo.</p>
+  <div class="nav">
+    <a href="/admin/acessos">Acessos</a>
+    <a href="/admin/inscricoes">Inscrições</a>
+    <a href="/admin/whatsapp">Conversas WhatsApp</a>
+    <a href="/admin/diagnosticos">Diagnósticos</a>
+    <a href="/admin/lista">Lista de prioridade</a>
+    <a href="/admin/crm" class="on">CRM</a>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="nTotal">0</b><span>Contatos</span></div>
+    <div class="stat"><b id="nOk">0</b><span>Autorizaram receber mensagem</span></div>
+    <div class="stat"><b id="nConv">0</b><span>Já saíram do status Novo</span></div>
+    <div class="stat"><b id="nQuente">0</b><span>Interessados ou inscritos</span></div>
+  </div>
+
+  <div class="bar">
+    <input id="q" class="search" type="search" placeholder="Buscar por nome, empresa, cargo, e-mail ou telefone" aria-label="Buscar no CRM">
+    <button class="btn" type="button" id="bNovo">Novo contato</button>
+    <button class="btn ghost" type="button" id="bImp">Importar lista</button>
+    <a class="btn ghost" href="/admin/api/crm.csv">Exportar CSV</a>
+  </div>
+  <div class="chips" id="chips" role="group" aria-label="Filtrar por status"></div>
+
+  <div class="list" id="list" aria-live="polite"></div>
+</div>
+
+<dialog id="dForm">
+  <form method="dialog" id="fForm" novalidate>
+    <h2 id="fTitulo">Novo contato</h2>
+    <p class="h">Preencha o WhatsApp (com DDD) ou o e-mail. O nome é obrigatório.</p>
+    <div class="grid">
+      <div><label for="fNome">Nome</label><input class="in" id="fNome" maxlength="160" autocomplete="off"></div>
+      <div><label for="fWhats">WhatsApp</label><input class="in" id="fWhats" maxlength="40" inputmode="tel" placeholder="(11) 99999-9999" autocomplete="off"></div>
+      <div><label for="fEmail">E-mail</label><input class="in" id="fEmail" maxlength="200" inputmode="email" autocomplete="off"></div>
+      <div><label for="fEmpresa">Empresa</label><input class="in" id="fEmpresa" maxlength="160" autocomplete="off"></div>
+      <div><label for="fCargo">Cargo</label><input class="in" id="fCargo" maxlength="120" autocomplete="off"></div>
+      <div><label for="fStatus">Status</label><select class="in" id="fStatus"></select></div>
+      <div><label for="fOrigem">Origem</label><input class="in" id="fOrigem" maxlength="120" placeholder="Ex.: lista do evento X" autocomplete="off"></div>
+      <div><label for="fConsent">Autorizou receber mensagem?</label>
+        <select class="in" id="fConsent"><option value="nao_informado">Não informado</option><option value="sim">Sim</option><option value="nao">Não</option></select></div>
+      <div class="full"><label for="fObs">Observações</label><textarea class="in" id="fObs" maxlength="2000"></textarea></div>
+    </div>
+    <div class="msg" id="fMsg" role="alert"></div>
+    <div class="acts">
+      <button type="button" class="btn ghost" id="fCancel">Cancelar</button>
+      <button type="submit" class="btn" id="fSalvar">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dImp">
+  <form method="dialog" id="fImp" novalidate>
+    <h2>Importar lista</h2>
+    <p class="h">Cole as linhas copiadas de uma planilha (ou escolha um arquivo CSV). A primeira linha precisa ter os títulos: nome, e-mail, telefone ou whatsapp, empresa, cargo. Quem já está no CRM (mesmo WhatsApp ou e-mail) é ignorado.</p>
+    <div class="grid">
+      <div class="full"><label for="iArq">Arquivo CSV</label><input class="in" type="file" id="iArq" accept=".csv,.txt,text/csv,text/plain"></div>
+      <div class="full"><label for="iTxt">Ou cole aqui</label><textarea class="in" id="iTxt" style="min-height:140px" placeholder="nome;email;telefone;empresa;cargo"></textarea></div>
+      <div><label for="iOrigem">Origem desta lista</label><input class="in" id="iOrigem" maxlength="120" placeholder="Ex.: lista de empresários, set/2026" autocomplete="off"></div>
+      <div><label for="iConsent">Autorizaram receber mensagem?</label>
+        <select class="in" id="iConsent"><option value="nao_informado">Não informado</option><option value="sim">Sim, todos autorizaram</option><option value="nao">Não</option></select></div>
+    </div>
+    <p class="hint">Só marque "Sim" se essas pessoas realmente autorizaram receber WhatsApp. É isso que protege a qualidade do número na Meta.</p>
+    <div class="msg" id="iMsg" role="status"></div>
+    <div class="acts">
+      <button type="button" class="btn ghost" id="iCancel">Fechar</button>
+      <button type="submit" class="btn" id="iGo">Importar</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  var STATUS = [
+    ['novo', 'Novo'], ['convite_enviado', 'Convite enviado'], ['respondeu', 'Respondeu'], ['interessado', 'Interessado'],
+    ['inscrito', 'Inscrito'], ['sem_interesse', 'Sem interesse'], ['nao_quer_receber', 'Não quer receber']
+  ];
+  var SLABEL = {}; STATUS.forEach(function (s) { SLABEL[s[0]] = s[1]; });
+  var items = [], q = '', filtro = '', armed = null, armT = null, editId = null;
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text; // textContent: nunca interpreta HTML
+    return e;
+  }
+  function api(method, url, body) {
+    var opt = { method: method, credentials: 'same-origin', headers: {} };
+    if (body !== undefined) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+    return fetch(url, opt).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (!r.ok) { var e = new Error(j.error || r.status); e.status = r.status; throw e; }
+        return j;
+      });
+    });
+  }
+  function fmt(d) {
+    var x = new Date(d);
+    return x.toLocaleDateString('pt-BR') + ' ' + x.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
+  function fmtFone(w) {
+    var d = String(w || '');
+    if (/^55\d{11}$/.test(d)) return '(' + d.slice(2, 4) + ') ' + d.slice(4, 9) + '-' + d.slice(9);
+    if (/^55\d{10}$/.test(d)) return '(' + d.slice(2, 4) + ') ' + d.slice(4, 8) + '-' + d.slice(8);
+    return d ? '+' + d : '';
+  }
+  function fillStatus(sel, withAll) {
+    sel.textContent = '';
+    STATUS.forEach(function (s) { var o = el('option', null, s[1]); o.value = s[0]; sel.appendChild(o); });
+  }
+
+  function load() {
+    return api('GET', '/admin/api/crm').then(function (rows) { items = rows; render(); })
+      .catch(function () {
+        var l = $('list'); l.textContent = '';
+        l.appendChild(el('div', 'empty', 'Não foi possível carregar o CRM. Recarregue a página.'));
+      });
+  }
+
+  function renderChips() {
+    var box = $('chips'); box.textContent = '';
+    var cont = { '': items.length };
+    items.forEach(function (d) { cont[d.status] = (cont[d.status] || 0) + 1; });
+    [['', 'Todos']].concat(STATUS).forEach(function (s) {
+      var b = el('button', 'chip' + (filtro === s[0] ? ' on' : ''), s[1] + ' (' + (cont[s[0]] || 0) + ')');
+      b.type = 'button';
+      b.addEventListener('click', function () { filtro = s[0]; render(); });
+      box.appendChild(b);
+    });
+  }
+
+  function render() {
+    $('nTotal').textContent = items.length;
+    $('nOk').textContent = items.filter(function (d) { return d.consentimento === 'sim'; }).length;
+    $('nConv').textContent = items.filter(function (d) { return d.status !== 'novo'; }).length;
+    $('nQuente').textContent = items.filter(function (d) { return d.status === 'interessado' || d.status === 'inscrito'; }).length;
+    renderChips();
+
+    var t = q.trim().toLowerCase();
+    var tDig = t.replace(/\D/g, '');
+    var list = $('list'); list.textContent = '';
+    var shown = items.filter(function (d) {
+      if (filtro && d.status !== filtro) return false;
+      if (!t) return true;
+      if ([d.nome, d.email, d.empresa, d.cargo, d.origem, d.observacoes].join(' ').toLowerCase().indexOf(t) !== -1) return true;
+      return tDig.length >= 4 && d.whats.indexOf(tDig) !== -1;
+    });
+    if (!shown.length) {
+      list.appendChild(el('div', 'empty', items.length ? 'Nada encontrado com esse filtro.' : 'O CRM está vazio. Use "Novo contato" ou "Importar lista" para começar.'));
+      return;
+    }
+    shown.forEach(function (d) {
+      var row = el('div', 'row');
+
+      var main = el('div');
+      main.appendChild(el('div', 'n', d.nome || '(sem nome)'));
+      var sub = [d.cargo, d.empresa].filter(Boolean).join(' @ ');
+      main.appendChild(el('div', 's', sub || 'Sem empresa e cargo informados.'));
+      var tags = el('div', 'tags');
+      tags.appendChild(el('span', 'tag ' + (d.consentimento === 'sim' ? 'ok' : d.consentimento === 'nao' ? 'no' : ''), d.consentimento === 'sim' ? 'autorizou mensagem' : d.consentimento === 'nao' ? 'NÃO autorizou' : 'autorização não informada'));
+      if (d.origem) tags.appendChild(el('span', 'tag', 'origem: ' + d.origem));
+      tags.appendChild(el('span', 'tag', d.ultima_interacao ? 'última interação ' + fmt(d.ultima_interacao) : 'sem interação ainda'));
+      main.appendChild(tags);
+      if (d.observacoes) main.appendChild(el('div', 's', d.observacoes));
+      row.appendChild(main);
+
+      var c1 = el('div');
+      if (d.whats) {
+        var w = el('a', 'l', fmtFone(d.whats)); w.href = 'https://wa.me/' + d.whats; w.target = '_blank'; w.rel = 'noopener';
+        c1.appendChild(w);
+      }
+      if (d.email) { var m = el('a', 'l', d.email); m.href = 'mailto:' + d.email; c1.appendChild(m); }
+      row.appendChild(c1);
+
+      var sel = el('select', 'sel'); sel.setAttribute('aria-label', 'Status de ' + (d.nome || 'contato'));
+      fillStatus(sel); sel.value = d.status;
+      sel.addEventListener('change', function () {
+        api('PATCH', '/admin/api/crm/' + d.id, { status: sel.value }).then(load).catch(function (e) { alert(e.message); load(); });
+      });
+      row.appendChild(sel);
+
+      var ed = el('button', 'sm', 'Editar'); ed.type = 'button';
+      ed.addEventListener('click', function () { abrirForm(d); });
+      row.appendChild(ed);
+
+      var del = el('button', 'sm del' + (armed === d.id ? ' arm' : ''), armed === d.id ? 'Confirmar' : 'Remover');
+      del.type = 'button';
+      del.addEventListener('click', function () { remover(d.id); });
+      row.appendChild(del);
+
+      list.appendChild(row);
+    });
+  }
+
+  function remover(id) {
+    if (armed !== id) {
+      armed = id; clearTimeout(armT);
+      armT = setTimeout(function () { armed = null; render(); }, 4000);
+      render(); return;
+    }
+    armed = null;
+    api('DELETE', '/admin/api/crm/' + id).then(load);
+  }
+
+  // ----- formulário (novo / editar)
+  function abrirForm(d) {
+    editId = d ? d.id : null;
+    $('fTitulo').textContent = d ? 'Editar contato' : 'Novo contato';
+    $('fNome').value = d ? d.nome : '';
+    $('fWhats').value = d ? fmtFone(d.whats) : '';
+    $('fEmail').value = d ? d.email : '';
+    $('fEmpresa').value = d ? d.empresa : '';
+    $('fCargo').value = d ? d.cargo : '';
+    $('fStatus').value = d ? d.status : 'novo';
+    $('fOrigem').value = d ? d.origem : '';
+    $('fConsent').value = d ? d.consentimento : 'nao_informado';
+    $('fObs').value = d ? d.observacoes : '';
+    $('fMsg').textContent = '';
+    $('dForm').showModal();
+    $('fNome').focus();
+  }
+  $('bNovo').addEventListener('click', function () { abrirForm(null); });
+  $('fCancel').addEventListener('click', function () { $('dForm').close(); });
+  $('fForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var body = {
+      nome: $('fNome').value, whats: $('fWhats').value, email: $('fEmail').value, empresa: $('fEmpresa').value,
+      cargo: $('fCargo').value, status: $('fStatus').value, origem: $('fOrigem').value,
+      consentimento: $('fConsent').value, observacoes: $('fObs').value
+    };
+    $('fSalvar').disabled = true;
+    api(editId ? 'PATCH' : 'POST', '/admin/api/crm' + (editId ? '/' + editId : ''), body)
+      .then(function () { $('dForm').close(); return load(); })
+      .catch(function (err) { $('fMsg').className = 'msg'; $('fMsg').textContent = err.message; })
+      .then(function () { $('fSalvar').disabled = false; });
+  });
+
+  // ----- importação
+  function parseTabela(texto) {
+    texto = String(texto || '').replace(/^﻿/, '');
+    var linhas = texto.split(/\r\n|\n|\r/).filter(function (l) { return l.trim() !== ''; });
+    if (linhas.length < 2) return { erro: 'Cole pelo menos a linha de títulos e um contato.' };
+    var cab = linhas[0];
+    var delim = ['\t', ';', ','].map(function (d) { return [d, cab.split(d).length]; }).sort(function (a, b) { return b[1] - a[1]; })[0][0];
+    function partir(l) {
+      var out = [], cur = '', asp = false;
+      for (var i = 0; i < l.length; i++) {
+        var ch = l[i];
+        if (asp) { if (ch === '"' && l[i + 1] === '"') { cur += '"'; i++; } else if (ch === '"') asp = false; else cur += ch; }
+        else if (ch === '"') asp = true;
+        else if (ch === delim) { out.push(cur); cur = ''; }
+        else cur += ch;
+      }
+      out.push(cur);
+      return out.map(function (c) { return c.trim(); });
+    }
+    function norm(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, ''); }
+    var mapa = {};
+    partir(cab).forEach(function (h, i) {
+      var k = norm(h);
+      if (/^(nome|name|contato)/.test(k)) mapa.nome = i;
+      else if (/mail/.test(k)) mapa.email = i;
+      else if (/(whats|telefone|celular|fone|phone|tel)/.test(k)) mapa.whats = i;
+      else if (/(empresa|company|negocio)/.test(k)) mapa.empresa = i;
+      else if (/(cargo|funcao|role|title|posicao)/.test(k)) mapa.cargo = i;
+    });
+    if (mapa.whats == null && mapa.email == null) return { erro: 'Não achei uma coluna de telefone/WhatsApp nem de e-mail na primeira linha.' };
+    var out = [];
+    for (var n = 1; n < linhas.length; n++) {
+      var c = partir(linhas[n]);
+      var pega = function (k) { return mapa[k] != null ? (c[mapa[k]] || '') : ''; };
+      out.push({ nome: pega('nome'), email: pega('email'), whats: pega('whats'), empresa: pega('empresa'), cargo: pega('cargo'), _linha: n + 1 });
+    }
+    return { contatos: out };
+  }
+  $('bImp').addEventListener('click', function () {
+    $('iTxt').value = ''; $('iArq').value = ''; $('iMsg').textContent = ''; $('iMsg').className = 'msg';
+    $('dImp').showModal();
+  });
+  $('iCancel').addEventListener('click', function () { $('dImp').close(); load(); });
+  $('iArq').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () { $('iTxt').value = String(r.result || ''); };
+    r.readAsText(f, 'utf-8');
+  });
+  $('fImp').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var msg = $('iMsg'); msg.className = 'msg';
+    var p = parseTabela($('iTxt').value);
+    if (p.erro) { msg.textContent = p.erro; return; }
+    var lotes = [];
+    for (var i = 0; i < p.contatos.length; i += 50) lotes.push(p.contatos.slice(i, i + 50));
+    var tot = { criados: 0, duplicados: 0, invalidos: [] };
+    $('iGo').disabled = true;
+    var origem = $('iOrigem').value, consent = $('iConsent').value;
+    var seq = Promise.resolve();
+    lotes.forEach(function (lote, i) {
+      seq = seq.then(function () {
+        msg.textContent = 'Importando… ' + Math.min((i + 1) * 50, p.contatos.length) + ' de ' + p.contatos.length;
+        return api('POST', '/admin/api/crm/importar', { contatos: lote, origem: origem, consentimento: consent }).then(function (r) {
+          tot.criados += r.criados; tot.duplicados += r.duplicados; tot.invalidos = tot.invalidos.concat(r.invalidos);
+        });
+      });
+    });
+    seq.then(function () {
+      msg.className = 'msg ok';
+      var t = tot.criados + ' contatos novos, ' + tot.duplicados + ' já estavam no CRM, ' + tot.invalidos.length + ' com problema.';
+      if (tot.invalidos.length) {
+        t += ' Linhas com problema: ' + tot.invalidos.slice(0, 15).map(function (x) { return x.linha + ' (' + x.motivo + ')'; }).join('; ') + (tot.invalidos.length > 15 ? '…' : '');
+      }
+      msg.textContent = t;
+      return load();
+    }).catch(function (err) {
+      msg.textContent = 'A importação parou: ' + err.message + '. O que já foi enviado ficou salvo; é seguro tentar de novo, repetidos são ignorados.';
+      return load();
+    }).then(function () { $('iGo').disabled = false; });
+  });
+
+  $('q').addEventListener('input', function (e) { q = e.target.value; render(); });
+  fillStatus($('fStatus'));
+  load();
+})();
+</script>
+</body>
+</html>
