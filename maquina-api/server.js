@@ -3305,7 +3305,7 @@ app.patch('/admin/api/crm/:id', async (req, res) => {
   if (!Number.isInteger(id)) return res.status(400).json({ error: 'Pedido inválido.' });
   const atual = await pool.query(`SELECT ${CRM_COLS} FROM crm_contatos WHERE id=$1`, [id]);
   if (!atual.rows[0]) return res.status(404).json({ error: 'Contato não encontrado.' });
-  const r = crmLimpa({ ...atual.rows[0], ...(req.body || {}) }, { exigeNome: true });
+  const r = crmLimpa({ ...atual.rows[0], ...(req.body || {}) }, { exigeNome: false }); // contato sem nome (nome perdido) ainda pode mudar de status
   if (r.erro) return res.status(400).json({ error: r.erro });
   const c = r.v;
   const mudouStatus = c.status !== atual.rows[0].status;
@@ -3347,7 +3347,7 @@ app.post('/admin/api/crm/importar', async (req, res) => {
   for (let i = 0; i < lista.length; i++) {
     const item = lista[i] || {};
     const r = crmLimpa(
-      { ...item, origem: item.origem || padrao.origem, consentimento: item.consentimento || padrao.consentimento, status: 'novo' },
+      { ...item, origem: item.origem || padrao.origem, consentimento: item.consentimento || padrao.consentimento, status: item.status || padrao.status || 'novo', observacoes: item.observacoes || padrao.observacoes },
       { exigeNome: false }
     );
     if (r.erro) { invalidos.push({ linha: item._linha || i + 1, nome: clean(item.nome, 80), motivo: r.erro }); continue; }
@@ -3360,8 +3360,8 @@ app.post('/admin/api/crm/importar', async (req, res) => {
     try {
       await pool.query(
         `INSERT INTO crm_contatos (nome, email, whats, empresa, cargo, status, origem, consentimento, consentimento_em, observacoes)
-         VALUES ($1,$2,$3,$4,$5,'novo',$6,$7, CASE WHEN $7 = 'sim' THEN now() END, $8)`,
-        [c.nome, c.email, c.whats, c.empresa, c.cargo, c.origem, c.consentimento, c.observacoes]
+         VALUES ($1,$2,$3,$4,$5,$9,$6,$7, CASE WHEN $7 = 'sim' THEN now() END, $8)`,
+        [c.nome, c.email, c.whats, c.empresa, c.cargo, c.origem, c.consentimento, c.observacoes, c.status]
       );
       criados++;
     } catch (e) {
