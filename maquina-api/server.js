@@ -1360,6 +1360,7 @@ async function saveLead(input, opts) {
     [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes, ingresso]
   );
   notifyLeadWhatsApp({ id: rows[0].id, nome, email, whats, empresa, cargo });
+  crmAtualiza({ whats, email, status: 'interessado' });
   return { ok: true, id: rows[0].id };
 }
 
@@ -1636,6 +1637,7 @@ async function saveContatoServico(d, ctx) {
          necessidade=COALESCE(NULLIF($6,''), necessidade), updated_at=now() WHERE id=$1`,
       [dup.rows[0].id, nome, whats, empresa, cargo, necessidade]
     );
+    crmAtualiza({ whats, email, status: 'interessado' });
     return { ok: true, novo: false, id: dup.rows[0].id };
   }
 
@@ -1646,6 +1648,7 @@ async function saveContatoServico(d, ctx) {
   );
   const enviado = await sendServicoEmail({ nome, email, whats, empresa, cargo, necessidade });
   if (enviado) await pool.query('UPDATE contatos_servico SET notificado_em=now() WHERE id=$1', [rows[0].id]);
+  crmAtualiza({ whats, email, status: 'interessado' });
   return { ok: true, novo: true, avisado: enviado, id: rows[0].id };
 }
 
@@ -1692,6 +1695,7 @@ async function saveLista(d, via) {
     const enviado = await sendListaEmail(email, nome);
     if (enviado) await pool.query('UPDATE lista_interesse SET confirmacao_enviada_em = now() WHERE id=$1', [rows[0].id]);
   }
+  crmAtualiza({ whats, email, status: 'interessado' });
   return { ok: true, novo: rows[0].novo };
 }
 
@@ -1882,6 +1886,7 @@ function mensagemPagamentoConfirmadoChat(lead) {
 // só acontece uma vez por pagamento, mesmo que o webhook chegue repetido ou o chat consulte junto.
 async function confirmarPagamentoLead(leadId) {
   await pool.query(`UPDATE leads SET status='pago', updated_at=now() WHERE id=$1`, [leadId]);
+  pool.query('SELECT whats, email FROM leads WHERE id=$1', [leadId]).then((r) => r.rows[0] && crmAtualiza({ whats: r.rows[0].whats, email: r.rows[0].email, status: 'inscrito' })).catch(() => {});
   const claim = await pool.query(
     `UPDATE payments SET boas_vindas_enviada_em=now()
      WHERE id = (SELECT id FROM payments WHERE lead_id=$1 ORDER BY created_at DESC LIMIT 1)
@@ -2154,6 +2159,18 @@ const CHAT_TOOLS = [
   },
   ...CAL_TOOLS,
   {
+    name: 'atualizar_status_crm',
+    description:
+      'Anota internamente, no CRM do Rodrigo, em que pé está esta pessoa na conversa do WhatsApp. Use SOMENTE quando a pessoa deixar claro, com as palavras dela: (a) "interessado": quer participar ou pede para seguir com a inscrição, valores ou como funciona a compra; (b) "sem_interesse": diz que não tem interesse ou que não vai participar; (c) "nao_quer_receber": pede para não receber mais mensagens. Não use por dúvida solta, curiosidade ou palavra ambígua. Nunca mencione essa anotação para a pessoa. Pode ser chamada de novo se ela mudar de ideia.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', enum: ['interessado', 'sem_interesse', 'nao_quer_receber'], description: 'O que a pessoa deixou claro.' },
+      },
+      required: ['status'],
+    },
+  },
+  {
     name: 'registrar_contato_servico',
     description:
       'Registra o pedido de quem quer contratar a Finder Lab ou o Rodrigo como fornecedor (consultoria de IA, produto ou agente de IA sob medida, integração de IA, versão in company, grupo maior que 3 pessoas) e avisa o Rodrigo por e-mail. NÃO é a inscrição na imersão. Só chame depois de ter nome, email e WhatsApp com DDD informados pela pessoa nesta conversa, de ter repetido esses dados pra ela confirmar, e de ela ter dito explicitamente que sim à pergunta se o Rodrigo pode entrar em contato por email e WhatsApp. Nunca invente, deduza nem preencha campo sozinho. Chame uma única vez por pessoa. Se a pessoa não quiser deixar os dados, não chame: passe os contatos do Rodrigo.',
@@ -2336,6 +2353,16 @@ async function runChatToolBase(name, toolInput, originUrl, ctx) {
       return { ok: false, error: 'Falha ao registrar agora. NÃO diga que registrou. Passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br do Rodrigo para a pessoa chamar direto.' };
     }
   }
+  if (name === 'atualizar_status_crm') {
+    const st = toolInput && ['interessado', 'sem_interesse', 'nao_quer_receber'].includes(toolInput.status) ? toolInput.status : null;
+    if (st && ctx && ctx.phone) await crmAtualiza({ whats: ctx.phone, status: st });
+    return {
+      ok: true,
+      instrucao: st === 'nao_quer_receber'
+        ? 'Anotado. Confirme em uma frase que não enviará mais mensagens e que a pessoa pode chamar quando quiser.'
+        : 'Anotado internamente. Não mencione isso e siga a conversa normalmente.',
+    };
+  }
   if (name === 'consultar_endereco_cep') return lookupCep(toolInput?.cep);
   if (name === 'registrar_inscricao') {
     const result = await saveLead(toolInput, { turma: ctx && ctx.turma, pessoas: toolInput && toolInput.quantidade_pessoas, participantes: toolInput && toolInput.outros_participantes });
@@ -2346,6 +2373,7 @@ async function runChatToolBase(name, toolInput, originUrl, ctx) {
   if (name === 'registrar_diagnostico') {
     const result = await saveDiagnostico(toolInput, ctx && ctx.sessionId);
     if (result.ok) {
+      crmAtualiza({ whats: result.whats || (toolInput && toolInput.whats), email: result.email || (toolInput && toolInput.email), status: 'interessado' });
       // dispara o email quando o dossiê já tem leitura + email válido e ainda não foi enviado
       // (vale mesmo se o email chegou numa chamada depois da leitura; nunca reenvia)
       const out = { sucesso: true, id: result.id };
@@ -2956,6 +2984,16 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
   try {
     await saveWhatsAppMessage({ phone, direction: 'in', body, profileName, messageSid });
 
+    // Pedido de sair (PARAR): marca no CRM, confirma e não passa pelo agente.
+    if (CRM_OPTOUT_RE.test(body)) {
+      await crmAtualiza({ whats: phone, status: 'nao_quer_receber' });
+      const adeus = 'Combinado, não envio mais mensagens por aqui. Se mudar de ideia, é só me chamar. Obrigado!';
+      await sendWhatsAppFreeform(phone, adeus);
+      await saveWhatsAppMessage({ phone, direction: 'out', body: adeus });
+      return;
+    }
+    await crmAtualiza({ whats: phone, status: 'respondeu' });
+
     if (!chatReady || !anthropic) {
       console.error('WhatsApp inbound: agente indisponível (chatReady=%s) para %s', chatReady, phone);
       return;
@@ -2964,7 +3002,7 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
     const history = await loadWhatsAppHistory(phone);
     const turma = await resolveWhatsAppTurma(phone, body);
     const systemPrompt = turma ? SYSTEM_PROMPT + '\n\n---\n\n' + TURMA_ADDENDUM + '\n\n---\n\n' + turmaFatos(turma) + WHATSAPP_TURMA_CANAL : undefined;
-    const ctx = turma ? { turma: turma.slug } : undefined;
+    const ctx = turma ? { turma: turma.slug, phone } : { phone };
     const { reply } = await getAgentReply(history, systemPrompt, SITE_ORIGIN, undefined, undefined, ctx);
     if (!reply) {
       console.error('WhatsApp inbound: sem resposta do modelo pra %s', phone);
@@ -3189,6 +3227,49 @@ function crmLimpa(b, { exigeNome }) {
     },
   };
 }
+
+// ---------- CRM: status automáticos (Drigo, formulários e pagamento) ----------
+// Só avança o andamento (novo < respondeu < interessado < inscrito). "Sem interesse" e "não quer receber"
+// vêm de um pedido explícito da pessoa; quem pediu para sair nunca é reativado sozinho (só o inscrito
+// registra o pagamento, e a autorização continua "não"). Nunca derruba o fluxo que chamou: falha só loga.
+const CRM_RANK = { novo: 0, convite_enviado: 1, respondeu: 2, sem_interesse: 2, interessado: 3, inscrito: 4 };
+async function crmAtualiza({ whats, email, status }) {
+  try {
+    const w = crmNormalizaWhats(whats);
+    const e = String(email || '').trim().toLowerCase();
+    if (!w && !e) return false;
+    const { rows } = await pool.query(
+      `SELECT id, status FROM crm_contatos
+       WHERE ($1 <> '' AND substr(whats,1,4) = substr($1,1,4) AND right(whats,8) = right($1,8))
+          OR ($2 <> '' AND lower(email) = $2)
+       ORDER BY id LIMIT 1`,
+      [w, e]
+    );
+    const c = rows[0];
+    if (!c) return false;
+    let novo = c.status;
+    if (status === 'nao_quer_receber') novo = 'nao_quer_receber';
+    else if (c.status === 'nao_quer_receber') novo = status === 'inscrito' ? 'inscrito' : c.status;
+    else if (c.status === 'inscrito') novo = c.status;
+    else if (status === 'sem_interesse') novo = 'sem_interesse';
+    else if ((CRM_RANK[status] == null ? -1 : CRM_RANK[status]) > (CRM_RANK[c.status] == null ? 0 : CRM_RANK[c.status])) novo = status;
+    await pool.query(
+      `UPDATE crm_contatos SET status=$2,
+         consentimento = CASE WHEN $2 = 'nao_quer_receber' THEN 'nao' ELSE consentimento END,
+         consentimento_em = CASE WHEN $2 = 'nao_quer_receber' THEN NULL ELSE consentimento_em END,
+         ultima_interacao = now(), updated_at = now()
+       WHERE id=$1`,
+      [c.id, novo]
+    );
+    return true;
+  } catch (err) {
+    console.error('crmAtualiza', err && err.message ? err.message : err);
+    return false;
+  }
+}
+
+// Pedido claro de sair, na mensagem inteira ("PARAR") ou dito por extenso.
+const CRM_OPTOUT_RE = /^\s*(parar|pare|stop|sair|descadastrar)\s*[.!]*\s*$|n[aã]o quero (mais )?receber|(pare|para) de (me )?(enviar|mandar)|me (tire|retire|remova|exclua) d[ae]s? (lista|mensagens)|descadastr/i;
 
 app.get('/admin/crm', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-crm.html')));
 
