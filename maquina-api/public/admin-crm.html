@@ -13,7 +13,8 @@
 *{box-sizing:border-box}
 body{margin:0;background:#05040C;color:#F1EEFB;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;
   background-image:radial-gradient(ellipse 900px 700px at 20% -10%,rgba(116,67,245,.28),transparent 65%)}
-.wrap{max-width:1240px;margin:0 auto;padding:40px 56px 96px}
+.wrap{max-width:1600px;margin:0 auto;padding:40px 28px 96px}
+.wrap>.sub,.wrap>.stats{max-width:1240px}
 .pill{display:inline-flex;border:1px solid rgba(168,139,255,.5);background:rgba(116,67,245,.12);color:var(--accent2);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:10px 18px;border-radius:8px}
 h1{margin:24px 0 0;font-size:clamp(34px,4vw,54px);font-weight:700;letter-spacing:-.04em;line-height:1;text-shadow:0 4px 24px rgba(116,67,245,.28),0 0 60px rgba(116,67,245,.16)}
 .sub{margin:16px 0 0;color:var(--muted);font-size:16px;line-height:1.7;max-width:680px}
@@ -52,6 +53,27 @@ button{cursor:pointer}
 .del:hover{border-color:#FFB86B;color:#FFB86B}
 .del.arm{border-color:#FF7A7A;color:#FF9A9A;background:rgba(255,80,80,.12)}
 .empty{margin-top:28px;border:1px dashed rgba(124,84,245,.45);border-radius:16px;padding:48px 24px;text-align:center;color:var(--muted);line-height:1.7}
+.board{display:none;gap:10px;overflow-x:auto;margin-top:22px;padding-bottom:16px;align-items:flex-start;scroll-snap-type:x proximity}
+.col{flex:1 1 170px;min-width:170px;scroll-snap-align:start;background:rgba(20,12,46,.45);border:1px solid rgba(124,84,245,.35);border-top:3px solid var(--c,#8B63FF);border-radius:16px;padding:12px;min-height:150px}
+.col.over{border-color:#A88BFF;background:rgba(116,67,245,.2)}
+.colh{display:flex;justify-content:space-between;align-items:center;padding:4px 6px 12px;font-size:13px;font-weight:700;letter-spacing:.02em}
+.colh .ct{min-width:26px;text-align:center;padding:2px 8px;border-radius:99px;background:rgba(116,67,245,.3);font-size:12px}
+.colb{display:flex;flex-direction:column;gap:8px;max-height:66vh;overflow-y:auto;min-height:70px;padding:2px}
+.colb:empty::after{content:'Solte um contato aqui';display:block;border:1px dashed rgba(124,84,245,.4);border-radius:12px;padding:22px 10px;text-align:center;font-size:12px;color:#8F8AA8}
+.card{border:1px solid rgba(124,84,245,.4);background:rgba(12,9,25,.92);border-radius:12px;padding:12px 14px;cursor:grab;user-select:none;-webkit-user-select:none}
+.card:hover{border-color:#A88BFF}
+.card.drag{opacity:.35}
+.card .cn{font-size:14px;font-weight:600;line-height:1.35;overflow-wrap:anywhere}
+.card .cn.nn{color:#AEA9C5;font-style:italic;font-weight:500}
+.card .cs{margin-top:3px;font-size:12px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
+.card a.wa{display:inline-block;margin-top:6px;font-size:12px;color:#CFC6F5;text-decoration:none}
+.card a.wa:hover{color:#fff;text-decoration:underline}
+.card .tags{margin-top:8px}
+.card .tag{white-space:normal;overflow-wrap:anywhere}
+.vw{display:flex;gap:6px}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#1B1438;border:1px solid #8B63FF;color:#F1EEFB;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:50;opacity:0;pointer-events:none;transition:opacity .2s;max-width:calc(100vw - 32px)}
+#toast.on{opacity:1}
+#toast.err{border-color:#FF7A7A;color:#FFB4B4}
 dialog{border:1px solid rgba(124,84,245,.55);background:#0C0919;color:#F1EEFB;border-radius:18px;padding:28px;width:min(640px,calc(100vw - 32px));box-shadow:0 24px 80px rgba(0,0,0,.6)}
 dialog::backdrop{background:rgba(3,2,10,.78)}
 dialog h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}
@@ -65,9 +87,9 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
 .msg{margin-top:14px;font-size:13px;line-height:1.6;color:#FFB86B;overflow-wrap:anywhere}
 .msg.ok{color:#5CD8A6}
 .hint{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px}
-@media(max-width:1100px){.wrap{padding-left:40px;padding-right:40px}.row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 20px}}
+@media(max-width:1100px){.wrap{padding-left:28px;padding-right:28px}.row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 20px}}
 @media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.wrap{padding:28px 20px 72px}.stat{padding:18px}.stat b{font-size:28px}.row{grid-template-columns:1fr;padding:18px}.grid{grid-template-columns:1fr}}
+@media(max-width:560px){.col{flex:0 0 78vw}.wrap{padding:28px 16px 72px}.stat{padding:18px}.stat b{font-size:28px}.row{grid-template-columns:1fr;padding:18px}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -75,7 +97,7 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
   <div class="pill">Área administrativa</div>
   <h1>CRM</h1>
   <p class="sub">Cadastro dos empresários: contato, empresa, cargo, em que pé está a conversa e se autorizou receber mensagem. Marque "Não quer receber" em quem pedir para sair, para não entrar de novo em nenhum disparo.</p>
-  <p class="sub" style="margin-top:12px;font-size:14px">Os status andam sozinhos: <b>Respondeu</b> quando a pessoa escreve para o Drigo no WhatsApp; <b>Interessado</b> quando ela se inscreve, entra na lista, pede contato, faz o diagnóstico ou deixa claro ao Drigo que quer participar; <b>Inscrito</b> quando o pagamento é confirmado; <b>Sem interesse</b> quando ela diz que não quer. Quem manda PARAR (ou pede para sair) vira <b>Não quer receber</b> automaticamente. O status só avança; para corrigir, use a caixa de status de cada contato.</p>
+  <p class="sub" style="margin-top:12px;font-size:14px">Os cards andam sozinhos conforme o Drigo conversa: <b>Respondeu</b> quando a pessoa escreve no WhatsApp, <b>Interessado</b> quando ela se inscreve, entra na lista ou deixa claro que quer participar, <b>Inscrito</b> quando o pagamento é confirmado, <b>Sem interesse</b> ou <b>Não quer receber</b> quando ela pede (PARAR inclusive). Você também pode arrastar um card para outra coluna. O quadro se atualiza a cada 30 segundos.</p>
   <div class="nav">
     <a href="/admin/acessos">Acessos</a>
     <a href="/admin/inscricoes">Inscrições</a>
@@ -97,11 +119,28 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
     <button class="btn" type="button" id="bNovo">Novo contato</button>
     <button class="btn ghost" type="button" id="bImp">Importar lista</button>
     <a class="btn ghost" href="/admin/api/crm.csv">Exportar CSV</a>
+    <div class="vw" role="group" aria-label="Modo de visualização">
+      <button class="chip" type="button" id="vQuadro">Quadro</button>
+      <button class="chip" type="button" id="vLista">Lista</button>
+    </div>
   </div>
   <div class="chips" id="chips" role="group" aria-label="Filtrar por status"></div>
 
+  <div class="board" id="board" aria-label="Quadro de contatos por status"></div>
   <div class="list" id="list" aria-live="polite"></div>
 </div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="dConf">
+  <form method="dialog" id="fConf">
+    <h2 id="cTitulo">Confirmar</h2>
+    <p class="h" id="cTexto"></p>
+    <div class="acts">
+      <button type="button" class="btn ghost" id="cNao">Cancelar</button>
+      <button type="submit" class="btn" id="cSim">Confirmar</button>
+    </div>
+  </form>
+</dialog>
 
 <dialog id="dForm">
   <form method="dialog" id="fForm" novalidate>
@@ -154,7 +193,9 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
     ['inscrito', 'Inscrito'], ['sem_interesse', 'Sem interesse'], ['nao_quer_receber', 'Não quer receber']
   ];
   var SLABEL = {}; STATUS.forEach(function (s) { SLABEL[s[0]] = s[1]; });
-  var items = [], q = '', filtro = '', armed = null, armT = null, editId = null;
+  var COR = { novo: '#8B63FF', convite_enviado: '#5B8CFF', respondeu: '#33B5E5', interessado: '#E8B65E', inscrito: '#1E9E6A', sem_interesse: '#8F8AA8', nao_quer_receber: '#FF7A7A' };
+  var items = [], q = '', filtro = '', armed = null, armT = null, editId = null, dragId = null, view = 'quadro', toastT = null;
+  try { view = localStorage.getItem('crmView') === 'lista' ? 'lista' : 'quadro'; } catch (e) {}
   var $ = function (id) { return document.getElementById(id); };
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -212,6 +253,12 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
     $('nOk').textContent = items.filter(function (d) { return d.consentimento === 'sim'; }).length;
     $('nConv').textContent = items.filter(function (d) { return d.status !== 'novo'; }).length;
     $('nQuente').textContent = items.filter(function (d) { return d.status === 'interessado' || d.status === 'inscrito'; }).length;
+    $('vQuadro').className = 'chip' + (view === 'quadro' ? ' on' : '');
+    $('vLista').className = 'chip' + (view === 'lista' ? ' on' : '');
+    $('board').style.display = view === 'quadro' ? 'flex' : 'none';
+    $('list').style.display = view === 'quadro' ? 'none' : 'flex';
+    $('chips').style.display = view === 'quadro' ? 'none' : 'flex';
+    if (view === 'quadro') { renderBoard(); return; }
     renderChips();
 
     var t = q.trim().toLowerCase();
@@ -396,6 +443,105 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
       return load();
     }).then(function () { $('iGo').disabled = false; });
   });
+
+
+  // ----- quadro (kanban)
+  function passaBusca(d) {
+    var t = q.trim().toLowerCase();
+    if (!t) return true;
+    if ([d.nome, d.email, d.empresa, d.cargo, d.origem, d.observacoes].join(' ').toLowerCase().indexOf(t) !== -1) return true;
+    var dig = t.replace(/\D/g, '');
+    return dig.length >= 4 && d.whats.indexOf(dig) !== -1;
+  }
+  function toast(msg, erro) {
+    var t = $('toast'); t.textContent = msg; t.className = 'on' + (erro ? ' err' : '');
+    clearTimeout(toastT); toastT = setTimeout(function () { t.className = ''; }, erro ? 4500 : 2200);
+  }
+  function confirma(titulo, texto, sim) {
+    return new Promise(function (resolve) {
+      $('cTitulo').textContent = titulo; $('cTexto').textContent = texto; $('cSim').textContent = sim;
+      var dlg = $('dConf'), ok = false;
+      function fim() { $('cSim').onclick = null; $('cNao').onclick = null; dlg.onclose = null; resolve(ok); }
+      $('cSim').onclick = function (e) { e.preventDefault(); ok = true; dlg.close(); };
+      $('cNao').onclick = function () { dlg.close(); };
+      dlg.onclose = fim;
+      dlg.showModal();
+    });
+  }
+  function mover(d, destino) {
+    var antes = d.status;
+    d.status = destino; render();
+    api('PATCH', '/admin/api/crm/' + d.id, { status: destino }).then(function (novo) {
+      Object.keys(novo).forEach(function (k) { d[k] = novo[k]; });
+      render(); toast((d.nome || 'Contato') + ' foi para ' + SLABEL[destino]);
+    }).catch(function (e) {
+      d.status = antes; render(); toast('Não consegui mover: ' + e.message, true);
+    });
+  }
+  function soltar(destino) {
+    var d = items.filter(function (x) { return x.id === dragId; })[0];
+    dragId = null;
+    if (!d || d.status === destino) { render(); return; }
+    var nome = d.nome || 'este contato';
+    var ask = Promise.resolve(true);
+    if (destino === 'nao_quer_receber') ask = confirma('Marcar como "Não quer receber"?', nome + ' ficará sem autorização para receber mensagens e não entra em nenhum disparo.', 'Marcar');
+    else if (d.status === 'nao_quer_receber') ask = confirma('Reativar este contato?', nome + ' pediu para sair em ' + (d.optout_em ? fmt(d.optout_em) : 'uma data não registrada') + '. Mover para outra coluna apaga esse registro. Só faça isso se a pessoa pediu para voltar.', 'Reativar');
+    ask.then(function (ok) { if (ok) mover(d, destino); else render(); });
+  }
+  function renderBoard() {
+    var board = $('board');
+    var sx = board.scrollLeft, sy = {};
+    Array.prototype.forEach.call(board.querySelectorAll('.col'), function (c) { sy[c.dataset.status] = c.querySelector('.colb').scrollTop; });
+    board.textContent = '';
+    var ord = function (a, b) {
+      var x = a.ultima_interacao ? new Date(a.ultima_interacao).getTime() : 0, y = b.ultima_interacao ? new Date(b.ultima_interacao).getTime() : 0;
+      return y - x || new Date(b.created_at) - new Date(a.created_at);
+    };
+    STATUS.forEach(function (s) {
+      var col = el('section', 'col'); col.dataset.status = s[0]; col.style.setProperty('--c', COR[s[0]]);
+      var lista = items.filter(function (d) { return d.status === s[0] && passaBusca(d); }).sort(ord);
+      var head = el('div', 'colh'); head.appendChild(el('span', null, s[1])); head.appendChild(el('span', 'ct', String(lista.length)));
+      col.appendChild(head);
+      var body = el('div', 'colb');
+      lista.forEach(function (d) {
+        var c = el('div', 'card'); c.draggable = true; c.tabIndex = 0;
+        c.setAttribute('role', 'button'); c.setAttribute('aria-label', 'Abrir ' + (d.nome || 'contato sem nome'));
+        c.appendChild(el('div', 'cn' + (d.nome ? '' : ' nn'), d.nome || '(sem nome)'));
+        var sub = [d.cargo, d.empresa].filter(Boolean).join(' @ ');
+        if (sub) c.appendChild(el('div', 'cs', sub));
+        if (d.whats) {
+          var w = el('a', 'wa', fmtFone(d.whats)); w.href = 'https://wa.me/' + d.whats; w.target = '_blank'; w.rel = 'noopener'; w.draggable = false;
+          w.addEventListener('click', function (e) { e.stopPropagation(); });
+          c.appendChild(w);
+        } else if (d.email) c.appendChild(el('div', 'cs', d.email));
+        var tags = el('div', 'tags');
+        if (d.optout_em) tags.appendChild(el('span', 'tag no', 'saiu em ' + new Date(d.optout_em).toLocaleDateString('pt-BR')));
+        else if (d.consentimento === 'nao') tags.appendChild(el('span', 'tag no', 'sem autorização'));
+        else if (d.consentimento === 'sim') tags.appendChild(el('span', 'tag ok', 'autorizou'));
+        if (d.ultima_interacao) tags.appendChild(el('span', 'tag', fmt(d.ultima_interacao)));
+        if (tags.childNodes.length) c.appendChild(tags);
+        c.addEventListener('dragstart', function (e) { dragId = d.id; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(d.id)); setTimeout(function () { c.classList.add('drag'); }, 0); });
+        c.addEventListener('dragend', function () { c.classList.remove('drag'); dragId = null; Array.prototype.forEach.call(board.querySelectorAll('.col.over'), function (x) { x.classList.remove('over'); }); });
+        c.addEventListener('click', function () { abrirForm(d); });
+        c.addEventListener('keydown', function (e) { if (e.key === 'Enter') abrirForm(d); });
+        body.appendChild(c);
+      });
+      col.appendChild(body);
+      col.addEventListener('dragover', function (e) { if (dragId == null) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; col.classList.add('over'); });
+      col.addEventListener('dragleave', function (e) { if (!col.contains(e.relatedTarget)) col.classList.remove('over'); });
+      col.addEventListener('drop', function (e) { e.preventDefault(); col.classList.remove('over'); soltar(s[0]); });
+      board.appendChild(col);
+      if (sy[s[0]]) body.scrollTop = sy[s[0]];
+    });
+    board.scrollLeft = sx;
+  }
+  $('vQuadro').addEventListener('click', function () { view = 'quadro'; try { localStorage.setItem('crmView', 'quadro'); } catch (e) {} render(); });
+  $('vLista').addEventListener('click', function () { view = 'lista'; try { localStorage.setItem('crmView', 'lista'); } catch (e) {} render(); });
+  // o Drigo e o pagamento movem cards sozinhos: recarrega de tempos em tempos, sem atrapalhar quem está arrastando ou editando
+  setInterval(function () {
+    if (dragId != null || document.hidden || document.querySelector('dialog[open]')) return;
+    api('GET', '/admin/api/crm').then(function (rows) { items = rows; render(); }).catch(function () {});
+  }, 30000);
 
   $('q').addEventListener('input', function (e) { q = e.target.value; render(); });
   fillStatus($('fStatus'));
