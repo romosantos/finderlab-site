@@ -238,6 +238,7 @@ textarea.in{min-height:96px;resize:vertical;line-height:1.5}
       tags.appendChild(el('span', 'tag ' + (d.consentimento === 'sim' ? 'ok' : d.consentimento === 'nao' ? 'no' : ''), d.consentimento === 'sim' ? 'autorizou mensagem' : d.consentimento === 'nao' ? 'NÃO autorizou' : 'autorização não informada'));
       if (d.origem) tags.appendChild(el('span', 'tag', 'origem: ' + d.origem));
       tags.appendChild(el('span', 'tag', d.ultima_interacao ? 'última interação ' + fmt(d.ultima_interacao) : 'sem interação ainda'));
+      if (d.optout_em) tags.appendChild(el('span', 'tag no', 'pediu para sair em ' + fmt(d.optout_em) + (d.optout_texto ? ' ("' + d.optout_texto + '")' : '')));
       main.appendChild(tags);
       if (d.observacoes) main.appendChild(el('div', 's', d.observacoes));
       row.appendChild(main);

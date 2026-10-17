@@ -1062,6 +1062,8 @@ async function migrate() {
     );
     CREATE UNIQUE INDEX IF NOT EXISTS crm_contatos_whats_uidx ON crm_contatos (whats) WHERE whats <> '';
     CREATE UNIQUE INDEX IF NOT EXISTS crm_contatos_email_uidx ON crm_contatos ((lower(email))) WHERE email <> '';
+    -- quando e com que palavras a pessoa pediu para não receber mais mensagens
+    ALTER TABLE crm_contatos ADD COLUMN IF NOT EXISTS optout_em TIMESTAMPTZ, ADD COLUMN IF NOT EXISTS optout_texto TEXT NOT NULL DEFAULT '';
   `);
 }
 
@@ -2355,7 +2357,7 @@ async function runChatToolBase(name, toolInput, originUrl, ctx) {
   }
   if (name === 'atualizar_status_crm') {
     const st = toolInput && ['interessado', 'sem_interesse', 'nao_quer_receber'].includes(toolInput.status) ? toolInput.status : null;
-    if (st && ctx && ctx.phone) await crmAtualiza({ whats: ctx.phone, status: st });
+    if (st && ctx && ctx.phone) await crmAtualiza({ whats: ctx.phone, status: st, texto: 'pediu ao Drigo na conversa' });
     return {
       ok: true,
       instrucao: st === 'nao_quer_receber'
@@ -2986,7 +2988,7 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
 
     // Pedido de sair (PARAR): marca no CRM, confirma e não passa pelo agente.
     if (CRM_OPTOUT_RE.test(body)) {
-      await crmAtualiza({ whats: phone, status: 'nao_quer_receber' });
+      await crmAtualiza({ whats: phone, status: 'nao_quer_receber', texto: body });
       const adeus = 'Combinado, não envio mais mensagens por aqui. Se mudar de ideia, é só me chamar. Obrigado!';
       await sendWhatsAppFreeform(phone, adeus);
       await saveWhatsAppMessage({ phone, direction: 'out', body: adeus });
@@ -3194,7 +3196,7 @@ app.get('/admin/api/lista.csv', async (_req, res) => {
 const CRM_STATUS = ['novo', 'convite_enviado', 'respondeu', 'interessado', 'inscrito', 'sem_interesse', 'nao_quer_receber'];
 const CRM_CONSENT = ['sim', 'nao', 'nao_informado'];
 const CRM_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const CRM_COLS = 'id, nome, email, whats, empresa, cargo, status, origem, consentimento, consentimento_em, observacoes, ultima_interacao, created_at, updated_at';
+const CRM_COLS = 'id, nome, email, whats, empresa, cargo, status, origem, consentimento, consentimento_em, observacoes, ultima_interacao, optout_em, optout_texto, created_at, updated_at';
 
 // Guarda só dígitos, sempre com o 55 na frente. Devolve '' quando não dá para confiar no número.
 function crmNormalizaWhats(raw) {
@@ -3233,7 +3235,7 @@ function crmLimpa(b, { exigeNome }) {
 // vêm de um pedido explícito da pessoa; quem pediu para sair nunca é reativado sozinho (só o inscrito
 // registra o pagamento, e a autorização continua "não"). Nunca derruba o fluxo que chamou: falha só loga.
 const CRM_RANK = { novo: 0, convite_enviado: 1, respondeu: 2, sem_interesse: 2, interessado: 3, inscrito: 4 };
-async function crmAtualiza({ whats, email, status }) {
+async function crmAtualiza({ whats, email, status, texto }) {
   try {
     const w = crmNormalizaWhats(whats);
     const e = String(email || '').trim().toLowerCase();
@@ -3257,9 +3259,11 @@ async function crmAtualiza({ whats, email, status }) {
       `UPDATE crm_contatos SET status=$2,
          consentimento = CASE WHEN $2 = 'nao_quer_receber' THEN 'nao' ELSE consentimento END,
          consentimento_em = CASE WHEN $2 = 'nao_quer_receber' THEN NULL ELSE consentimento_em END,
+         optout_em = CASE WHEN $2 = 'nao_quer_receber' AND status <> 'nao_quer_receber' THEN now() ELSE optout_em END,
+         optout_texto = CASE WHEN $2 = 'nao_quer_receber' AND status <> 'nao_quer_receber' THEN $3 ELSE optout_texto END,
          ultima_interacao = now(), updated_at = now()
        WHERE id=$1`,
-      [c.id, novo]
+      [c.id, novo, clean(texto, 300)]
     );
     return true;
   } catch (err) {
@@ -3311,6 +3315,8 @@ app.patch('/admin/api/crm/:id', async (req, res) => {
          consentimento=$9,
          consentimento_em = CASE WHEN $9 = 'sim' AND consentimento <> 'sim' THEN now() WHEN $9 <> 'sim' THEN NULL ELSE consentimento_em END,
          observacoes=$10,
+         optout_em = CASE WHEN $7 = 'nao_quer_receber' AND status <> 'nao_quer_receber' THEN now() WHEN $7 <> 'nao_quer_receber' THEN NULL ELSE optout_em END,
+         optout_texto = CASE WHEN $7 = 'nao_quer_receber' AND status <> 'nao_quer_receber' THEN 'marcado manualmente no CRM' WHEN $7 <> 'nao_quer_receber' THEN '' ELSE optout_texto END,
          ultima_interacao = CASE WHEN $11 THEN now() ELSE ultima_interacao END,
          updated_at = now()
        WHERE id=$1 RETURNING ${CRM_COLS}`,
@@ -3374,9 +3380,9 @@ app.get('/admin/api/crm.csv', async (_req, res) => {
     return '"' + s.replace(/"/g, '""') + '"';
   };
   const iso = (d) => (d ? new Date(d).toISOString() : '');
-  const head = ['Nome', 'Email', 'WhatsApp', 'Empresa', 'Cargo', 'Status', 'Origem', 'Consentimento', 'Consentimento em', 'Observações', 'Última interação', 'Cadastrado em'];
+  const head = ['Nome', 'Email', 'WhatsApp', 'Empresa', 'Cargo', 'Status', 'Origem', 'Consentimento', 'Consentimento em', 'Observações', 'Última interação', 'Pediu para sair em', 'Pediu para sair (texto)', 'Cadastrado em'];
   const lines = [head.map(esc).join(';')].concat(
-    rows.map((d) => [d.nome, d.email, d.whats, d.empresa, d.cargo, d.status, d.origem, d.consentimento, iso(d.consentimento_em), d.observacoes, iso(d.ultima_interacao), iso(d.created_at)].map(esc).join(';'))
+    rows.map((d) => [d.nome, d.email, d.whats, d.empresa, d.cargo, d.status, d.origem, d.consentimento, iso(d.consentimento_em), d.observacoes, iso(d.ultima_interacao), iso(d.optout_em), d.optout_texto, iso(d.created_at)].map(esc).join(';'))
   );
   res.set('Content-Type', 'text/csv; charset=utf-8');
   res.set('Content-Disposition', 'attachment; filename="crm-empresarios.csv"');
