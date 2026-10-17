@@ -69,6 +69,14 @@ button{cursor:pointer}
 .card a.wa{display:inline-block;margin-top:6px;font-size:12px;color:#CFC6F5;text-decoration:none}
 .card a.wa:hover{color:#fff;text-decoration:underline}
 .card .tags{margin-top:8px}
+.card .ch{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.card .tp{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;border-radius:99px;padding:3px 9px;border:1px solid var(--t);color:var(--t);background:color-mix(in srgb,var(--t) 14%,transparent);white-space:nowrap}
+.card .tp i{width:7px;height:7px;border-radius:99px;background:var(--t)}
+.card .ft{margin-top:10px;padding-top:8px;border-top:1px solid rgba(124,84,245,.22);display:flex;flex-direction:column;gap:3px}
+.card .ft .cs{margin:0;font-size:11.5px}
+.card a.wa{margin-top:0}
+.tag.warn{border-color:rgba(232,182,94,.55);color:#F0C97F;background:rgba(232,182,94,.12)}
+.tag.info{border-color:rgba(91,140,255,.5);color:#9DB8FF;background:rgba(91,140,255,.12)}
 .card .tag{white-space:normal;overflow-wrap:anywhere}
 .vw{display:flex;gap:6px}
 #toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#1B1438;border:1px solid #8B63FF;color:#F1EEFB;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:50;opacity:0;pointer-events:none;transition:opacity .2s;max-width:calc(100vw - 32px)}
@@ -530,6 +538,8 @@ dialog.det[open]{display:flex;flex-direction:column}
       tentaMover(d, sel.value).then(function () { var x = detItem(); if (x) { pintaCabeca(x); pintaEsq(x); if (detData) pintaDir(); } });
     });
     ctl.appendChild(sel);
+    var tpm = temperatura(d);
+    if (tpm) { var tg = el('span', 'tp'); tg.style.setProperty('--t', TEMPS[tpm[0]][1]); tg.title = tpm[1]; tg.style.cssText += ';display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;border:1px solid ' + TEMPS[tpm[0]][1] + ';color:' + TEMPS[tpm[0]][1] + ';border-radius:99px;padding:6px 12px'; tg.textContent = TEMPS[tpm[0]][0] + ' · ' + tpm[1]; ctl.appendChild(tg); }
     if (d.whats) { var w = el('a', 'btn ghost', 'Abrir no WhatsApp'); w.href = 'https://wa.me/' + d.whats; w.target = '_blank'; w.rel = 'noopener'; w.style.minHeight = '44px'; ctl.appendChild(w); }
     if (d.email) { var m = el('a', 'btn ghost', 'Enviar e-mail'); m.href = 'mailto:' + d.email; m.style.minHeight = '44px'; ctl.appendChild(m); }
     var ed = el('button', 'btn ghost', 'Editar dados'); ed.type = 'button'; ed.style.minHeight = '44px';
@@ -746,6 +756,53 @@ dialog.det[open]{display:flex;flex-direction:column}
     if (!d || d.status === destino) { render(); return; }
     tentaMover(d, destino).then(function (feito) { if (!feito) render(); });
   }
+  // ----- temperatura e selos do card (calculados com os sinais que a lista traz)
+  var H = 3600 * 1000;
+  var TEMPS = { quente: ['Quente', '#FF8A5C'], morna: ['Morno', '#E8B65E'], fria: ['Frio', '#5B8CFF'], sem: ['Sem sinal', '#8F8AA8'] };
+  var PAGO = ['CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH', 'PAYMENT_CONFIRMED', 'PAYMENT_RECEIVED'];
+  function ms(x) { return x ? new Date(x).getTime() : 0; }
+  function ha(x) {
+    var m = Math.max(0, Math.round((Date.now() - ms(x)) / 60000));
+    if (m < 2) return 'agora';
+    if (m < 60) return 'há ' + m + ' min';
+    if (m < 60 * 24) return 'há ' + Math.round(m / 60) + ' h';
+    if (m < 60 * 24 * 14) return 'há ' + Math.round(m / 1440) + ' dias';
+    return 'há ' + Math.round(m / 10080) + ' sem';
+  }
+  // devolve [chave, motivo] ou null quando temperatura não faz sentido (já inscrito, sem interesse, pediu para sair)
+  function temperatura(d) {
+    if (d.status === 'inscrito' || d.status === 'sem_interesse' || d.status === 'nao_quer_receber') return null;
+    var agora = Date.now(), emAberto = d.insc && PAGO.indexOf(d.insc) === -1;
+    var recente = ms(d.wa_in) && agora - ms(d.wa_in) <= 48 * H;
+    if (emAberto) return ['quente', d.insc === 'sem_cobranca' ? 'Iniciou a inscrição' : 'Tem pagamento em aberto'];
+    if (d.diag === 'quente') return ['quente', 'Diagnóstico deu lead quente'];
+    if (recente && (d.status === 'respondeu' || d.status === 'interessado')) return ['quente', 'Escreveu ' + ha(d.wa_in)];
+    if (d.status === 'interessado') return ['morna', 'Marcado como interessado'];
+    if (d.diag === 'morna') return ['morna', 'Diagnóstico deu lead morno'];
+    if (d.status === 'respondeu') return ['morna', 'Respondeu, mas faz tempo (' + ha(d.wa_in) + ')'];
+    if (d.diag && d.diag !== '-') return ['fria', 'Diagnóstico deu lead frio'];
+    if (d.lista) return ['morna', 'Entrou na lista de prioridade'];
+    if (d.status === 'convite_enviado') return ['fria', 'Convite enviado, sem resposta'];
+    return ['sem', 'Ainda sem nenhum sinal de interesse'];
+  }
+  function selos(d) {
+    var out = [], terminal = d.status === 'sem_interesse' || d.status === 'nao_quer_receber';
+    if (d.optout_em) out.push(['no', 'saiu em ' + new Date(d.optout_em).toLocaleDateString('pt-BR')]);
+    else if (d.consentimento === 'nao') out.push(['no', 'sem autorização']);
+    if (d.insc) {
+      if (PAGO.indexOf(d.insc) !== -1) out.push(['ok', 'pagamento confirmado']);
+      else out.push(['warn', d.insc === 'sem_cobranca' ? 'inscrição iniciada' : 'pagamento pendente']);
+    }
+    if (d.diag) out.push(['', d.diag === '-' ? 'fez o diagnóstico' : 'diagnóstico ' + ({ quente: 'quente', morna: 'morno', fria: 'frio' }[d.diag] || d.diag)]);
+    if (d.lista) out.push(['', 'lista de prioridade']);
+    if (!terminal && d.status !== 'inscrito') {
+      var janela = ms(d.wa_in) && Date.now() - ms(d.wa_in) < 24 * H;
+      if (ms(d.wa_in) && ms(d.wa_in) - ms(d.wa_out) > 2 * 60000) out.push(['warn', 'falta responder']);
+      if (janela) out.push(['info', 'janela 24h aberta']);
+    }
+    if (!out.length && d.consentimento === 'sim') out.push(['ok', 'autorizou']);
+    return out;
+  }
   function renderBoard() {
     var board = $('board');
     var sx = board.scrollLeft, sy = {};
@@ -764,20 +821,29 @@ dialog.det[open]{display:flex;flex-direction:column}
       lista.forEach(function (d) {
         var c = el('div', 'card'); c.draggable = true; c.tabIndex = 0;
         c.setAttribute('role', 'button'); c.setAttribute('aria-label', 'Abrir ' + (d.nome || 'contato sem nome'));
-        c.appendChild(el('div', 'cn' + (d.nome ? '' : ' nn'), d.nome || '(sem nome)'));
+        var head = el('div', 'ch');
+        var tp = temperatura(d);
+        if (tp) {
+          var chip = el('span', 'tp'); chip.style.setProperty('--t', TEMPS[tp[0]][1]); chip.title = tp[1];
+          chip.appendChild(el('i')); chip.appendChild(document.createTextNode(TEMPS[tp[0]][0]));
+          head.appendChild(chip);
+        }
+        head.appendChild(el('div', 'cn' + (d.nome ? '' : ' nn'), d.nome || '(sem nome)'));
+        c.appendChild(head);
         var sub = [d.cargo, d.empresa].filter(Boolean).join(' @ ');
         if (sub) c.appendChild(el('div', 'cs', sub));
+        var tags = el('div', 'tags');
+        selos(d).forEach(function (t) { tags.appendChild(el('span', 'tag ' + t[0], t[1])); });
+        if (tags.childNodes.length) c.appendChild(tags);
+        var ft = el('div', 'ft');
         if (d.whats) {
           var w = el('a', 'wa', fmtFone(d.whats)); w.href = 'https://wa.me/' + d.whats; w.target = '_blank'; w.rel = 'noopener'; w.draggable = false;
           w.addEventListener('click', function (e) { e.stopPropagation(); });
-          c.appendChild(w);
-        } else if (d.email) c.appendChild(el('div', 'cs', d.email));
-        var tags = el('div', 'tags');
-        if (d.optout_em) tags.appendChild(el('span', 'tag no', 'saiu em ' + new Date(d.optout_em).toLocaleDateString('pt-BR')));
-        else if (d.consentimento === 'nao') tags.appendChild(el('span', 'tag no', 'sem autorização'));
-        else if (d.consentimento === 'sim') tags.appendChild(el('span', 'tag ok', 'autorizou'));
-        if (d.ultima_interacao) tags.appendChild(el('span', 'tag', fmt(d.ultima_interacao)));
-        if (tags.childNodes.length) c.appendChild(tags);
+          ft.appendChild(w);
+        } else if (d.email) ft.appendChild(el('div', 'cs', d.email));
+        if (d.origem) ft.appendChild(el('div', 'cs', 'Origem: ' + d.origem));
+        ft.appendChild(el('div', 'cs', d.ultima_interacao ? 'Última interação ' + ha(d.ultima_interacao) : 'Sem interação ainda'));
+        c.appendChild(ft);
         c.addEventListener('dragstart', function (e) { dragId = d.id; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(d.id)); setTimeout(function () { c.classList.add('drag'); }, 0); });
         c.addEventListener('dragend', function () { c.classList.remove('drag'); dragId = null; Array.prototype.forEach.call(board.querySelectorAll('.col.over'), function (x) { x.classList.remove('over'); }); });
         c.addEventListener('click', function () { abrirDetalhe(d); });

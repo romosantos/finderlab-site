@@ -3277,9 +3277,33 @@ const CRM_OPTOUT_RE = /^\s*(parar|pare|stop|sair|descadastrar)\s*[.!]*\s*$|n[aã
 
 app.get('/admin/crm', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-crm.html')));
 
+// Lista do quadro: além dos dados do contato, traz os sinais que o card usa para mostrar temperatura e selos
+// (última mensagem recebida/enviada no WhatsApp, inscrição/pagamento, diagnóstico, lista de prioridade).
+// A temperatura em si é calculada no navegador a partir desses sinais, para acompanhar mudança de status na hora.
 app.get('/admin/api/crm', async (_req, res) => {
-  const { rows } = await pool.query(`SELECT ${CRM_COLS} FROM crm_contatos ORDER BY created_at DESC, id DESC`);
-  res.json(rows);
+  try {
+    const kc = crmChaveSql('c.whats');
+    const quem = (colFone, colMail) => `((${kc} IS NOT NULL AND ${crmChaveSql(colFone)} = ${kc}) OR (c.email <> '' AND lower(${colMail}) = lower(c.email)))`;
+    const { rows } = await pool.query(
+      `WITH wa AS (
+         SELECT k, max(created_at) FILTER (WHERE direction = 'in') AS wa_in, max(created_at) FILTER (WHERE direction = 'out') AS wa_out
+           FROM (SELECT ${crmChaveSql('phone')} AS k, direction, created_at FROM whatsapp_messages) m
+          WHERE k IS NOT NULL GROUP BY k)
+       SELECT ${CRM_COLS.split(', ').map(x => 'c.' + x).join(', ')},
+              wa.wa_in, wa.wa_out,
+              (SELECT COALESCE(p.status, 'sem_cobranca') FROM leads l LEFT JOIN payments p ON p.lead_id = l.id
+                WHERE ${quem('l.whats', 'l.email')}
+                ORDER BY (p.status IN ('CONFIRMED','RECEIVED','RECEIVED_IN_CASH','PAYMENT_CONFIRMED','PAYMENT_RECEIVED')) DESC NULLS LAST, l.created_at DESC LIMIT 1) AS insc,
+              (SELECT COALESCE(NULLIF(d.temperatura, ''), '-') FROM diagnostico_leads d WHERE ${quem('d.whats', 'd.email')} ORDER BY d.created_at DESC LIMIT 1) AS diag,
+              EXISTS (SELECT 1 FROM lista_interesse li WHERE ${quem('li.whats', 'li.email')}) AS lista
+         FROM crm_contatos c
+         LEFT JOIN wa ON wa.k = ${kc}
+        ORDER BY c.created_at DESC, c.id DESC`);
+    res.json(rows);
+  } catch (e) {
+    console.error('crm lista:', e.message);
+    res.status(500).json({ error: 'Não foi possível carregar o CRM.' });
+  }
 });
 
 app.post('/admin/api/crm', async (req, res) => {
