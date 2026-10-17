@@ -3474,6 +3474,20 @@ app.post('/admin/api/crm/importar', async (req, res) => {
   res.json({ criados, duplicados, invalidos });
 });
 
+// ---------- CRM: disparo agendado do convite (lib/crm-disparo.js) ----------
+const crmDisparo = require('./lib/crm-disparo').init(app, {
+  pool, twilioClient, from: TWILIO_WHATSAPP_FROM, templateSid: process.env.TWILIO_CONVITE_TEMPLATE_SID || '',
+  saveWhatsAppMessage, toWhatsAppAddress, crmChaveSql, clean, ownerWhats: TWILIO_OWNER_WHATSAPP,
+  avisa: async (assunto, texto) => {
+    if (!RESEND_API_KEY || !SERVICO_NOTIFY_EMAIL) return;
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: EMAIL_FROM, to: SERVICO_NOTIFY_EMAIL, subject: assunto, text: texto }),
+    });
+  },
+});
+
 app.get('/admin/api/crm.csv', async (_req, res) => {
   const { rows } = await pool.query(`SELECT ${CRM_COLS} FROM crm_contatos ORDER BY created_at ASC, id ASC`);
   const esc = (v) => {
@@ -3819,7 +3833,8 @@ app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] })
 app.use((_req, res) => res.status(404).send('Not found'));
 
 migrate()
-  .then(() => app.listen(PORT, () => console.log('maquina-api na porta ' + PORT)))
+  .then(() => crmDisparo.migrate())
+  .then(() => { crmDisparo.start(); return app.listen(PORT, () => console.log('maquina-api na porta ' + PORT)); })
   .catch((err) => {
     console.error('Falha ao preparar o banco', err);
     process.exit(1);

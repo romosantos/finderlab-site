@@ -162,6 +162,21 @@ dialog.det[open]{display:flex;flex-direction:column}
 @media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:820px){body.vq{overflow:auto}body.vq .wrap{height:auto}.board{height:72vh;flex:none}.flt{flex:1 1 140px;max-width:none}}
 @media(max-width:560px){.col{flex:0 0 78vw}.wrap{padding:28px 16px 72px}.stat{padding:18px}.stat b{font-size:28px}.row{grid-template-columns:1fr;padding:18px}.grid{grid-template-columns:1fr}}
+.dsp .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;border-radius:99px;padding:5px 12px;border:1px solid var(--c);color:var(--c)}
+.dsp .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+.dsp .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 0 16px}
+.dsp .kpi{border:1px solid rgba(124,84,245,.3);border-radius:10px;padding:10px 12px}
+.dsp .kpi b{display:block;font-size:20px}.dsp .kpi span{font-size:11px;color:var(--muted)}
+.dsp table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 12px}
+.dsp th{text-align:left;font-size:11px;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid rgba(124,84,245,.3)}
+.dsp td{padding:8px;border-bottom:1px solid rgba(124,84,245,.15);vertical-align:top}
+.dsp td .o{font-size:11px;color:var(--muted);line-height:1.5}
+.dsp .mini{min-height:30px;padding:0 12px;font-size:12px;border-radius:8px;border:1px solid rgba(124,84,245,.5);background:transparent;color:#E4E0F4;font-weight:600}
+.dsp .ck{display:flex;gap:8px;align-items:center;font-size:13px;margin:0 0 6px;font-weight:500}
+.dsp .ck input{width:16px;height:16px}
+.dsp h3{font-size:13px;margin:18px 0 6px;color:#D2CEE6}
+.dsp .rec{display:grid;grid-template-columns:1fr auto auto;gap:10px;font-size:12px;padding:5px 0;border-bottom:1px solid rgba(124,84,245,.12)}
+@media(max-width:640px){.dsp .kpis{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -198,6 +213,7 @@ dialog.det[open]{display:flex;flex-direction:column}
     <button class="lim" type="button" id="fLimpa" style="display:none">Limpar filtros</button>
     <button class="btn" type="button" id="bNovo">Novo contato</button>
     <button class="btn ghost" type="button" id="bImp">Importar lista</button>
+    <button class="btn ghost" type="button" id="bDisp">Disparos</button>
     <a class="btn ghost" href="/admin/api/crm.csv">CSV</a>
     <div class="vw" role="group" aria-label="Modo de visualização">
       <button class="chip" type="button" id="vQuadro">Quadro</button>
@@ -278,6 +294,27 @@ dialog.det[open]{display:flex;flex-direction:column}
       <button type="submit" class="btn" id="iGo">Importar</button>
     </div>
   </form>
+</dialog>
+
+<dialog id="dDisp" class="dsp" style="width:min(780px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow-y:auto">
+  <h2>Disparos do convite</h2>
+  <p class="h">O sistema envia o convite aos contatos do CRM, um a um, só nos dias e horários abaixo. Entram apenas contatos em "Novo", com nome e WhatsApp, que não disseram "não" à autorização e ainda não têm nenhuma conversa.</p>
+  <div class="row" id="dsTopo"></div>
+  <div class="msg" style="margin:-6px 0 14px" id="dsMsg" role="status"></div>
+  <div class="kpis" id="dsKpis"></div>
+  <h3>Plano por dia</h3>
+  <table><thead><tr><th>Dia</th><th>Quem</th><th>Enviados</th><th>Na fila</th><th></th></tr></thead><tbody id="dsDias"></tbody></table>
+  <h3 id="dsFormT">Adicionar ou editar um dia</h3>
+  <div class="grid">
+    <div><label for="dsData">Data</label><input class="in" type="date" id="dsData"></div>
+    <div><label for="dsLim">Limite de envios no dia</label><input class="in" type="number" id="dsLim" min="1" max="300" value="50"></div>
+    <div class="full"><label>Origens que podem receber neste dia (a primeira marcada vai primeiro)</label><div id="dsOrig"></div></div>
+  </div>
+  <div class="acts" style="margin-top:12px"><button type="button" class="btn ghost" id="dsSalvaDia">Salvar dia</button></div>
+  <h3>Últimos envios</h3>
+  <div id="dsRec"></div>
+  <p class="hint" id="dsRegras"></p>
+  <div class="acts"><button type="button" class="btn ghost" id="dsFecha" autofocus>Fechar</button></div>
 </dialog>
 
 <script>
@@ -922,6 +959,102 @@ dialog.det[open]{display:flex;flex-direction:column}
     flt = { temp: '', orig: '', aut: '', conv: '' }; q = ''; $('q').value = '';
     ['fTemp', 'fOrig', 'fAut', 'fConv'].forEach(function (id) { $(id).value = ''; });
     render();
+  });
+
+  // ---------- Disparos agendados do convite ----------
+  var dsEstado = null, dsOrigSel = [];
+  var DS_TPL = { approved: ['Template aprovado', '#5CD8A6'], pending: ['Template em análise na Meta', '#E8B65E'], received: ['Template em análise na Meta', '#E8B65E'], rejected: ['Template reprovado', '#FF7A7A'], paused: ['Template pausado', '#FF7A7A'], desconhecido: ['Template: status indisponível', '#E8B65E'] };
+  function dsDia(iso) { var p = iso.split('-'); var d = new Date(+p[0], +p[1] - 1, +p[2]); return d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }); }
+  function dsStatusEnvio(r) {
+    if (r.status === 'erro') return 'Falhou';
+    if (r.status === 'ignorado') return 'Pulado';
+    if (r.contato_status === 'nao_quer_receber') return 'Pediu para parar';
+    if (r.status_final === 'read') return 'Lida';
+    if (r.status_final === 'delivered') return 'Entregue';
+    if (r.status_final === 'failed' || r.status_final === 'undelivered') return 'Não entregue';
+    return 'Enviada';
+  }
+  function dsPintaOrigens() {
+    var box = $('dsOrig'); box.textContent = '';
+    (dsEstado.origens || []).forEach(function (o) {
+      var l = el('label', 'ck'); var c = document.createElement('input'); c.type = 'checkbox'; c.value = o.origem;
+      c.checked = dsOrigSel.indexOf(o.origem) >= 0;
+      c.addEventListener('change', function () {
+        var i = dsOrigSel.indexOf(o.origem);
+        if (c.checked && i < 0) dsOrigSel.push(o.origem); else if (!c.checked && i >= 0) dsOrigSel.splice(i, 1);
+      });
+      l.appendChild(c); l.appendChild(document.createTextNode(o.origem + ' (' + o.n + ')'));
+      box.appendChild(l);
+    });
+  }
+  function dsPinta() {
+    var d = dsEstado, topo = $('dsTopo'); topo.textContent = '';
+    var tpl = DS_TPL[d.template.status] || DS_TPL.desconhecido;
+    var p1 = el('span', 'pill', d.ativo ? 'Ativo' : 'Pausado'); p1.style.setProperty('--c', d.ativo ? '#5CD8A6' : '#E8B65E'); topo.appendChild(p1);
+    var p2 = el('span', 'pill', tpl[0]); p2.style.setProperty('--c', tpl[1]); topo.appendChild(p2);
+    var b = el('button', 'btn', d.ativo ? 'Pausar disparos' : 'Ativar disparos'); b.type = 'button'; b.style.minHeight = '38px';
+    b.addEventListener('click', function () {
+      if (!d.ativo && !window.confirm('Ativar os disparos? A partir de agora, nos dias e horários do plano, o convite sai sozinho para os contatos elegíveis.')) return;
+      api('POST', '/admin/api/disparo/ativar', { ativo: !d.ativo }).then(function () { dsCarrega(); }).catch(function (e) { toast(e.message, true); });
+    });
+    topo.appendChild(b);
+    var t = el('button', 'btn ghost', 'Enviar teste para o meu número'); t.type = 'button'; t.style.minHeight = '38px';
+    t.addEventListener('click', function () {
+      api('POST', '/admin/api/disparo/teste', {}).then(function () { toast('Teste enviado.'); }).catch(function (e) { toast(e.message, true); });
+    });
+    topo.appendChild(t);
+    var m = $('dsMsg'); m.className = 'msg'; m.textContent = '';
+    if (!d.ativo && d.motivo_pausa) m.textContent = 'Pausado automaticamente: ' + d.motivo_pausa;
+    else if (d.ativo && d.template.status !== 'approved') { m.className = 'msg'; m.textContent = 'Ativado. Nada será enviado até a Meta aprovar o template; assim que aprovar, os envios começam sozinhos no próximo horário do plano.'; }
+    else if (d.ativo) { m.className = 'msg ok'; m.textContent = 'Ativo. Agora são ' + String(d.agora.hora).padStart(2, '0') + 'h em Brasília.'; }
+
+    var k = $('dsKpis'); k.textContent = '';
+    [['Enviados', d.totais.enviados], ['Responderam', d.totais.responderam], ['Pediram para parar', d.totais.parar], ['Não entregues', d.totais.nao_entregues], ['Com erro', d.totais.erros]].forEach(function (x) {
+      var c = el('div', 'kpi'); c.appendChild(el('b', null, String(x[1]))); c.appendChild(el('span', null, x[0])); k.appendChild(c);
+    });
+
+    var tb = $('dsDias'); tb.textContent = '';
+    if (!d.dias.length) { var tr0 = el('tr'); var td0 = el('td', null, 'Nenhum dia no plano.'); td0.colSpan = 5; tr0.appendChild(td0); tb.appendChild(tr0); }
+    d.dias.forEach(function (x) {
+      var tr = el('tr');
+      var c1 = el('td', null, dsDia(x.dia) + (x.dia === d.agora.dia ? ' (hoje)' : '')); tr.appendChild(c1);
+      var c2 = el('td'); c2.appendChild(el('div', 'o', x.origens.length ? x.origens.join(', ') : 'Qualquer origem')); tr.appendChild(c2);
+      tr.appendChild(el('td', null, x.enviados + ' de ' + x.limite));
+      tr.appendChild(el('td', null, String(x.elegiveis)));
+      var c5 = el('td'); c5.style.whiteSpace = 'nowrap';
+      var ed = el('button', 'mini', 'Editar'); ed.type = 'button';
+      ed.addEventListener('click', function () { $('dsData').value = x.dia; $('dsLim').value = x.limite; dsOrigSel = x.origens.slice(); dsPintaOrigens(); $('dsData').scrollIntoView({ block: 'center' }); });
+      var rm = el('button', 'mini', 'Remover'); rm.type = 'button'; rm.style.marginLeft = '6px';
+      rm.addEventListener('click', function () {
+        if (!window.confirm('Remover este dia do plano?')) return;
+        api('DELETE', '/admin/api/disparo/dia/' + x.dia).then(dsCarrega).catch(function (e) { toast(e.message, true); });
+      });
+      c5.appendChild(ed); c5.appendChild(rm); tr.appendChild(c5); tb.appendChild(tr);
+    });
+    dsPintaOrigens();
+
+    var rc = $('dsRec'); rc.textContent = '';
+    if (!d.recentes.length) rc.appendChild(el('div', 'hint', 'Nenhum envio ainda.'));
+    d.recentes.forEach(function (r) {
+      var row = el('div', 'rec');
+      row.appendChild(el('span', null, r.nome || r.whats));
+      row.appendChild(el('span', null, dsStatusEnvio(r)));
+      row.appendChild(el('span', null, fmt(r.enviado_em)));
+      rc.appendChild(row);
+    });
+    $('dsRegras').textContent = 'Janela de envio: ' + d.janela.ini + 'h às ' + d.janela.fim + 'h, em lotes de ' + d.ritmo.lote + ', com ' + d.ritmo.pausa_min_s + ' a ' + d.ritmo.pausa_max_s + ' segundos entre mensagens e ' + d.ritmo.pausa_lote_min + ' minutos entre lotes. Pausa sozinho com 3 mensagens não entregues, 3 falhas seguidas ou pedidos de PARAR acima de 10% do dia, e avisa por e-mail.';
+  }
+  function dsCarrega() {
+    return api('GET', '/admin/api/disparo').then(function (d) { dsEstado = d; dsPinta(); }).catch(function (e) { toast(e.message, true); });
+  }
+  $('bDisp').addEventListener('click', function () {
+    $('dsData').value = ''; $('dsLim').value = 50; dsOrigSel = [];
+    $('dDisp').showModal(); dsCarrega();
+  });
+  $('dsFecha').addEventListener('click', function () { $('dDisp').close(); load(); });
+  $('dsSalvaDia').addEventListener('click', function () {
+    if (!$('dsData').value) { toast('Escolha a data.', true); return; }
+    api('PUT', '/admin/api/disparo/dia', { dia: $('dsData').value, limite: Number($('dsLim').value), origens: dsOrigSel }).then(function () { toast('Dia salvo.'); return dsCarrega(); }).catch(function (e) { toast(e.message, true); });
   });
   fillStatus($('fStatus'));
   load();
