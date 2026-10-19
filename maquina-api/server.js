@@ -3476,7 +3476,7 @@ app.post('/admin/api/crm/importar', async (req, res) => {
 
 // ---------- CRM: disparo agendado do convite (lib/crm-disparo.js) ----------
 const crmDisparo = require('./lib/crm-disparo').init(app, {
-  pool, twilioClient, from: TWILIO_WHATSAPP_FROM, templateSid: process.env.TWILIO_CONVITE_TEMPLATE_SID || '',
+  pool, twilioClient, from: TWILIO_WHATSAPP_FROM, templateSid: process.env.TWILIO_CONVITE_TEMPLATE_SID || '', templateSidGeral: process.env.TWILIO_CONVITE_GERAL_TEMPLATE_SID || '',
   saveWhatsAppMessage, toWhatsAppAddress, crmChaveSql, clean, ownerWhats: TWILIO_OWNER_WHATSAPP,
   avisa: async (assunto, texto) => {
     if (!RESEND_API_KEY || !SERVICO_NOTIFY_EMAIL) return;

@@ -298,7 +298,7 @@ dialog.det[open]{display:flex;flex-direction:column}
 
 <dialog id="dDisp" class="dsp" style="width:min(780px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow-y:auto">
   <h2>Disparos do convite</h2>
-  <p class="h">O sistema envia o convite aos contatos do CRM, um a um, só nos dias e horários abaixo. Entram apenas contatos em "Novo", com nome e WhatsApp, que não disseram "não" à autorização e ainda não têm nenhuma conversa.</p>
+  <p class="h">O sistema envia o convite aos contatos do CRM, um a um, só nos dias e horários abaixo. Entram apenas contatos em "Novo", com WhatsApp, que não disseram "não" à autorização e ainda não têm nenhuma conversa. Quem tem nome recebe a saudação com o primeiro nome; quem não tem recebe a versão sem nome, assim que a Meta aprovar esse template.</p>
   <div class="row" id="dsTopo"></div>
   <div class="msg" style="margin:-6px 0 14px" id="dsMsg" role="status"></div>
   <div class="kpis" id="dsKpis"></div>
@@ -992,6 +992,8 @@ dialog.det[open]{display:flex;flex-direction:column}
     var tpl = DS_TPL[d.template.status] || DS_TPL.desconhecido;
     var p1 = el('span', 'pill', d.ativo ? 'Ativo' : 'Pausado'); p1.style.setProperty('--c', d.ativo ? '#5CD8A6' : '#E8B65E'); topo.appendChild(p1);
     var p2 = el('span', 'pill', tpl[0]); p2.style.setProperty('--c', tpl[1]); topo.appendChild(p2);
+    var tg = DS_TPL[(d.template_geral || {}).status] || DS_TPL.desconhecido;
+    var p3 = el('span', 'pill', 'Convite sem nome: ' + tg[0].replace('Template ', '')); p3.style.setProperty('--c', tg[1]); topo.appendChild(p3);
     var b = el('button', 'btn', d.ativo ? 'Pausar disparos' : 'Ativar disparos'); b.type = 'button'; b.style.minHeight = '38px';
     b.addEventListener('click', function () {
       if (!d.ativo && !window.confirm('Ativar os disparos? A partir de agora, nos dias e horários do plano, o convite sai sozinho para os contatos elegíveis.')) return;
@@ -1003,6 +1005,11 @@ dialog.det[open]{display:flex;flex-direction:column}
       api('POST', '/admin/api/disparo/teste', {}).then(function () { toast('Teste enviado.'); }).catch(function (e) { toast(e.message, true); });
     });
     topo.appendChild(t);
+    var t2 = el('button', 'btn ghost', 'Teste do convite sem nome'); t2.type = 'button'; t2.style.minHeight = '38px';
+    t2.addEventListener('click', function () {
+      api('POST', '/admin/api/disparo/teste', { geral: true }).then(function () { toast('Teste enviado.'); }).catch(function (e) { toast(e.message, true); });
+    });
+    topo.appendChild(t2);
     var m = $('dsMsg'); m.className = 'msg'; m.textContent = '';
     if (!d.ativo && d.motivo_pausa) m.textContent = 'Pausado automaticamente: ' + d.motivo_pausa;
     else if (d.ativo && d.template.status !== 'approved') { m.className = 'msg'; m.textContent = 'Ativado. Nada será enviado até a Meta aprovar o template; assim que aprovar, os envios começam sozinhos no próximo horário do plano.'; }

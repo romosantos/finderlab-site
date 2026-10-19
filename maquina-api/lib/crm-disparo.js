@@ -5,7 +5,8 @@
 // O envio só acontece com o template aprovado pela Meta, dentro da janela do dia, no ritmo configurado,
 // e pausa sozinho se aparecerem falhas de entrega ou muitos pedidos de PARAR.
 
-const TEMPLATE_PADRAO = 'HXde4088ab10c6fb2f0d76d9d36fd3a5ae'; // maquina_convite_imersao (Marketing, pt_BR)
+const TEMPLATE_PADRAO = 'HXde4088ab10c6fb2f0d76d9d36fd3a5ae'; // maquina_convite_imersao (Marketing, pt_BR), com o primeiro nome
+const TEMPLATE_GERAL_PADRAO = 'HX3cd3ea79c853888c0f418e999b25d0f8'; // maquina_convite_imersao_geral, mesma mensagem sem o nome (contato sem nome)
 const FUSO = 'America/Sao_Paulo';
 const LOCK_ID = 7331001;
 
@@ -19,6 +20,9 @@ const TEXTO_CONVITE = [
   'Posso te explicar como vai funcionar?',
   'Para não receber mais mensagens, responda PARAR.',
 ].join('\n');
+
+// Igual ao template sem nome aprovado na Meta.
+const TEXTO_GERAL = TEXTO_CONVITE.replace('Oi, {{1}}, tudo bem?', 'Oi, tudo bem?').replace(' — e não apenas', ', e não apenas');
 
 const PLANO_INICIAL = [
   ['2026-10-19', 19, ['Meus Contatos']],
@@ -46,12 +50,13 @@ function agoraBrasilia(d = new Date()) {
 }
 
 function init(app, deps) {
-  const { pool, twilioClient, from, templateSid: tplEnv, saveWhatsAppMessage, toWhatsAppAddress, crmChaveSql, clean, avisa, ownerWhats } = deps;
+  const { pool, twilioClient, from, templateSid: tplEnv, templateSidGeral: tplGeralEnv, saveWhatsAppMessage, toWhatsAppAddress, crmChaveSql, clean, avisa, ownerWhats } = deps;
   const relogio = deps.agora || agoraBrasilia;
   const TEMPLATE_SID = tplEnv || TEMPLATE_PADRAO;
+  const TEMPLATE_GERAL_SID = tplGeralEnv || TEMPLATE_GERAL_PADRAO;
   let tickRodando = false;
   let proximoEm = 0;
-  let cacheAprov = { em: 0, st: 'desconhecido' };
+  const cacheAprov = {};
   let timer = null;
 
   async function migrate() {
@@ -97,18 +102,19 @@ function init(app, deps) {
   }
 
   // ---- aprovação do template (Content API da Twilio), com cache curto ----
-  async function aprovacao(forca) {
-    const idade = Date.now() - cacheAprov.em;
-    if (!forca && idade < (cacheAprov.st === 'approved' ? 30 * 60e3 : 3 * 60e3)) return cacheAprov.st;
+  async function aprovacao(forca, sid) {
+    sid = sid || TEMPLATE_SID;
+    const c = cacheAprov[sid] || { em: 0, st: 'desconhecido' };
+    if (!forca && Date.now() - c.em < (c.st === 'approved' ? 30 * 60e3 : 3 * 60e3)) return c.st;
     let st = 'desconhecido';
     try {
-      const r = await twilioClient.content.v1.contents(TEMPLATE_SID).approvalFetch().fetch();
+      const r = await twilioClient.content.v1.contents(sid).approvalFetch().fetch();
       st = String((r && r.whatsapp && r.whatsapp.status) || 'desconhecido').toLowerCase();
     } catch (e) {
       console.error('disparo: não consegui ler a aprovação do template', e && e.message ? e.message : e);
-      st = cacheAprov.st === 'approved' ? 'approved' : 'desconhecido';
+      st = c.st === 'approved' ? 'approved' : 'desconhecido';
     }
-    cacheAprov = { em: Date.now(), st };
+    cacheAprov[sid] = { em: Date.now(), st };
     return st;
   }
 
@@ -145,9 +151,10 @@ function init(app, deps) {
   }
 
   // Candidatos na ordem das origens do dia (primeiro as primeiras da lista), mais antigos primeiro.
-  function sqlElegiveis(select, limite) {
+  // aceitaSemNome: só quando o template sem nome está aprovado; senão contato sem nome fica esperando.
+  function sqlElegiveis(select, limite, aceitaSemNome) {
     return `SELECT ${select} FROM crm_contatos c
-       WHERE c.status = 'novo' AND c.whats ~ '^55[0-9]{10,11}$' AND btrim(c.nome) <> '' AND c.consentimento <> 'nao'
+       WHERE c.status = 'novo' AND c.whats ~ '^55[0-9]{10,11}$' ${aceitaSemNome ? '' : "AND btrim(c.nome) <> ''"} AND c.consentimento <> 'nao'
          AND (cardinality($1::text[]) = 0 OR c.origem = ANY($1::text[]))
          AND NOT EXISTS (SELECT 1 FROM crm_disparos d WHERE d.contato_id = c.id)
          AND NOT EXISTS (SELECT 1 FROM whatsapp_messages w WHERE ${crmChaveSql('w.phone')} = ${crmChaveSql('c.whats')})
@@ -157,17 +164,18 @@ function init(app, deps) {
   async function enviaConvite(contato, dia) {
     const nome = primeiroNome(contato.nome);
     const ins = await pool.query(
-      `INSERT INTO crm_disparos (contato_id, whats, dia, status, erro) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING RETURNING id`,
-      [contato.id, contato.whats, dia, nome ? 'pendente' : 'ignorado', nome ? '' : 'sem primeiro nome válido']);
+      `INSERT INTO crm_disparos (contato_id, whats, dia, status) VALUES ($1,$2,$3,'pendente') ON CONFLICT DO NOTHING RETURNING id`,
+      [contato.id, contato.whats, dia]);
     if (!ins.rowCount) return 'repetido';
-    if (!nome) return 'ignorado';
     const id = ins.rows[0].id;
     try {
       const m = await twilioClient.messages.create({
-        from, to: toWhatsAppAddress(contato.whats), contentSid: TEMPLATE_SID, contentVariables: JSON.stringify({ 1: nome }),
+        from, to: toWhatsAppAddress(contato.whats),
+        contentSid: nome ? TEMPLATE_SID : TEMPLATE_GERAL_SID,
+        ...(nome ? { contentVariables: JSON.stringify({ 1: nome }) } : {}),
       });
       await pool.query(`UPDATE crm_disparos SET status='enviado', message_sid=$2, status_final=$3, enviado_em=now() WHERE id=$1`, [id, m.sid || '', m.status || '']);
-      await saveWhatsAppMessage({ phone: '+' + contato.whats, direction: 'out', body: TEXTO_CONVITE.replace('{{1}}', nome), messageSid: m.sid || '' });
+      await saveWhatsAppMessage({ phone: '+' + contato.whats, direction: 'out', body: nome ? TEXTO_CONVITE.replace('{{1}}', nome) : TEXTO_GERAL, messageSid: m.sid || '' });
       await pool.query(`UPDATE crm_contatos SET status='convite_enviado', ultima_interacao=now(), updated_at=now() WHERE id=$1 AND status='novo'`, [contato.id]);
       return 'enviado';
     } catch (e) {
@@ -192,10 +200,12 @@ function init(app, deps) {
     if (!proximoEm && hoje.ultimo) proximoEm = new Date(hoje.ultimo).getTime() + cfg.pausa_min_s * 1000;
     if (Date.now() < proximoEm) return;
 
-    const cand = (await pool.query(sqlElegiveis('c.id, c.nome, c.whats', 5), [plano.origens])).rows;
+    const geralOk = (await aprovacao(false, TEMPLATE_GERAL_SID)) === 'approved';
+    const cand = (await pool.query(sqlElegiveis('c.id, c.nome, c.whats', 25, geralOk), [plano.origens])).rows;
     for (const c of cand) {
+      if (!geralOk && !primeiroNome(c.nome)) continue; // nome inútil e sem template geral aprovado: espera
       const r = await enviaConvite(c, dia);
-      if (r === 'ignorado' || r === 'repetido') continue;
+      if (r === 'repetido') continue;
       const enviadosAgora = hoje.n + (r === 'enviado' ? 1 : 0);
       const fimDeLote = r === 'enviado' && enviadosAgora % cfg.lote === 0;
       const espera = fimDeLote
@@ -235,6 +245,8 @@ function init(app, deps) {
     try {
       const cfg = (await pool.query('SELECT * FROM crm_disparo_config WHERE id=1')).rows[0];
       const agora = relogio();
+      const geralSt = await aprovacao(false, TEMPLATE_GERAL_SID);
+      const geralOk = geralSt === 'approved';
       const dias = (await pool.query(`SELECT to_char(dia,'YYYY-MM-DD') AS dia, limite, origens FROM crm_disparo_dias ORDER BY dia`)).rows;
       for (const d of dias) {
         const r = await pool.query(`SELECT count(*) FILTER (WHERE status IN ('pendente','enviado'))::int AS enviados,
@@ -242,7 +254,7 @@ function init(app, deps) {
                                            count(*) FILTER (WHERE status_final = 'delivered' OR status_final = 'read')::int AS entregues
                                       FROM crm_disparos WHERE dia = $1`, [d.dia]);
         Object.assign(d, r.rows[0]);
-        d.elegiveis = (await pool.query(`SELECT count(*)::int AS n FROM (${sqlElegiveis('c.id', 0)}) x`, [d.origens])).rows[0].n;
+        d.elegiveis = (await pool.query(`SELECT count(*)::int AS n FROM (${sqlElegiveis('c.id', 0, geralOk)}) x`, [d.origens])).rows[0].n;
       }
       const tot = (await pool.query(
         `SELECT count(*) FILTER (WHERE d.status IN ('pendente','enviado'))::int AS enviados,
@@ -259,6 +271,7 @@ function init(app, deps) {
       res.json({
         ativo: cfg.ativo, motivo_pausa: cfg.motivo_pausa, pausado_em: cfg.pausado_em,
         template: { sid: TEMPLATE_SID, status: await aprovacao() },
+        template_geral: { sid: TEMPLATE_GERAL_SID, status: geralSt },
         agora, janela: { ini: cfg.hora_ini, fim: cfg.hora_fim },
         ritmo: { lote: cfg.lote, pausa_min_s: cfg.pausa_min_s, pausa_max_s: cfg.pausa_max_s, pausa_lote_min: cfg.pausa_lote_min },
         dias, totais: tot, recentes, origens,
@@ -302,18 +315,19 @@ function init(app, deps) {
   // Envia o convite para um número só (o seu, por padrão) para ver a mensagem chegando antes de ativar.
   app.post('/admin/api/disparo/teste', async (req, res) => {
     try {
-      if ((await aprovacao(true)) !== 'approved') return res.status(409).json({ error: 'O template ainda não foi aprovado pela Meta.' });
+      const geral = !!(req.body && req.body.geral);
+      if ((await aprovacao(true, geral ? TEMPLATE_GERAL_SID : TEMPLATE_SID)) !== 'approved') return res.status(409).json({ error: 'Esse template ainda não foi aprovado pela Meta.' });
       const alvo = String((req.body && req.body.whats) || ownerWhats || '');
       if (!alvo) return res.status(400).json({ error: 'Informe um WhatsApp.' });
       const nome = primeiroNome((req.body && req.body.nome) || 'Rodrigo') || 'Rodrigo';
-      const m = await twilioClient.messages.create({ from, to: toWhatsAppAddress(alvo), contentSid: TEMPLATE_SID, contentVariables: JSON.stringify({ 1: nome }) });
+      const m = await twilioClient.messages.create({ from, to: toWhatsAppAddress(alvo), contentSid: geral ? TEMPLATE_GERAL_SID : TEMPLATE_SID, ...(geral ? {} : { contentVariables: JSON.stringify({ 1: nome }) }) });
       res.json({ ok: true, sid: m.sid });
     } catch (e) {
       res.status(500).json({ error: 'Falha no envio de teste: ' + clean(e && e.message ? e.message : e, 200) });
     }
   });
 
-  return { migrate, start, tick, _t: { liberaProximo: () => { proximoEm = 1; }, limpaCache: () => { cacheAprov = { em: 0, st: 'desconhecido' }; } } };
+  return { migrate, start, tick, _t: { liberaProximo: () => { proximoEm = 1; }, limpaCache: () => { for (const k of Object.keys(cacheAprov)) delete cacheAprov[k]; } } };
 }
 
-module.exports = { init, primeiroNome, agoraBrasilia, TEXTO_CONVITE };
+module.exports = { init, primeiroNome, agoraBrasilia, TEXTO_CONVITE, TEXTO_GERAL };
