@@ -2494,6 +2494,15 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
   async function callModel() {
     const params = { model: ANTHROPIC_MODEL, max_tokens: maxTokens || CHAT_MAX_TOKENS, system: systemBlocks, messages };
     params.tools = ctx && ctx.semFerramentas ? LISTA_TOOLS : CHAT_TOOLS;
+    // Conversa puxada pelo convite: a pessoa não se cadastrou, então o documento de termos só sai se ela pedir
+    // (sem isso o modelo despejava os termos inteiros como resposta a "como você tem meu contato?").
+    if (ctx && ctx.termosSoSePedido) {
+      const ultima = [...messages].reverse().find((m) => m.role === 'user');
+      const texto = ultima ? (typeof ultima.content === 'string' ? ultima.content : JSON.stringify(ultima.content)) : '';
+      if (!/termos|privacidade|lgpd|pol[ií]tica de dados|dados pessoais|aceit/i.test(texto)) {
+        params.tools = params.tools.filter((t) => t.name !== 'consultar_termos_privacidade');
+      }
+    }
     if (!onEvent) return anthropic.messages.create(params);
     const stream = anthropic.messages.stream(params);
     stream.on('text', makeThinkingFilter((delta) => onEvent('delta', delta)));
@@ -2928,11 +2937,34 @@ async function sendWhatsAppFreeform(phoneRaw, body) {
 // Fora disso, segue o agente geral do site. O modo só liga por origem confiável do servidor, nunca por pedido do modelo.
 const WHATSAPP_TURMA_PADRAO = 'associados';
 const WHATSAPP_TURMA_GATILHO_RE = /vim pela p[aá]gina da imers[aã]o/i;
-// Quando o Drigo puxou a conversa (convite do disparo), a abertura padrão da base de conhecimento ("me apresento e pergunto o que trouxe a
-// pessoa") não faz sentido: foi ele quem escreveu primeiro. Este bloco entra depois do prompt em cache.
-const CONVITE_CONTEXTO = '# CONTEXTO DESTA CONVERSA\n\nVocê, Drigo, iniciou esta conversa pelo WhatsApp: a primeira mensagem do histórico é o convite que você enviou para a imersão Máquina de Decisões, e a pessoa está respondendo a ele. Nesta conversa não use a abertura padrão: não se apresente de novo e não pergunte "como posso ajudar" nem "por onde a gente começa", porque foi você quem puxou o assunto. Reconheça o que a pessoa escreveu (se for só um cumprimento, cumprimente de volta, usando o nome que aparece no convite) e retome o convite com leveza, oferecendo explicar como a imersão funciona ou perguntando o que a pessoa faz para adaptar a explicação. Se ela te chamar de Rodrigo, esclareça de forma natural que você é o Drigo, agente de IA do Rodrigo, e siga a conversa. Se a resposta parecer mensagem automática de atendimento, não force o convite.';
-function contextoDoConvite(history) {
-  return history && history.length > 0 && history[0].role === 'assistant' ? CONVITE_CONTEXTO : '';
+// Quando o Drigo puxou a conversa (convite do disparo), a pessoa não se cadastrou e a abertura padrão da base de
+// conhecimento não vale. O contexto (quem puxou, de qual lista o número veio, como conduzir) vem de lib/conversa-convite.js
+// e entra como bloco extra depois do prompt em cache. A conversa é "do convite" se o contato tem um disparo registrado ou se
+// a primeira mensagem do histórico é do Drigo (testes e convites antigos).
+const conversaConvite = require('./lib/conversa-convite');
+async function dadosDoConvite(phone, history) {
+  try {
+    const { rows } = await pool.query(
+      `SELECT c.nome, c.origem FROM crm_contatos c
+       JOIN crm_disparos d ON d.contato_id = c.id
+       WHERE ${crmChaveSql('c.whats')} = ${crmChaveSql('$1::text')}
+       ORDER BY d.id DESC LIMIT 1`,
+      [phone]
+    );
+    if (rows[0]) return { origem: rows[0].origem, nome: rows[0].nome };
+  } catch (err) {
+    // tabela de disparos ainda não existe ou falha de consulta: cai no teste pelo histórico
+  }
+  if (history && history.length > 0 && history[0].role === 'assistant') {
+    try {
+      const { rows } = await pool.query(
+        `SELECT nome, origem FROM crm_contatos WHERE ${crmChaveSql('whats')} = ${crmChaveSql('$1::text')} ORDER BY id LIMIT 1`,
+        [phone]
+      );
+      return { origem: rows[0] ? rows[0].origem : '', nome: rows[0] ? rows[0].nome : '' };
+    } catch (_) { return { origem: '', nome: '' }; }
+  }
+  return null;
 }
 
 const WHATSAPP_TURMA_CANAL = '\n\n---\n\n# CANAL: WHATSAPP\n\nEsta conversa acontece pelo WhatsApp do Drigo, não pela página. A pessoa já está falando com você aqui: não mande ninguém "para a página" nem "para o chat", conduza a inscrição e o pagamento nesta própria conversa. Mensagens curtas, em texto corrido, sem markdown.';
@@ -3012,8 +3044,16 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
     const turma = await resolveWhatsAppTurma(phone, body);
     const systemPrompt = turma ? SYSTEM_PROMPT + '\n\n---\n\n' + TURMA_ADDENDUM + '\n\n---\n\n' + turmaFatos(turma) + WHATSAPP_TURMA_CANAL : undefined;
     const ctx = turma ? { turma: turma.slug, phone } : { phone };
-    const contextoConvite = contextoDoConvite(history);
-    if (contextoConvite) ctx.contextoVisita = contextoConvite;
+    const convite = await dadosDoConvite(phone, history);
+    if (convite) {
+      // Primeira resposta a um convite que é só atendimento automático: não responde (e não vira conversa com robô).
+      if (history.length <= 2 && conversaConvite.respostaAutomatica(body)) {
+        console.log('WhatsApp inbound: resposta automática ignorada para %s', phone);
+        return;
+      }
+      ctx.contextoVisita = conversaConvite.contextoConvite(convite);
+      ctx.termosSoSePedido = true;
+    }
     const { reply } = await getAgentReply(history, systemPrompt, SITE_ORIGIN, undefined, undefined, ctx);
     if (!reply) {
       console.error('WhatsApp inbound: sem resposta do modelo pra %s', phone);
