@@ -321,6 +321,8 @@ function init(app, deps) {
       if (!alvo) return res.status(400).json({ error: 'Informe um WhatsApp.' });
       const nome = primeiroNome((req.body && req.body.nome) || 'Rodrigo') || 'Rodrigo';
       const m = await twilioClient.messages.create({ from, to: toWhatsAppAddress(alvo), contentSid: geral ? TEMPLATE_GERAL_SID : TEMPLATE_SID, ...(geral ? {} : { contentVariables: JSON.stringify({ 1: nome }) }) });
+      // Grava o convite na conversa, como no envio real, para o Drigo ter o contexto quando você responder ao teste.
+      try { await saveWhatsAppMessage({ phone: '+' + String(alvo).replace(/\D/g, ''), direction: 'out', body: geral ? TEXTO_GERAL : TEXTO_CONVITE.replace('{{1}}', nome), messageSid: m.sid || '' }); } catch (_) { /* só contexto */ }
       res.json({ ok: true, sid: m.sid });
     } catch (e) {
       res.status(500).json({ error: 'Falha no envio de teste: ' + clean(e && e.message ? e.message : e, 200) });

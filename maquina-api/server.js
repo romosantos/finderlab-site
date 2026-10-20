@@ -2928,6 +2928,13 @@ async function sendWhatsAppFreeform(phoneRaw, body) {
 // Fora disso, segue o agente geral do site. O modo só liga por origem confiável do servidor, nunca por pedido do modelo.
 const WHATSAPP_TURMA_PADRAO = 'associados';
 const WHATSAPP_TURMA_GATILHO_RE = /vim pela p[aá]gina da imers[aã]o/i;
+// Quando o Drigo puxou a conversa (convite do disparo), a abertura padrão da base de conhecimento ("me apresento e pergunto o que trouxe a
+// pessoa") não faz sentido: foi ele quem escreveu primeiro. Este bloco entra depois do prompt em cache.
+const CONVITE_CONTEXTO = '# CONTEXTO DESTA CONVERSA\n\nVocê, Drigo, iniciou esta conversa pelo WhatsApp: a primeira mensagem do histórico é o convite que você enviou para a imersão Máquina de Decisões, e a pessoa está respondendo a ele. Nesta conversa não use a abertura padrão: não se apresente de novo e não pergunte "como posso ajudar" nem "por onde a gente começa", porque foi você quem puxou o assunto. Reconheça o que a pessoa escreveu (se for só um cumprimento, cumprimente de volta, usando o nome que aparece no convite) e retome o convite com leveza, oferecendo explicar como a imersão funciona ou perguntando o que a pessoa faz para adaptar a explicação. Se ela te chamar de Rodrigo, esclareça de forma natural que você é o Drigo, agente de IA do Rodrigo, e siga a conversa. Se a resposta parecer mensagem automática de atendimento, não force o convite.';
+function contextoDoConvite(history) {
+  return history && history.length > 0 && history[0].role === 'assistant' ? CONVITE_CONTEXTO : '';
+}
+
 const WHATSAPP_TURMA_CANAL = '\n\n---\n\n# CANAL: WHATSAPP\n\nEsta conversa acontece pelo WhatsApp do Drigo, não pela página. A pessoa já está falando com você aqui: não mande ninguém "para a página" nem "para o chat", conduza a inscrição e o pagamento nesta própria conversa. Mensagens curtas, em texto corrido, sem markdown.';
 
 function chaveTelefoneBR(raw) {
@@ -3005,6 +3012,8 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
     const turma = await resolveWhatsAppTurma(phone, body);
     const systemPrompt = turma ? SYSTEM_PROMPT + '\n\n---\n\n' + TURMA_ADDENDUM + '\n\n---\n\n' + turmaFatos(turma) + WHATSAPP_TURMA_CANAL : undefined;
     const ctx = turma ? { turma: turma.slug, phone } : { phone };
+    const contextoConvite = contextoDoConvite(history);
+    if (contextoConvite) ctx.contextoVisita = contextoConvite;
     const { reply } = await getAgentReply(history, systemPrompt, SITE_ORIGIN, undefined, undefined, ctx);
     if (!reply) {
       console.error('WhatsApp inbound: sem resposta do modelo pra %s', phone);
