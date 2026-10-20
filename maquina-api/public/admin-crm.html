@@ -194,7 +194,7 @@ dialog.det[open]{display:flex;flex-direction:column}
   </div>
   <details class="como">
     <summary>Como o quadro funciona</summary>
-    <p>Cada coluna é uma etapa da conversa. Os cards andam sozinhos conforme o Drigo conversa: <b>Respondeu</b> quando a pessoa escreve no WhatsApp, <b>Interessado</b> quando ela se inscreve, entra na lista ou deixa claro que quer participar, <b>Inscrito</b> quando o pagamento é confirmado, <b>Sem interesse</b> ou <b>Não quer receber</b> quando ela pede (PARAR inclusive). Você também pode arrastar um card para outra coluna. A etiqueta de temperatura (Quente, Morno, Frio) é calculada a partir dos sinais do contato: inscrição, pagamento, diagnóstico, lista de prioridade e mensagens no WhatsApp. Passe o mouse sobre ela para ver o motivo. O quadro se atualiza a cada 30 segundos.</p>
+    <p>Cada coluna é uma etapa da conversa. Os cards andam sozinhos conforme o Drigo conversa: <b>Respondeu</b> quando a pessoa escreve no WhatsApp, <b>Interessado</b> quando ela se inscreve, entra na lista ou deixa claro que quer participar, <b>Inscrito</b> quando o pagamento é confirmado, <b>Sem interesse</b> ou <b>Não quer receber</b> quando ela pede (PARAR inclusive). Você também pode arrastar um card para outra coluna. A etiqueta de temperatura (Quente, Morno, Frio) é calculada a partir dos sinais do contato: inscrição, pagamento, diagnóstico, lista de prioridade e mensagens no WhatsApp. <b>Quente</b> é interesse real (inscrição iniciada, pagamento em aberto ou interesse claro na conversa); quem só respondeu, inclusive com resposta automática, fica em Morno. Passe o mouse sobre ela para ver o motivo. O quadro se atualiza a cada 30 segundos.</p>
   </details>
 
   <div class="stats">
@@ -856,10 +856,10 @@ dialog.det[open]{display:flex;flex-direction:column}
     var recente = ms(d.wa_in) && agora - ms(d.wa_in) <= 48 * H;
     if (emAberto) return ['quente', d.insc === 'sem_cobranca' ? 'Iniciou a inscrição' : 'Tem pagamento em aberto'];
     if (d.diag === 'quente') return ['quente', 'Diagnóstico deu lead quente'];
-    if (recente && (d.status === 'respondeu' || d.status === 'interessado')) return ['quente', 'Escreveu ' + ha(d.wa_in)];
+    if (recente && d.status === 'interessado') return ['quente', 'Demonstrou interesse e escreveu ' + ha(d.wa_in)];
     if (d.status === 'interessado') return ['morna', 'Marcado como interessado'];
     if (d.diag === 'morna') return ['morna', 'Diagnóstico deu lead morno'];
-    if (d.status === 'respondeu') return ['morna', 'Respondeu, mas faz tempo (' + ha(d.wa_in) + ')'];
+    if (d.status === 'respondeu') return ['morna', ms(d.wa_in) ? 'Respondeu ' + ha(d.wa_in) + ', ainda sem interesse claro' : 'Respondeu, ainda sem interesse claro'];
     if (d.diag && d.diag !== '-') return ['fria', 'Diagnóstico deu lead frio'];
     if (d.lista) return ['morna', 'Entrou na lista de prioridade'];
     if (d.status === 'convite_enviado') return ['fria', 'Convite enviado, sem resposta'];

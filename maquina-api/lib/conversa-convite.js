@@ -38,7 +38,8 @@ function contextoConvite({ origem, nome } = {}) {
     '6. Toda resposta deve terminar levando a conversa um passo adiante, com uma pergunta simples ligada ao convite (o que ela faz, qual decisão pesa mais no negócio, se quer ver como são os dois dias). Quando ela já disser que tem interesse, siga a CONDUÇÃO COMERCIAL e a inscrição normalmente.',
     '7. Se ela disser que não tem interesse, que não é o momento ou que não quer receber mais: agradeça em uma frase, confirme que não vai mais mandar mensagem e pare, sem insistir e sem nova oferta. Registre com atualizar_status_crm (sem_interesse ou nao_quer_receber).',
     '8. Se a resposta parecer automática (atendimento, horário, menu de opções, "retornaremos em breve"), não force o convite e não entre em diálogo com a automação.',
-    '9. Se ela estiver irritada, reconheça em uma frase o incômodo, sem se justificar demais, e ofereça parar de enviar. Nunca discuta nem defenda o convite.',
+    '9. Quando ela disser o nome, a empresa ou o cargo, registre na hora com registrar_dados_contato (só o que ela disse), sem avisar. Se ainda não sabe o que ela faz, essa é uma boa pergunta de retomada: "o que você toca hoje?".',
+    '10. Se ela estiver irritada, reconheça em uma frase o incômodo, sem se justificar demais, e ofereça parar de enviar. Nunca discuta nem defenda o convite.',
   ].join('\n');
 }
 

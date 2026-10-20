@@ -2173,6 +2173,19 @@ const CHAT_TOOLS = [
     },
   },
   {
+    name: 'registrar_dados_contato',
+    description:
+      'Guarda no CRM do Rodrigo o nome, a empresa e o cargo que a pessoa DISSE nesta conversa do WhatsApp, com as palavras dela. Só preenche o que ainda está vazio no cadastro e nunca sobrescreve o que já existe. Chame assim que ela disser um desses dados (por exemplo "sou dono da Padaria X", "trabalho na Y como diretora", "meu nome é Z"), sem pedir confirmação e sem avisar a pessoa. Não deduza nem complete: se ela não falou, não envie o campo. Não use para dados de terceiros nem para o que veio de mensagem automática.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        nome: { type: 'string', description: 'Nome da pessoa, como ela disse. Omita se ela não disse.' },
+        empresa: { type: 'string', description: 'Nome da empresa, como ela disse. Omita se ela não disse.' },
+        cargo: { type: 'string', description: 'Cargo ou função (ex.: sócio, diretora comercial). Omita se ela não disse.' },
+      },
+    },
+  },
+  {
     name: 'registrar_contato_servico',
     description:
       'Registra o pedido de quem quer contratar a Finder Lab ou o Rodrigo como fornecedor (consultoria de IA, produto ou agente de IA sob medida, integração de IA, versão in company, grupo maior que 3 pessoas) e avisa o Rodrigo por e-mail. NÃO é a inscrição na imersão. Só chame depois de ter nome, email e WhatsApp com DDD informados pela pessoa nesta conversa, de ter repetido esses dados pra ela confirmar, e de ela ter dito explicitamente que sim à pergunta se o Rodrigo pode entrar em contato por email e WhatsApp. Nunca invente, deduza nem preencha campo sozinho. Chame uma única vez por pessoa. Se a pessoa não quiser deixar os dados, não chame: passe os contatos do Rodrigo.',
@@ -2355,6 +2368,10 @@ async function runChatToolBase(name, toolInput, originUrl, ctx) {
       return { ok: false, error: 'Falha ao registrar agora. NÃO diga que registrou. Passe o WhatsApp (11) 3164-3783 e o email rodrigo.moraes@finderlab.com.br do Rodrigo para a pessoa chamar direto.' };
     }
   }
+  if (name === 'registrar_dados_contato') {
+    if (ctx && ctx.phone) await crmPreencheDados(ctx.phone, toolInput || {});
+    return { ok: true, instrucao: 'Anotado internamente. Não mencione isso e siga a conversa normalmente.' };
+  }
   if (name === 'atualizar_status_crm') {
     const st = toolInput && ['interessado', 'sem_interesse', 'nao_quer_receber'].includes(toolInput.status) ? toolInput.status : null;
     if (st && ctx && ctx.phone) await crmAtualiza({ whats: ctx.phone, status: st, texto: 'pediu ao Drigo na conversa' });
@@ -2494,6 +2511,8 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
   async function callModel() {
     const params = { model: ANTHROPIC_MODEL, max_tokens: maxTokens || CHAT_MAX_TOKENS, system: systemBlocks, messages };
     params.tools = ctx && ctx.semFerramentas ? LISTA_TOOLS : CHAT_TOOLS;
+    // Salvar dados no CRM só faz sentido no WhatsApp (é lá que sabemos qual contato é).
+    if (!(ctx && ctx.phone)) params.tools = params.tools.filter((t) => t.name !== 'registrar_dados_contato');
     // Conversa puxada pelo convite: a pessoa não se cadastrou, então o documento de termos só sai se ela pedir
     // (sem isso o modelo despejava os termos inteiros como resposta a "como você tem meu contato?").
     if (ctx && ctx.termosSoSePedido) {
@@ -3034,6 +3053,8 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
       return;
     }
     await crmAtualiza({ whats: phone, status: 'respondeu' });
+    const nomePerfil = nomeDePerfilValido(profileName);
+    if (nomePerfil) await crmPreencheDados(phone, { nome: nomePerfil });
 
     if (!chatReady || !anthropic) {
       console.error('WhatsApp inbound: agente indisponível (chatReady=%s) para %s', chatReady, phone);
@@ -3049,6 +3070,7 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
       // Primeira resposta a um convite que é só atendimento automático: não responde (e não vira conversa com robô).
       if (history.length <= 2 && conversaConvite.respostaAutomatica(body)) {
         console.log('WhatsApp inbound: resposta automática ignorada para %s', phone);
+        await crmAnotaObservacao(phone, body);
         return;
       }
       ctx.contextoVisita = conversaConvite.contextoConvite(convite);
@@ -3284,6 +3306,58 @@ function crmLimpa(b, { exigeNome }) {
 // vêm de um pedido explícito da pessoa; quem pediu para sair nunca é reativado sozinho (só o inscrito
 // registra o pagamento, e a autorização continua "não"). Nunca derruba o fluxo que chamou: falha só loga.
 const CRM_RANK = { novo: 0, convite_enviado: 1, respondeu: 2, sem_interesse: 2, interessado: 3, inscrito: 4 };
+// Preenche nome, empresa e cargo do contato só onde está vazio: o que o Rodrigo já cadastrou nunca é sobrescrito.
+async function crmPreencheDados(whats, dados) {
+  try {
+    const nome = clean(dados.nome, 120), empresa = clean(dados.empresa, 160), cargo = clean(dados.cargo, 120);
+    if (!nome && !empresa && !cargo) return false;
+    const w = crmNormalizaWhats(whats);
+    if (!w) return false;
+    const r = await pool.query(
+      `UPDATE crm_contatos SET
+         nome = CASE WHEN COALESCE(nome,'') = '' THEN $2 ELSE nome END,
+         empresa = CASE WHEN COALESCE(empresa,'') = '' THEN $3 ELSE empresa END,
+         cargo = CASE WHEN COALESCE(cargo,'') = '' THEN $4 ELSE cargo END,
+         updated_at = now()
+       WHERE id = (SELECT id FROM crm_contatos WHERE substr(whats,1,4) = substr($1,1,4) AND right(whats,8) = right($1,8) ORDER BY id LIMIT 1)`,
+      [w, nome, empresa, cargo]
+    );
+    return r.rowCount > 0;
+  } catch (err) {
+    console.error('crmPreencheDados', err && err.message ? err.message : err);
+    return false;
+  }
+}
+
+// Nome do perfil do WhatsApp só entra se parecer nome de pessoa (sem emoji, número ou apelido de aparelho) e o cadastro estiver sem nome.
+function nomeDePerfilValido(raw) {
+  const n = String(raw || '').replace(/\s+/g, ' ').trim();
+  if (n.length < 3 || n.length > 60) return '';
+  if (!/^[\p{L}][\p{L} .'’-]*$/u.test(n)) return '';
+  if ((n.match(/\p{L}/gu) || []).length < 3) return '';
+  if (/iphone|android|samsung|celular|whatsapp|^user$/i.test(n)) return '';
+  return n;
+}
+
+// Guarda o texto de uma resposta automática nas observações do contato (às vezes traz o nome da empresa).
+async function crmAnotaObservacao(whats, texto) {
+  try {
+    const w = crmNormalizaWhats(whats);
+    const t = clean(texto, 300);
+    if (!w || !t) return false;
+    const linha = 'Resposta automática (' + new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) + '): ' + t;
+    const r = await pool.query(
+      `UPDATE crm_contatos SET observacoes = CASE WHEN COALESCE(observacoes,'') = '' THEN $2 ELSE observacoes || E'\n' || $2 END, updated_at = now()
+       WHERE id = (SELECT id FROM crm_contatos WHERE substr(whats,1,4) = substr($1,1,4) AND right(whats,8) = right($1,8) ORDER BY id LIMIT 1)`,
+      [w, linha]
+    );
+    return r.rowCount > 0;
+  } catch (err) {
+    console.error('crmAnotaObservacao', err && err.message ? err.message : err);
+    return false;
+  }
+}
+
 async function crmAtualiza({ whats, email, status, texto }) {
   try {
     const w = crmNormalizaWhats(whats);
