@@ -2163,7 +2163,7 @@ const CHAT_TOOLS = [
   {
     name: 'atualizar_status_crm',
     description:
-      'Anota internamente, no CRM do Rodrigo, em que pé está esta pessoa na conversa do WhatsApp. Use SOMENTE quando a pessoa deixar claro, com as palavras dela: (a) "interessado": quer participar ou pede para seguir com a inscrição, valores ou como funciona a compra; (b) "sem_interesse": diz que não tem interesse ou que não vai participar; (c) "nao_quer_receber": pede para não receber mais mensagens. Não use por dúvida solta, curiosidade ou palavra ambígua. Nunca mencione essa anotação para a pessoa. Pode ser chamada de novo se ela mudar de ideia.',
+      'Anota internamente, no CRM do Rodrigo, em que pé está esta pessoa na conversa do WhatsApp. Use SOMENTE quando a pessoa deixar claro, com as palavras dela: (a) "interessado": diz que quer participar ou pergunta valor, vaga, data ou inscrição para ir (um "sim" a "posso te explicar?", "obrigado", "bom dia" ou curiosidade NÃO é interessado); (b) "sem_interesse": diz que não tem interesse ou que não vai participar; (c) "nao_quer_receber": pede para não receber mais mensagens. Não use por dúvida solta, curiosidade ou palavra ambígua. Nunca mencione essa anotação para a pessoa. Pode ser chamada de novo se ela mudar de ideia.',
     input_schema: {
       type: 'object',
       properties: {
@@ -2931,10 +2931,13 @@ async function saveWhatsAppMessage({ phone, direction, body, profileName, messag
   );
 }
 
+// O WhatsApp devolve alguns números brasileiros sem o 9 (o convite foi para +5531994932776 e a resposta volta de
+// +553194932776). A conversa é a mesma, então o histórico junta pelo DDD + últimos 8 dígitos (mesma chave do CRM).
 async function loadWhatsAppHistory(phone) {
   const { rows } = await pool.query(
     `SELECT direction, body FROM whatsapp_messages
-     WHERE phone = $1 ORDER BY created_at DESC LIMIT $2`,
+     WHERE phone = $1 OR (${crmChaveSql('phone')} IS NOT NULL AND ${crmChaveSql('phone')} = ${crmChaveSql('$1::text')})
+     ORDER BY created_at DESC LIMIT $2`,
     [phone, WHATSAPP_HISTORY_LIMIT]
   );
   return rows.reverse().map((r) => ({ role: r.direction === 'in' ? 'user' : 'assistant', content: r.body }));
@@ -3040,6 +3043,20 @@ async function resolveWhatsAppTurma(phone, body) {
 // Roda depois de já termos respondido 200 pra Twilio (veja a rota abaixo), então uma
 // demora aqui (o modelo pode levar vários segundos, mais ainda se chamar
 // registrar_inscricao) não atrasa nem derruba o webhook.
+// Fila por pessoa (chave DDD + 8 últimos dígitos): duas mensagens da mesma pessoa nunca são processadas ao mesmo tempo.
+const WHATSAPP_RAJADA_MS = process.env.WHATSAPP_RAJADA_MS != null && process.env.WHATSAPP_RAJADA_MS !== '' ? Number(process.env.WHATSAPP_RAJADA_MS) : 2500;
+const filasWhatsApp = new Map();
+function naFilaDoWhatsApp(phone, fn) {
+  const d = String(phone || '').replace(/\D/g, '');
+  const l = d.length >= 12 && d.startsWith('55') ? d.slice(2) : d;
+  const chave = l.length >= 10 ? l.slice(0, 2) + l.slice(-8) : d;
+  const anterior = filasWhatsApp.get(chave) || Promise.resolve();
+  const atual = anterior.catch(() => {}).then(fn);
+  filasWhatsApp.set(chave, atual);
+  atual.catch(() => {}).then(() => { if (filasWhatsApp.get(chave) === atual) filasWhatsApp.delete(chave); });
+  return atual;
+}
+
 async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
   try {
     await saveWhatsAppMessage({ phone, direction: 'in', body, profileName, messageSid });
@@ -3061,29 +3078,42 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
       return;
     }
 
-    const history = await loadWhatsAppHistory(phone);
-    const turma = await resolveWhatsAppTurma(phone, body);
-    const systemPrompt = turma ? SYSTEM_PROMPT + '\n\n---\n\n' + TURMA_ADDENDUM + '\n\n---\n\n' + turmaFatos(turma) + WHATSAPP_TURMA_CANAL : undefined;
-    const ctx = turma ? { turma: turma.slug, phone } : { phone };
-    const convite = await dadosDoConvite(phone, history);
-    if (convite) {
-      // Primeira resposta a um convite que é só atendimento automático: não responde (e não vira conversa com robô).
-      if (history.length <= 2 && conversaConvite.respostaAutomatica(body)) {
-        console.log('WhatsApp inbound: resposta automática ignorada para %s', phone);
-        await crmAnotaObservacao(phone, body);
+    // Rajada: quem manda duas ou três mensagens seguidas recebe UMA resposta. Espera um instante, entra na fila da
+    // pessoa (uma resposta por vez) e só responde se ainda for a última mensagem e se ninguém respondeu depois dela.
+    if (WHATSAPP_RAJADA_MS > 0) await new Promise((r) => setTimeout(r, WHATSAPP_RAJADA_MS));
+    await naFilaDoWhatsApp(phone, async () => {
+      const history = await loadWhatsAppHistory(phone);
+      const ultima = history[history.length - 1];
+      if (!ultima || ultima.role !== 'user') return; // já respondida por outro processamento
+      if (String(ultima.content) !== String(body)) return; // chegou mensagem mais nova: ela responde por todas
+
+      const turma = await resolveWhatsAppTurma(phone, body);
+      const systemPrompt = turma ? SYSTEM_PROMPT + '\n\n---\n\n' + TURMA_ADDENDUM + '\n\n---\n\n' + turmaFatos(turma) + WHATSAPP_TURMA_CANAL : undefined;
+      const ctx = turma ? { turma: turma.slug, phone } : { phone };
+      const convite = await dadosDoConvite(phone, history);
+      if (convite) {
+        // Convite respondido só por atendimento automático: não responde (nem vira conversa com robô).
+        const pendentes = conversaConvite.pendentesDoFim(history);
+        const respostasDoDrigo = history.filter((m) => m.role === 'assistant').length;
+        if (respostasDoDrigo <= 1 && pendentes.length > 0 && pendentes.every(conversaConvite.respostaAutomatica)) {
+          console.log('WhatsApp inbound: resposta automática ignorada para %s', phone);
+          for (const texto of pendentes) await crmAnotaObservacao(phone, texto);
+          return;
+        }
+        ctx.contextoVisita = conversaConvite.contextoConvite(convite);
+        ctx.termosSoSePedido = true;
+      } else if (!turma) {
+        ctx.contextoVisita = conversaConvite.contextoWhatsApp();
+      }
+      const { reply } = await getAgentReply(history, systemPrompt, SITE_ORIGIN, undefined, undefined, ctx);
+      if (!reply) {
+        console.error('WhatsApp inbound: sem resposta do modelo pra %s', phone);
         return;
       }
-      ctx.contextoVisita = conversaConvite.contextoConvite(convite);
-      ctx.termosSoSePedido = true;
-    }
-    const { reply } = await getAgentReply(history, systemPrompt, SITE_ORIGIN, undefined, undefined, ctx);
-    if (!reply) {
-      console.error('WhatsApp inbound: sem resposta do modelo pra %s', phone);
-      return;
-    }
 
-    await sendWhatsAppFreeform(phone, reply);
-    await saveWhatsAppMessage({ phone, direction: 'out', body: reply });
+      await sendWhatsAppFreeform(phone, reply);
+      await saveWhatsAppMessage({ phone, direction: 'out', body: reply });
+    });
   } catch (err) {
     console.error('WhatsApp inbound: falha ao processar mensagem de %s', phone, err && err.message ? err.message : err);
   }
@@ -3789,17 +3819,15 @@ app.get('/admin/api/stats', async (req, res) => {
 
 app.get('/admin/api/whatsapp/conversations', async (_req, res) => {
   try {
+    // Agrupa pelo DDD + 8 últimos dígitos: o WhatsApp às vezes tira o 9 e a mesma pessoa aparecia em duas conversas.
     const { rows } = await pool.query(`
-      SELECT c.phone, c.last_at, c.count, m.body AS last_body, m.direction AS last_direction, m.profile_name
-      FROM (
-        SELECT phone, MAX(created_at) AS last_at, COUNT(*) AS count
-        FROM whatsapp_messages GROUP BY phone
-      ) c
-      JOIN LATERAL (
-        SELECT body, direction, profile_name FROM whatsapp_messages wm
-        WHERE wm.phone = c.phone ORDER BY created_at DESC LIMIT 1
-      ) m ON true
-      ORDER BY c.last_at DESC
+      SELECT phone, last_at, count, last_body, last_direction, profile_name FROM (
+        SELECT DISTINCT ON (k) phone, created_at AS last_at, body AS last_body, direction AS last_direction, profile_name,
+               count(*) OVER (PARTITION BY k) AS count
+        FROM (SELECT *, COALESCE(${crmChaveSql('phone')}, phone) AS k FROM whatsapp_messages) t
+        ORDER BY k, created_at DESC
+      ) x
+      ORDER BY last_at DESC
       LIMIT 200
     `);
     res.json(rows);
@@ -3814,7 +3842,8 @@ app.get('/admin/api/whatsapp/conversations/:phone', async (req, res) => {
     const phone = clean(req.params.phone, 30);
     const { rows } = await pool.query(
       `SELECT direction, body, profile_name, created_at FROM whatsapp_messages
-       WHERE phone = $1 ORDER BY created_at ASC LIMIT 500`,
+       WHERE phone = $1 OR (${crmChaveSql('phone')} IS NOT NULL AND ${crmChaveSql('phone')} = ${crmChaveSql('$1::text')})
+       ORDER BY created_at ASC LIMIT 500`,
       [phone]
     );
     res.json(rows);
