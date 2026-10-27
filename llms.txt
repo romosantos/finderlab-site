@@ -1,0 +1,25 @@
+# Finder Lab
+
+> Applied Intelligence Lab: pesquisa que vira sistema, para decisões e operações que não podem esperar. A Finder Lab é uma empresa brasileira que constrói agentes de IA e sistemas para a operação de empresas. Conteúdo do site em português (Brasil).
+
+A Finder Lab é a razão social Finder Consultoria em TI Ltda (CNPJ 53.291.349/0001-96) e foi fundada por Rodrigo Moraes, o Drigo. O atendimento comercial começa por um diagnóstico gratuito, conduzido pelo Drigo, agente virtual da Finder Lab, que também atende no WhatsApp.
+
+## Página inicial
+
+- [Finder Lab](https://finderlab.com.br/): agentes de IA sob medida que atendem, qualificam e resolvem dentro do WhatsApp e dos sistemas da empresa; método, entregas, arquitetura, diferencial e perguntas frequentes.
+
+## Produtos
+
+- [Anchora](https://finderlab.com.br/anchora.html): sistema de Performance Management agêntico. Três agentes de IA leem o trabalho real das pessoas e ajudam RH, lideranças e colaboradores a decidir carreira com contexto.
+- [Zelus Health](https://finderlab.com.br/zelus-health.html): sistema de saúde preventiva humana. Reúne exames, hábitos e sintomas, acompanha a evolução no tempo e organiza o histórico para a consulta.
+- [Zelus Pet](https://finderlab.com.br/zelus-pet.html): plataforma multi-pet. Lê e classifica marcadores laboratoriais por espécie e prepara o tutor para a consulta com o veterinário.
+- [Zelus Life](https://finderlab.com.br/zelus-life.html): conecta a pessoa a um terapeuta verificado e oferece um app de acompanhamento (humor, sono, combinados) entre as sessões. A terapia é feita por terapeutas, não por IA. Não é plano de saúde.
+- [Edi Vita](https://finderlab.com.br/edi-vita.html): gestão condominial que conecta síndicos, moradores, documentos e operação, com uma assistente que responde indicando a fonte.
+- [Famulus](https://finderlab.com.br/famulus.html): portal de saúde e segurança do trabalho (SST). O cliente pede e acompanha vidas e documentos, e a operação de SST resolve tudo num fluxo só.
+
+## Contato
+
+- E-mail: contato@finderlab.com.br
+- WhatsApp: (11) 5039-9353 (https://wa.me/551150399353)
+- LinkedIn: https://www.linkedin.com/company/finderlab
+- Instagram: https://www.instagram.com/finderlab.ai

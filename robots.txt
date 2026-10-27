@@ -1,0 +1,9 @@
+# Finder Lab: todos os buscadores e rastreadores de IA (Googlebot, Bingbot, GPTBot, OAI-SearchBot, ChatGPT-User,
+# ClaudeBot, Claude-SearchBot, PerplexityBot, Google-Extended, Applebot etc.) podem acessar o conteúdo público.
+User-agent: *
+Allow: /
+Disallow: /maquina-api/
+Disallow: /scripts/
+Disallow: /Sistemas-prints/
+
+Sitemap: https://finderlab.com.br/sitemap.xml
