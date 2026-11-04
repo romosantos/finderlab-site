@@ -69,12 +69,20 @@ a{color:inherit}
 .chat-mic.recording{background:#E5484D;border-color:#E5484D;color:#fff;animation:micPulse 1.1s infinite}
 @keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(229,72,77,.5)}50%{box-shadow:0 0 0 8px rgba(229,72,77,0)}}
 :focus-visible{outline:2px solid #A88BFF;outline-offset:3px}
+/* atalhos de início: quem chega do anúncio no celular toca em vez de escrever */
+.chat-quick{display:flex;flex-wrap:wrap;gap:8px;align-self:flex-start;max-width:100%}
+.chat-quick button{font-family:inherit;font-size:13px;line-height:1.3;color:#EDEAF7;background:rgba(116,67,245,.16);border:1px solid rgba(168,139,255,.55);border-radius:999px;padding:9px 14px;cursor:pointer;text-align:left}
+.chat-quick button:hover{background:rgba(116,67,245,.3)}
+.chat-head-text{flex:1;min-width:0}
+.chat-imersao{flex-shrink:0;font-size:12px;font-weight:600;color:var(--accent2);text-decoration:none;border:1px solid rgba(168,139,255,.5);border-radius:8px;padding:7px 10px;white-space:nowrap}
+.chat-imersao:hover{background:rgba(116,67,245,.2)}
+@media(max-width:400px){.chat-imersao{font-size:11px;padding:6px 8px}}
 
 .foot{padding:20px 100px 32px;text-align:center}
 .foot a{font-size:13px;color:var(--muted);text-decoration:none}
 .foot a:hover{color:var(--accent2)}
 @media(max-width:900px){.top{padding-left:24px;padding-right:24px}.main{padding-left:24px;padding-right:24px;align-items:flex-start}.foot{padding-left:24px;padding-right:24px}.chat-row{flex-direction:column;justify-content:center;align-items:flex-start}.hero{max-width:480px;width:100%}.chat-modal{border-radius:22px}}
-@media(max-width:560px){.top{padding-left:16px;padding-right:16px}.main{padding:20px 16px 32px;gap:22px}.foot{padding-left:16px;padding-right:16px}.chat-modal{height:min(560px,70vh)}}
+@media(max-width:560px){.top{padding-left:16px;padding-right:16px}.main{padding:20px 16px 32px;gap:22px}.hero-text-wrap{display:none}.hero h1{font-size:23px}.foot{padding-left:16px;padding-right:16px}.chat-modal{height:min(560px,70vh)}}
 /* ---------- desktop: texto no topo, Drigo + parágrafo à esquerda, chat grande à direita ---------- */
 @media(min-width:901px){
   .top{padding-left:64px;padding-right:64px}
@@ -109,13 +117,20 @@ a{color:inherit}
     <div class="chat-modal" role="dialog" aria-labelledby="chat-title" id="chat-modal">
       <div class="chat-head">
         <img class="drigo-avatar" src="/img/drigo-avatar-cabeca.png" width="40" height="40" alt="">
-        <div>
+        <div class="chat-head-text">
           <b id="chat-title">Drigo</b>
           <span>Diagnóstico · Finder Lab</span>
         </div>
+        <a class="chat-imersao" href="https://www.maquina.finderlab.com.br/" target="_blank" rel="noopener">Imersão 9 e 10/12 ↗</a>
       </div>
       <div class="chat-body" id="chat-body" aria-live="polite">
-        <div class="chat-msg bot">Oi, tudo bem? Eu sou o Drigo. Bora fazer um diagnóstico rápido da decisão que mais pesa pra você no negócio agora? Em poucas perguntas eu já te devolvo uma leitura de verdade, sem compromisso nenhum. Qual é essa decisão?</div>
+        <div class="chat-msg bot">Oi! Eu sou o Drigo. Me conta qual decisão mais pesa no seu negócio agora, que em poucas perguntas eu te devolvo uma leitura de verdade, sem compromisso. Escreve do seu jeito ou toca numa opção:</div>
+        <div class="chat-quick" id="chat-quick" role="group" aria-label="Começar por um destes assuntos">
+          <button type="button">Tô perdendo cliente ou venda</button>
+          <button type="button">Não sei se contrato mais gente</button>
+          <button type="button">Não sei se meu preço está certo</button>
+          <button type="button">Quero usar IA no negócio e não sei por onde começar</button>
+        </div>
       </div>
       <form class="chat-form" id="chat-form">
         <textarea id="chat-input" autocomplete="off" placeholder="Escreve aqui..." aria-label="Sua mensagem" maxlength="600" rows="1"></textarea>
@@ -333,7 +348,22 @@ a{color:inherit}
       .finally(function () { setTimeout(scrollChat, 30); });
   });
 
-  chatInput.focus();
+  // Atalhos de início: o toque manda o texto como mensagem da pessoa e os botões somem.
+  var quick = document.getElementById('chat-quick');
+  function removeQuick() { if (quick) { quick.remove(); quick = null; } }
+  if (quick) {
+    quick.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (!b || chatLoading) return;
+      chatInput.value = b.textContent.trim();
+      updateSendState();
+      chatForm.requestSubmit();
+    });
+  }
+  chatForm.addEventListener('submit', removeQuick);
+
+  // No celular, focar o campo abre o teclado e esconde os atalhos; só foca no desktop.
+  if (window.matchMedia('(min-width: 901px)').matches) chatInput.focus();
 })();
 </script>
 

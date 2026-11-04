@@ -107,6 +107,7 @@ function semSecoes(texto, prefixos) {
 // Ficam guardadas nos arquivos e no SYSTEM_PROMPT cheio, para a turma aberta. Menos texto
 // para ler = primeira resposta mais rápida e menos chance de falar de valor ou de inscrição.
 const LISTA_SECOES_FORA_INSTRUCOES = [
+  '# REGRAS QUE VALEM ACIMA DE TUDO',
   '# REGRAS DE FECHAMENTO',
   '# CONDUÇÃO COMERCIAL ATÉ A INSCRIÇÃO',
   '# INSCRIÇÃO PELO CHAT',
@@ -4021,3 +4022,13 @@ migrate()
     console.error('Falha ao preparar o banco', err);
     process.exit(1);
   });
+
+// Para a bateria de testes do Drigo (scripts fora do repo): os prompts e ferramentas exatamente como
+// o servidor monta, sem duplicar a lógica. Não muda nada em produção.
+module.exports = {
+  paraTeste: () => ({
+    SYSTEM_PROMPT, DIAGNOSTIC_ADDENDUM, LISTA_PROMPT_BASE, LISTA_ADDENDUM, CHAT_TOOLS, LISTA_TOOLS,
+    CHAT_MAX_TOKENS, CHAT_DIAGNOSTIC_MAX_TOKENS, DOMAIN_ADDENDA, DOMAIN_LABELS, detectDomainAddenda,
+    stripMarkdown, stripInternalReasoning, conversaConvite, chatReady, TURMA_ADDENDUM, turmaFatos, turmaPorSlug,
+  }),
+};
