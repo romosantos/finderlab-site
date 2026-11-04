@@ -2531,7 +2531,12 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
     }
     if (!onEvent) return anthropic.messages.create(params);
     const stream = anthropic.messages.stream(params);
-    stream.on('text', makeThinkingFilter((delta) => onEvent('delta', delta)));
+    // stripMarkdown só limpa a resposta final; sem isto, o balão (e a voz) mostrava "**" e travessão
+    // enquanto o texto chegava. Remove todo asterisco já no pedaço, porque "**" pode vir partido em dois.
+    stream.on('text', makeThinkingFilter((delta) => {
+      const d = delta.replace(/\*/g, '').replace(/ ?— ?/g, ', ');
+      if (d) onEvent('delta', d);
+    }));
     return stream.finalMessage();
   }
 
