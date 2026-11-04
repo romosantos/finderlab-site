@@ -107,6 +107,7 @@ function semSecoes(texto, prefixos) {
 // Ficam guardadas nos arquivos e no SYSTEM_PROMPT cheio, para a turma aberta. Menos texto
 // para ler = primeira resposta mais rápida e menos chance de falar de valor ou de inscrição.
 const LISTA_SECOES_FORA_INSTRUCOES = [
+  '# REGRAS DE FECHAMENTO',
   '# CONDUÇÃO COMERCIAL ATÉ A INSCRIÇÃO',
   '# INSCRIÇÃO PELO CHAT',
   '# CONCORDÂNCIA NA ETAPA DE AUTORIZAÇÃO',
@@ -2203,6 +2204,7 @@ const CHAT_TOOLS = [
       required: ['nome', 'email', 'whats', 'consentimento'],
     },
   },
+  require('./lib/alerta-rodrigo').DEFINICAO,
   {
     name: 'gerar_pagamento_inscricao',
     description:
@@ -2371,6 +2373,11 @@ async function runChatToolBase(name, toolInput, originUrl, ctx) {
   if (name === 'registrar_dados_contato') {
     if (ctx && ctx.phone) await crmPreencheDados(ctx.phone, toolInput || {});
     return { ok: true, instrucao: 'Anotado internamente. Não mencione isso e siga a conversa normalmente.' };
+  }
+  if (name === 'avisar_rodrigo') {
+    const r = await alertaRodrigo.executar(toolInput, ctx);
+    if (r.ok && ctx && ctx.phone) await crmAtualiza({ whats: ctx.phone, status: 'interessado', texto: 'Drigo avisou o Rodrigo' });
+    return r;
   }
   if (name === 'atualizar_status_crm') {
     const st = toolInput && ['interessado', 'sem_interesse', 'nao_quer_receber'].includes(toolInput.status) ? toolInput.status : null;
@@ -3628,17 +3635,33 @@ app.post('/admin/api/crm/importar', async (req, res) => {
 });
 
 // ---------- CRM: disparo agendado do convite (lib/crm-disparo.js) ----------
+// E-mail interno para o Rodrigo. Lança erro se não estiver configurado ou se a Resend recusar,
+// para quem chama saber que o aviso não saiu.
+async function avisaRodrigo(assunto, texto) {
+  if (!RESEND_API_KEY || !SERVICO_NOTIFY_EMAIL) throw new Error('e-mail de aviso não configurado (RESEND_API_KEY / SERVICO_NOTIFY_EMAIL)');
+  const r = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: EMAIL_FROM, to: SERVICO_NOTIFY_EMAIL, subject: assunto, text: texto }),
+  });
+  if (!r.ok) throw new Error('Resend respondeu ' + r.status);
+}
+
 const crmDisparo = require('./lib/crm-disparo').init(app, {
   pool, twilioClient, from: TWILIO_WHATSAPP_FROM, templateSid: process.env.TWILIO_CONVITE_TEMPLATE_SID || '', templateSidGeral: process.env.TWILIO_CONVITE_GERAL_TEMPLATE_SID || '',
   saveWhatsAppMessage, toWhatsAppAddress, crmChaveSql, clean, ownerWhats: TWILIO_OWNER_WHATSAPP,
-  avisa: async (assunto, texto) => {
-    if (!RESEND_API_KEY || !SERVICO_NOTIFY_EMAIL) return;
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: EMAIL_FROM, to: SERVICO_NOTIFY_EMAIL, subject: assunto, text: texto }),
-    });
-  },
+  avisa: (assunto, texto) => avisaRodrigo(assunto, texto).catch((err) => console.error('crm-disparo: aviso', err.message)),
+});
+
+// ---------- Lead quente: Drigo avisa o Rodrigo (lib/alerta-rodrigo.js) ----------
+const alertaRodrigo = require('./lib/alerta-rodrigo').init({
+  pool, clean, avisa: avisaRodrigo, adminUrl: 'https://www.maquina.finderlab.com.br/admin/crm',
+});
+
+// ---------- WhatsApp: follow-up de quem respondeu e ficou sem resposta (lib/whatsapp-followup.js) ----------
+const whatsappFollowup = require('./lib/whatsapp-followup').init({
+  pool, crmChaveSql, sendWhatsAppFreeform, saveWhatsAppMessage, respostaAutomatica: conversaConvite.respostaAutomatica,
+  ativo: !/^(0|off|false|nao|não)$/i.test(process.env.WHATSAPP_FOLLOWUP || ''),
 });
 
 app.get('/admin/api/crm.csv', async (_req, res) => {
@@ -3986,7 +4009,9 @@ app.use((_req, res) => res.status(404).send('Not found'));
 
 migrate()
   .then(() => crmDisparo.migrate())
-  .then(() => { crmDisparo.start(); return app.listen(PORT, () => console.log('maquina-api na porta ' + PORT)); })
+  .then(() => alertaRodrigo.migrate())
+  .then(() => whatsappFollowup.migrate())
+  .then(() => { crmDisparo.start(); whatsappFollowup.start(); return app.listen(PORT, () => console.log('maquina-api na porta ' + PORT)); })
   .catch((err) => {
     console.error('Falha ao preparar o banco', err);
     process.exit(1);
