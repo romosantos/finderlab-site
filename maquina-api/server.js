@@ -892,6 +892,8 @@ async function migrate() {
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS bairro      TEXT NOT NULL DEFAULT '';
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS cidade      TEXT NOT NULL DEFAULT '';
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS estado      TEXT NOT NULL DEFAULT '';
+    -- quem indicou (programa "3 ingressos vendidos, o quarto sai de graça"): texto livre ou ?ref= do link
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS indicado_por TEXT NOT NULL DEFAULT '';
 
     CREATE TABLE IF NOT EXISTS chat_logs (
       id          SERIAL PRIMARY KEY,
@@ -1331,6 +1333,7 @@ async function saveLead(input, opts) {
   const cidade = clean(b.cidade, 120);
   const estado = clean(b.estado, 2).toUpperCase();
   const consent = b.consent === true;
+  const indicadoPor = clean(b.indicadoPor, 120);
 
   const errors = {};
   if (nome.length < 2) errors.nome = 'Informe o nome completo.';
@@ -1341,8 +1344,8 @@ async function saveLead(input, opts) {
 
   // mesma pessoa reenviando: atualiza os dados e preserva o andamento
   const { rows } = await pool.query(
-    `INSERT INTO leads (nome, email, whats, empresa, cargo, cpf_cnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes, ingresso)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+    `INSERT INTO leads (nome, email, whats, empresa, cargo, cpf_cnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes, ingresso, indicado_por)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
      ON CONFLICT (lower(email)) DO UPDATE
        SET nome=EXCLUDED.nome, whats=EXCLUDED.whats, empresa=EXCLUDED.empresa,
            cargo=EXCLUDED.cargo,
@@ -1359,9 +1362,10 @@ async function saveLead(input, opts) {
            pessoas=CASE WHEN EXCLUDED.turma <> '' THEN EXCLUDED.pessoas ELSE leads.pessoas END,
            participantes=CASE WHEN EXCLUDED.turma <> '' THEN EXCLUDED.participantes ELSE leads.participantes END,
            ingresso=CASE WHEN EXCLUDED.ingresso <> '' THEN EXCLUDED.ingresso ELSE leads.ingresso END,
+           indicado_por=CASE WHEN EXCLUDED.indicado_por <> '' THEN EXCLUDED.indicado_por ELSE leads.indicado_por END,
            updated_at=now()
      RETURNING id`,
-    [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes, ingresso]
+    [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes, ingresso, indicadoPor]
   );
   notifyLeadWhatsApp({ id: rows[0].id, nome, email, whats, empresa, cargo });
   crmAtualiza({ whats, email, status: 'interessado' });
@@ -3210,12 +3214,12 @@ app.get('/admin/api/leads.csv', async (_req, res) => {
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // evita injeção de fórmula no Excel
     return '"' + s.replace(/"/g, '""') + '"';
   };
-  const head = ['Data', 'Nome', 'Email', 'WhatsApp', 'CPF/CNPJ', 'CEP', 'Endereço', 'Número', 'Complemento', 'Bairro', 'Cidade', 'Estado', 'Empresa', 'Cargo', 'Turma', 'Pessoas', 'Participantes', 'Ingresso', 'Status'];
+  const head = ['Data', 'Nome', 'Email', 'WhatsApp', 'CPF/CNPJ', 'CEP', 'Endereço', 'Número', 'Complemento', 'Bairro', 'Cidade', 'Estado', 'Empresa', 'Cargo', 'Turma', 'Pessoas', 'Participantes', 'Ingresso', 'Indicado por', 'Status'];
   const lines = [head.map(esc).join(';')].concat(
     rows.map((l) =>
       [
         new Date(l.created_at).toISOString(), l.nome, l.email, l.whats, l.cpf_cnpj, l.cep, l.endereco, l.numero,
-        l.complemento, l.bairro, l.cidade, l.estado, l.empresa, l.cargo, l.turma, l.turma ? l.pessoas : '', l.participantes, l.turma ? '' : (l.ingresso === 'imersao' ? 'Imersão' : 'Imersão + Agente'), l.status,
+        l.complemento, l.bairro, l.cidade, l.estado, l.empresa, l.cargo, l.turma, l.turma ? l.pessoas : '', l.participantes, l.turma ? '' : (l.ingresso === 'imersao' ? 'Imersão' : 'Imersão + Agente'), l.indicado_por || '', l.status,
       ].map(esc).join(';')
     )
   );
