@@ -601,6 +601,10 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   els.estado.addEventListener('input', function () {
     els.estado.value = els.estado.value.toUpperCase();
   });
+  // Depois da primeira tentativa, os avisos acompanham a digitação: corrigiu o campo, o aviso some
+  // (antes ficava na tela até clicar de novo e parecia que o dado certo continuava errado).
+  els.form.addEventListener('input', function () { if (tried) showErrors(validate()); });
+  els.form.addEventListener('change', function () { if (tried) showErrors(validate()); });
   // Busca endereço pelo CEP (ViaCEP) pra reduzir o quanto a pessoa precisa digitar.
   // Nunca bloqueia o envio se a busca falhar — os campos continuam editáveis.
   els.cep.addEventListener('blur', function () {
