@@ -988,6 +988,18 @@ async function migrate() {
     );
     CREATE INDEX IF NOT EXISTS chat_tentativas_created_idx ON chat_tentativas (created_at DESC);
 
+    -- O que as ferramentas registraram em cada conversa (inscrição, link de pagamento, aviso ao
+    -- Rodrigo...). O histórico que volta para o modelo é só texto, sem as chamadas de ferramenta;
+    -- sem isto o Drigo chegava a desmentir uma inscrição que ele mesmo tinha feito.
+    -- chave: 's:<sessionId>' no site, 'wa:<telefone>' no WhatsApp.
+    CREATE TABLE IF NOT EXISTS chat_fatos (
+      id          SERIAL PRIMARY KEY,
+      chave       TEXT NOT NULL,
+      fato        TEXT NOT NULL,
+      created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS chat_fatos_chave_idx ON chat_fatos (chave, created_at);
+
     -- Contatos do diagnóstico gratuito (modo diagnóstico, entrada via diagnostico.finderlab.com.br).
     -- Tabela separada de leads: aqui não há consentimento formal nem intenção de compra
     -- confirmada, é captação de topo de funil. Não dispara notificação de WhatsApp por
@@ -2581,6 +2593,52 @@ const REFUSAL_REPLY_TURMA = 'Essa eu não consigo responder por aqui. Me conta d
 // Chama o modelo com o loop de tool use (registrar_inscricao) até ele responder só com
 // texto ou até um limite de segurança. Compartilhado entre o chat do site e o WhatsApp,
 // pra não duplicar essa lógica em dois lugares.
+function chaveDaConversa(ctx) {
+  if (ctx && ctx.phone) return 'wa:' + ctx.phone;
+  if (ctx && ctx.sessionId) return 's:' + ctx.sessionId;
+  return '';
+}
+
+// Frase curta do que a ferramenta fez, só quando deu certo. null = nada a registrar.
+function fatoDaFerramenta(nome, input, r) {
+  const ok = r && (r.ok === true || r.sucesso === true);
+  if (!ok) return null;
+  const i = input || {};
+  const ingresso = i.ingresso === 'imersao' ? 'Imersão' : i.ingresso === 'completo' ? 'Imersão + Agente' : '';
+  if (nome === 'registrar_inscricao') return `Inscrição registrada no sistema (nº ${r.id}${i.nome ? ', ' + i.nome : ''}${ingresso ? ', ' + ingresso : ''}). Falta o pagamento.`;
+  if (nome === 'gerar_pagamento_inscricao') return `Inscrição registrada (nº ${r.inscricao_id}) e link de pagamento gerado: ${r.url_pagamento}`;
+  if (nome === 'registrar_interesse_lista') return 'A pessoa entrou na lista de prioridade.';
+  if (nome === 'avisar_rodrigo') return 'O Rodrigo foi avisado por e-mail sobre esta conversa.';
+  if (nome === 'registrar_contato_servico') return 'Pedido de serviço da Finder Lab registrado para o Rodrigo.';
+  if (nome === 'agendar_reuniao') return `Conversa com o Rodrigo ${r.confirmada ? 'marcada' : 'pedida (aguardando confirmação dele)'}${r.quando ? ' para ' + r.quando : ''}.`;
+  return null;
+}
+
+async function registrarFato(ctx, fato) {
+  const chave = chaveDaConversa(ctx);
+  if (!chave || !fato) return;
+  await pool.query('INSERT INTO chat_fatos (chave, fato) VALUES ($1,$2)', [chave, fato])
+    .catch((err) => console.error('Falha ao gravar chat_fatos', err && err.message ? err.message : err));
+}
+
+async function fatosDaConversa(ctx) {
+  const chave = chaveDaConversa(ctx);
+  if (!chave) return '';
+  try {
+    const { rows } = await pool.query(
+      `SELECT fato, to_char(created_at AT TIME ZONE 'America/Sao_Paulo', 'DD/MM HH24:MI') AS quando
+       FROM chat_fatos WHERE chave = $1 ORDER BY created_at DESC LIMIT 10`, [chave]);
+    if (!rows.length) return '';
+    return '# O QUE JÁ FOI FEITO NESTA CONVERSA (registro do sistema)\n\n' +
+      'Isto aconteceu de fato, pelas suas ferramentas, mesmo que o histórico abaixo não mostre a chamada. ' +
+      'Confie nisto: não diga que algo não foi registrado e não registre de novo o que já está aqui.\n\n' +
+      rows.reverse().map((x) => `- ${x.quando}: ${x.fato}`).join('\n');
+  } catch (err) {
+    console.error('Falha ao ler chat_fatos', err && err.message ? err.message : err);
+    return '';
+  }
+}
+
 async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent, maxTokens, ctx) {
   const system = semIndicacaoVencida(systemPromptOverride || SYSTEM_PROMPT);
   // Prompt caching: system prompt e tools são estáticos entre chamadas -- sem isso, cada
@@ -2590,6 +2648,8 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
   const systemBlocks = [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }];
   // Contexto por visitante vai DEPOIS do bloco em cache, para não invalidar o cache.
   if (ctx && ctx.contextoVisita) systemBlocks.push({ type: 'text', text: ctx.contextoVisita });
+  const fatos = await fatosDaConversa(ctx);
+  if (fatos) systemBlocks.push({ type: 'text', text: fatos });
 
   // onEvent(kind, payload), kind: 'delta' (pedaço de texto) | 'reset' (a rodada que acabou de
   // streamar NÃO era a resposta final -- tinha tool use, descarta o texto que veio junto).
@@ -2676,6 +2736,7 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
     const toolResults = [];
     for (const block of toolUseBlocks) {
       const result = await runChatTool(block.name, block.input, originUrl, ctx);
+      await registrarFato(ctx, fatoDaFerramenta(block.name, block.input, result));
       toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) });
     }
     messages.push({ role: 'assistant', content: response.content });
