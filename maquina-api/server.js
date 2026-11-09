@@ -72,6 +72,20 @@ const pool = new Pool({
 const STATUSES = ['novo', 'contatado', 'pago'];
 
 // ---------- agente de chat: persona + base de conhecimento ----------
+// Programa de indicação (3 inscrições pagas até 30/11 = vaga grátis). Depois do prazo, os trechos
+// saem do prompt sozinhos, para o Drigo não oferecer uma condição vencida. Prazo ajustável por env.
+const INDICACAO_ATE = new Date(process.env.INDICACAO_ATE || '2026-12-01T00:00:00-03:00');
+const TRECHOS_INDICACAO = [
+  / Se mesmo assim o dinheiro pesar.*?não chame de desconto\./s,
+  / \(o único benefício que você pode oferecer sozinho é o programa de indicação da regra 6\)/,
+  / Se mesmo com o Imersão o dinheiro ainda for o obstáculo, oferece o programa de indicação \(abaixo\)\./,
+  /\*\*Programa de indicação.*?\n\n/s,
+];
+function semIndicacaoVencida(texto) {
+  if (Date.now() < INDICACAO_ATE.getTime()) return texto;
+  return TRECHOS_INDICACAO.reduce((t, re) => t.replace(re, ''), texto);
+}
+
 let SYSTEM_PROMPT = '';
 let REGISTRATION_TERMS = '';
 function semValoresParaLista(texto) {
@@ -329,6 +343,9 @@ try {
   if (/R\$|mensalidade|manuten[çc][ãa]o do agente/i.test(LISTA_PROMPT_BASE)) {
     console.error('AVISO: o prompt do modo lista ainda contém termos de valores. Revise semValoresParaLista().');
   }
+  // Se alguém reescrever o texto do programa de indicação, o desligamento automático deixa de achá-lo.
+  const semAchar = TRECHOS_INDICACAO.filter((re) => !re.test(SYSTEM_PROMPT)).length;
+  if (semAchar) console.error('AVISO: %d trecho(s) do programa de indicação não foram encontrados no prompt; o desligamento em %s não vai tirá-los.', semAchar, INDICACAO_ATE.toISOString());
   chatReady = true;
 } catch (err) {
   console.error('Não foi possível carregar as instruções, a base de conhecimento ou os termos de inscrição. O agente de chat ficará desligado.', err.message);
@@ -2565,7 +2582,7 @@ const REFUSAL_REPLY_TURMA = 'Essa eu não consigo responder por aqui. Me conta d
 // texto ou até um limite de segurança. Compartilhado entre o chat do site e o WhatsApp,
 // pra não duplicar essa lógica em dois lugares.
 async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent, maxTokens, ctx) {
-  const system = systemPromptOverride || SYSTEM_PROMPT;
+  const system = semIndicacaoVencida(systemPromptOverride || SYSTEM_PROMPT);
   // Prompt caching: system prompt e tools são estáticos entre chamadas -- sem isso, cada
   // chamada (e cada rodada de tool use) reprocessava ~16k tokens do zero, que era a maior
   // parte da demora sentida no chat e na voz. Com cache_control, só a 1a chamada depois de
