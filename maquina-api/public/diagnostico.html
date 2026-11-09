@@ -336,8 +336,10 @@ a{color:inherit}
         }
         return pump();
       })
-      .catch(function () {
+      .catch(function (err) {
         clearTimeout(timeoutId);
+        // Avisa o servidor da falha que só o navegador vê (rede, tempo esgotado), pro funil do chat.
+        try { navigator.sendBeacon('/t/chat-falha', new Blob([JSON.stringify({ s: chatSession, e: String((err && (err.name === 'AbortError' ? 'tempo esgotado' : err.message)) || err).slice(0, 200) })], { type: 'application/json' })); } catch (_) {}
         setLoading(false);
         voice.cancelWait();
         voiceTurn = false;

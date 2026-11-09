@@ -956,6 +956,23 @@ async function migrate() {
     CREATE INDEX IF NOT EXISTS page_views_created_idx ON page_views (created_at DESC);
     CREATE INDEX IF NOT EXISTS page_views_visitor_idx ON page_views (visitor_id);
 
+    -- Uma linha por mensagem enviada ao chat, com o desfecho. chat_logs só guarda o que deu
+    -- certo; sem isto, quem recebeu erro (ou passou do limite) some sem deixar rastro.
+    -- resultado: ok | recusa | sem_resposta | erro | cliente_saiu | limite | falha_cliente
+    CREATE TABLE IF NOT EXISTS chat_tentativas (
+      id          SERIAL PRIMARY KEY,
+      session_id  TEXT NOT NULL DEFAULT '',
+      visitor_id  TEXT NOT NULL DEFAULT '',
+      modo        TEXT NOT NULL DEFAULT '',
+      primeira    BOOLEAN NOT NULL DEFAULT false,
+      resultado   TEXT NOT NULL,
+      erro        TEXT NOT NULL DEFAULT '',
+      ms          INTEGER NOT NULL DEFAULT 0,
+      interno     BOOLEAN NOT NULL DEFAULT false,
+      created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS chat_tentativas_created_idx ON chat_tentativas (created_at DESC);
+
     -- Contatos do diagnóstico gratuito (modo diagnóstico, entrada via diagnostico.finderlab.com.br).
     -- Tabela separada de leads: aqui não há consentimento formal nem intenção de compra
     -- confirmada, é captação de topo de funil. Não dispara notificação de WhatsApp por
@@ -2033,7 +2050,33 @@ const chatLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Muitas mensagens. Espera um pouco e tenta de novo.' },
+  handler: (req, res, next, options) => {
+    registrarTentativa(req, { resultado: 'limite' });
+    res.status(options.statusCode).json(options.message);
+  },
 });
+
+// Visitante sem criar cookie novo (o chat responde em streaming, então não dá para mexer
+// nos headers depois de começar; quem chega ao chat já ganhou o cookie na página).
+function visitorIdDoCookie(req) {
+  const m = (req.headers.cookie || '').match(new RegExp('(?:^|;\\s*)' + VISITOR_COOKIE + '=([a-f0-9-]{36})'));
+  return m ? m[1] : '';
+}
+
+function registrarTentativa(req, t) {
+  const b = req.body || {};
+  pool
+    .query(
+      `INSERT INTO chat_tentativas (session_id, visitor_id, modo, primeira, resultado, erro, ms, interno)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [
+        clean(b.sessionId, 80), visitorIdDoCookie(req), t.modo || clean(b.modo, 20),
+        t.primeira === true || (Array.isArray(b.history) && b.history.length === 0),
+        t.resultado, clean(t.erro, 500), Math.round(t.ms || 0), visitaIgnorada(req),
+      ]
+    )
+    .catch((err) => console.error('Falha ao gravar chat_tentativas', err && err.message ? err.message : err));
+}
 
 function hashIp(ip) {
   return crypto.createHash('sha256').update(String(ip || '')).digest('hex').slice(0, 24);
@@ -2685,6 +2728,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
 
   const b = req.body || {};
   const wantsStream = b.stream === true;
+  let modoTentativa = '';
   let sseStarted = false;
   function sseSend(payload) {
     if (clientGone || res.writableEnded) return;
@@ -2724,6 +2768,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
     // Modo lista: pedido pela página /lista. Sem ferramentas (não há inscrição nem pagamento
     // nessa etapa), então nada do que o cliente mandar consegue disparar registro ou cobrança.
     const isLista = b.modo === 'lista' && !isDiagnostico && !b.turma;
+    modoTentativa = (b.turma ? 'turma' : isLista ? 'lista' : isDiagnostico ? 'diagnostico' : 'site') + (isVoiceTurn ? '-voz' : '');
     // Modo turma: página /turma/:slug. Precisa de turma existente e do código de acesso do link.
     let turma = null;
     if (b.turma && !isDiagnostico) {
@@ -2769,6 +2814,12 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
       console.error('POST /chat: resposta demorou %dms (rounds=%d) — perto ou acima do timeout do cliente', elapsedMs, toolRounds);
     }
 
+    registrarTentativa(req, {
+      modo: modoTentativa,
+      resultado: !reply ? 'sem_resposta' : clientGone ? 'cliente_saiu' : reply === REFUSAL_REPLY ? 'recusa' : 'ok',
+      ms: elapsedMs,
+    });
+
     if (!reply) {
       if (wantsStream) { sseSend({ error: 'Não veio resposta do assistente. Tenta de novo.' }); if (!clientGone) res.end(); return; }
       return res.status(502).json({ error: 'Não veio resposta do assistente. Tenta de novo.' });
@@ -2789,6 +2840,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
     }
   } catch (err) {
     console.error('POST /chat', err && err.message ? err.message : err, `(${Date.now() - chatStartedAt}ms decorridos)`);
+    registrarTentativa(req, { modo: modoTentativa, resultado: 'erro', erro: err && err.message ? err.message : String(err), ms: Date.now() - chatStartedAt });
     if (wantsStream) {
       if (sseStarted) { sseSend({ error: 'Não consegui responder agora. Tenta de novo em instantes.' }); if (!res.writableEnded) res.end(); }
       else if (!res.headersSent) res.status(500).json({ error: 'Não consegui responder agora. Tenta de novo em instantes.' });
@@ -3934,6 +3986,16 @@ const ONLINE_TTL_MS = 75 * 1000;
 const onlineVisitors = new Map(); // visitorId -> { page, at }
 
 const pingLimiter = rateLimit({ windowMs: 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false });
+
+// Falha do chat vista só pelo navegador (rede caiu, tempo esgotado, stream cortado).
+app.post('/t/chat-falha', pingLimiter, (req, res) => {
+  const ua = req.headers['user-agent'] || '';
+  const b = req.body || {};
+  if (!BOT_UA_RE.test(ua) && typeof b.s === 'string' && b.s) {
+    registrarTentativa({ headers: req.headers, body: { sessionId: b.s } }, { resultado: 'falha_cliente', erro: b.e });
+  }
+  res.status(204).end();
+});
 
 app.post('/t/ping', pingLimiter, (req, res) => {
   try {
