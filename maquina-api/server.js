@@ -2210,7 +2210,7 @@ const CHAT_TOOLS = [
   {
     name: 'atualizar_status_crm',
     description:
-      'Anota internamente, no CRM do Rodrigo, em que pé está esta pessoa na conversa do WhatsApp. Use SOMENTE quando a pessoa deixar claro, com as palavras dela: (a) "interessado": diz que quer participar ou pergunta valor, vaga, data ou inscrição para ir (um "sim" a "posso te explicar?", "obrigado", "bom dia" ou curiosidade NÃO é interessado); (b) "sem_interesse": diz que não tem interesse ou que não vai participar; (c) "nao_quer_receber": pede para não receber mais mensagens. Não use por dúvida solta, curiosidade ou palavra ambígua. Nunca mencione essa anotação para a pessoa. Pode ser chamada de novo se ela mudar de ideia.',
+      'Anota internamente, no CRM do Rodrigo, em que pé está esta pessoa na conversa do WhatsApp. Use só quando a pessoa deixar claro, com as palavras dela: (a) "interessado": diz que quer participar ou pergunta valor, vaga, data ou inscrição para ir (um "sim" a "posso te explicar?", "obrigado", "bom dia" ou curiosidade não conta como interessado); (b) "sem_interesse": diz que não tem interesse ou que não vai participar; (c) "nao_quer_receber": pede para não receber mais mensagens. Não use por dúvida solta, curiosidade ou palavra ambígua. Nunca mencione essa anotação para a pessoa. Pode ser chamada de novo se ela mudar de ideia.',
     input_schema: {
       type: 'object',
       properties: {
@@ -2265,12 +2265,12 @@ const CHAT_TOOLS = [
         cargo: { type: 'string', description: 'Cargo da pessoa, se ela informou. String vazia se não informou.' },
         cpfCnpj: { type: 'string', description: 'CPF ou CNPJ, exatamente como a pessoa informou (com ou sem pontuação).' },
         cep: { type: 'string', description: 'CEP, exatamente como a pessoa informou.' },
-        endereco: { type: 'string', description: 'Rua/logradouro, exatamente como a pessoa informou.' },
+        endereco: { type: 'string', description: 'Rua/logradouro como retornado por consultar_endereco_cep e confirmado pela pessoa no resumo; se a consulta não trouxe, como a pessoa informou.' },
         numero: { type: 'string', description: 'Número do endereço, exatamente como a pessoa informou.' },
         complemento: { type: 'string', description: 'Complemento do endereço, se a pessoa informou. String vazia se não informou.' },
-        bairro: { type: 'string', description: 'Bairro, exatamente como a pessoa informou.' },
-        cidade: { type: 'string', description: 'Cidade, se a pessoa informou. String vazia se não informou.' },
-        estado: { type: 'string', description: 'Estado (UF, 2 letras), se a pessoa informou. String vazia se não informou.' },
+        bairro: { type: 'string', description: 'Bairro como retornado por consultar_endereco_cep e confirmado pela pessoa; se a consulta não trouxe, como a pessoa informou.' },
+        cidade: { type: 'string', description: 'Cidade como retornada por consultar_endereco_cep, ou como a pessoa informou. String vazia se não houver.' },
+        estado: { type: 'string', description: 'Estado (UF, 2 letras) como retornado por consultar_endereco_cep, ou como a pessoa informou. String vazia se não houver.' },
         parcelamento: { type: 'string', enum: ['ate_3x', '10x', ''], description: 'Só para o ingresso "imersao" no cartão: "ate_3x" (valor à vista, em até 3x sem juros) ou "10x" (10 parcelas de R$ 119,90, com juros). String vazia se ela não escolheu ou for o ingresso completo (que parcela em até 10x sem juros). Ignorado na turma fechada e no Pix.' },
         formaPagamento: {
           type: 'string',
@@ -2559,6 +2559,7 @@ function logUso(tag, resp, ms) {
 // O modelo pode recusar por filtro de segurança (HTTP 200 com stop_reason "refusal" e content vazio
 // ou cortado). Sem tratar, a resposta vinha vazia e o chat mostrava o erro genérico.
 const REFUSAL_REPLY = 'Essa eu não consigo responder por aqui. Me conta de outro jeito o que você precisa, ou fala direto com o Rodrigo no WhatsApp (11) 3164-3783.';
+const REFUSAL_REPLY_TURMA = 'Essa eu não consigo responder por aqui. Me conta de outro jeito o que você precisa que eu te ajudo.';
 
 // Chama o modelo com o loop de tool use (registrar_inscricao) até ele responder só com
 // texto ou até um limite de segurança. Compartilhado entre o chat do site e o WhatsApp,
@@ -2585,7 +2586,9 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
     // Salvar dados no CRM só faz sentido no WhatsApp (é lá que sabemos qual contato é). O filtro é fixo
     // por canal; nada aqui pode variar de uma mensagem para outra, porque as ferramentas vêm antes do
     // system no cache e, dentro de uma rodada de ferramentas, mudá-las invalida os blocos de raciocínio.
-    if (!(ctx && ctx.phone)) params.tools = params.tools.filter((t) => t.name !== 'registrar_dados_contato');
+    if (!(ctx && ctx.phone)) params.tools = params.tools.filter((t) => t.name !== 'registrar_dados_contato' && t.name !== 'atualizar_status_crm');
+    // O dossiê do diagnóstico só existe no modo diagnóstico (fixo por sessão, definido pelo domínio).
+    if (!(ctx && ctx.diagnostico)) params.tools = params.tools.filter((t) => t.name !== 'registrar_diagnostico');
     const t0 = Date.now();
     const tag = ctx && ctx.phone ? 'whatsapp' : onEvent ? 'chat-stream' : 'chat';
     if (!onEvent) {
@@ -2672,7 +2675,8 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
     console.error('chat: o modelo recusou (categoria=%s, rodadas=%d)', cat || '?', toolRounds);
     // Recusa no meio do streaming: apaga do balão o texto parcial que já tinha chegado.
     if (onEvent) onEvent('reset');
-    return { reply: REFUSAL_REPLY, toolRounds, listaRegistrada: !!(ctx && ctx.listaRegistrada), pagamentoToken: (ctx && ctx.pagamentoToken) || '' };
+    // Na turma fechada o contato pessoal do Rodrigo nunca aparece (modo-turma.md).
+    return { reply: ctx && ctx.turma ? REFUSAL_REPLY_TURMA : REFUSAL_REPLY, toolRounds, listaRegistrada: !!(ctx && ctx.listaRegistrada), pagamentoToken: (ctx && ctx.pagamentoToken) || '' };
   }
 
   const rawReply = (response.content || [])
@@ -2826,7 +2830,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
         }
       : null;
     const { reply, toolRounds, showTermsAcceptance, termsAcceptanceLabel, listaRegistrada, pagamentoToken } = await getAgentReply(
-      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : (isDiagnostico ? CHAT_DIAGNOSTIC_MAX_TOKENS : CHAT_MAX_TOKENS), { sessionId, contextoVisita, semFerramentas: isLista, turma: turma ? turma.slug : '', ipHash: hashIp(req.ip), origem: clean(b.utm_source, 80), campanha: clean(b.utm_campaign, 120) }
+      messages, systemPrompt, originUrl, onEvent, isVoiceTurn ? CHAT_VOICE_MAX_TOKENS : (isDiagnostico ? CHAT_DIAGNOSTIC_MAX_TOKENS : CHAT_MAX_TOKENS), { sessionId, contextoVisita, semFerramentas: isLista, diagnostico: isDiagnostico, turma: turma ? turma.slug : '', ipHash: hashIp(req.ip), origem: clean(b.utm_source, 80), campanha: clean(b.utm_campaign, 120) }
     );
 
     const elapsedMs = Date.now() - chatStartedAt;
@@ -2836,7 +2840,7 @@ app.post('/chat', publicCors, chatLimiter, async (req, res) => {
 
     registrarTentativa(req, {
       modo: modoTentativa,
-      resultado: !reply ? 'sem_resposta' : clientGone ? 'cliente_saiu' : reply === REFUSAL_REPLY ? 'recusa' : 'ok',
+      resultado: !reply ? 'sem_resposta' : clientGone ? 'cliente_saiu' : (reply === REFUSAL_REPLY || reply === REFUSAL_REPLY_TURMA) ? 'recusa' : 'ok',
       ms: elapsedMs,
     });
 
