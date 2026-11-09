@@ -30,22 +30,20 @@ const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.maquina.finderlab.co
 
 // Modelo padrão. Se um modelo mais novo estiver disponível, defina ANTHROPIC_MODEL
 // no Railway em vez de mudar aqui. Lista atual em: https://docs.claude.com/en/docs/about-claude/models
-const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5-20250929';
-// 700 cortava respostas no meio em casos de decisão pesada: o raciocínio interno das
-// seis lentes (ver knowledge/system-instructions.md) já consome boa parte do teto antes
-// da resposta visível começar, e no modo diagnóstico a leitura final é instruída a ser
-// completa (sintoma/causa, custo de não mudar, primeiro movimento). 1400 dá fôlego pra
-// isso sem custar nada a mais nas respostas curtas, que já paravam bem antes do teto.
-const CHAT_MAX_TOKENS = 1400;
-// Modo diagnóstico: além do raciocínio oculto, a mesma rodada pode ter que escrever a leitura completa
-// na ferramenta (registrar_diagnostico, com mapa e nota interna) E de novo na resposta. Com 1400 o
-// teto estourava dentro do raciocínio e a pessoa recebia resposta vazia ("Não veio resposta").
-// Respostas curtas continuam curtas: o teto só vale como limite, o modelo para antes.
-const CHAT_DIAGNOSTIC_MAX_TOKENS = 3200;
-// Resposta de voz: respostas longas são lentas de gerar E lentas de ouvir -- um teto menor
-// resolve as duas coisas de uma vez (menos tempo de geração no Claude, e no fallback via
-// Gemini, menos tempo e menos áudio pra gerar/baixar também).
-const CHAT_VOICE_MAX_TOKENS = 380;
+const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
+// Esforço do modelo. No Sonnet 5.5 o raciocínio é adaptativo e, sem isto, roda no padrão "high":
+// pensa antes de quase toda resposta, o que só deixa o chat mais lento e caro. "low" é o ponto de
+// partida recomendado para chat. Fixo por deploy: mudar o esforço no meio da conversa invalida o cache.
+const ANTHROPIC_EFFORT = process.env.ANTHROPIC_EFFORT || 'low';
+// O raciocínio do modelo conta dentro do max_tokens. Com tetos apertados (1400, e 380 na voz) ele
+// podia consumir o teto antes da resposta visível e a pessoa recebia resposta vazia ou cortada.
+// O teto é só limite: respostas curtas continuam curtas (o tamanho é regido pelo prompt).
+const CHAT_MAX_TOKENS = 4000;
+// Modo diagnóstico: a mesma rodada pode escrever a leitura completa na ferramenta
+// (registrar_diagnostico) e de novo na resposta.
+const CHAT_DIAGNOSTIC_MAX_TOKENS = 8000;
+// Resposta de voz: a brevidade vem do VOICE_REPLY_ADDENDUM, não do teto.
+const CHAT_VOICE_MAX_TOKENS = 1500;
 const VOICE_REPLY_ADDENDUM =
   '\n\n---\n\n# RESPOSTA POR VOZ (ativo nesta resposta)\n\nEsta resposta vai ser falada em voz alta, não lida. ' +
   'Fale corrido, em tom de conversa real -- nunca use listas, markdown, emojis ou múltiplos parágrafos. ' +
@@ -2579,19 +2577,15 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
   // streamar NÃO era a resposta final -- tinha tool use, descarta o texto que veio junto).
   // Sem onEvent (ex.: chamada do WhatsApp), chama a API sem streaming, igual antes.
   async function callModel() {
-    const params = { model: ANTHROPIC_MODEL, max_tokens: maxTokens || CHAT_MAX_TOKENS, system: systemBlocks, messages };
+    const params = {
+      model: ANTHROPIC_MODEL, max_tokens: maxTokens || CHAT_MAX_TOKENS,
+      output_config: { effort: ANTHROPIC_EFFORT }, system: systemBlocks, messages,
+    };
     params.tools = ctx && ctx.semFerramentas ? LISTA_TOOLS : CHAT_TOOLS;
-    // Salvar dados no CRM só faz sentido no WhatsApp (é lá que sabemos qual contato é).
+    // Salvar dados no CRM só faz sentido no WhatsApp (é lá que sabemos qual contato é). O filtro é fixo
+    // por canal; nada aqui pode variar de uma mensagem para outra, porque as ferramentas vêm antes do
+    // system no cache e, dentro de uma rodada de ferramentas, mudá-las invalida os blocos de raciocínio.
     if (!(ctx && ctx.phone)) params.tools = params.tools.filter((t) => t.name !== 'registrar_dados_contato');
-    // Conversa puxada pelo convite: a pessoa não se cadastrou, então o documento de termos só sai se ela pedir
-    // (sem isso o modelo despejava os termos inteiros como resposta a "como você tem meu contato?").
-    if (ctx && ctx.termosSoSePedido) {
-      const ultima = [...messages].reverse().find((m) => m.role === 'user');
-      const texto = ultima ? (typeof ultima.content === 'string' ? ultima.content : JSON.stringify(ultima.content)) : '';
-      if (!/termos|privacidade|lgpd|pol[ií]tica de dados|dados pessoais|aceit/i.test(texto)) {
-        params.tools = params.tools.filter((t) => t.name !== 'consultar_termos_privacidade');
-      }
-    }
     const t0 = Date.now();
     const tag = ctx && ctx.phone ? 'whatsapp' : onEvent ? 'chat-stream' : 'chat';
     if (!onEvent) {
@@ -2611,6 +2605,11 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
     return resp;
   }
 
+  // Calculado antes do loop: lá dentro a última mensagem "user" passa a ser o tool_result.
+  const ultimaDaPessoa = [...messages].reverse().find((m) => m.role === 'user');
+  const textoDaPessoa = ultimaDaPessoa ? (typeof ultimaDaPessoa.content === 'string' ? ultimaDaPessoa.content : JSON.stringify(ultimaDaPessoa.content)) : '';
+  const pediuTermos = /termos|privacidade|lgpd|pol[ií]tica de dados|dados pessoais|aceit/i.test(textoDaPessoa);
+
   let response = await callModel();
 
   let toolRounds = 0;
@@ -2619,6 +2618,23 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
     if (onEvent) onEvent('reset');
     const toolUseBlocks = (response.content || []).filter((block) => block.type === 'tool_use');
     const termsRequest = toolUseBlocks.find((block) => block.name === 'consultar_termos_privacidade');
+    // Conversa puxada pelo convite: a pessoa não se cadastrou, então o documento de termos só sai se ela pedir
+    // (sem isso o modelo despejava os termos inteiros como resposta a "como você tem meu contato?").
+    // A ferramenta fica sempre declarada; a trava é aqui, devolvendo erro para o modelo responder sem os termos.
+    if (termsRequest && ctx && ctx.termosSoSePedido && !pediuTermos) {
+      messages.push({ role: 'assistant', content: response.content });
+      messages.push({
+        role: 'user',
+        content: toolUseBlocks.map((block) => ({
+          type: 'tool_result', tool_use_id: block.id, is_error: true,
+          content: block === termsRequest
+            ? 'A pessoa não pediu os termos. Responda à pergunta dela sem exibir o documento.'
+            : 'Não executado nesta rodada. Responda primeiro à pergunta da pessoa.',
+        })),
+      });
+      response = await callModel();
+      continue;
+    }
     if (termsRequest) {
       // Deliver the published document verbatim, without model truncation or rewriting.
       // Stop here even if the model also requested registration: reading is not consent.
@@ -2645,6 +2661,10 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
     messages.push({ role: 'assistant', content: response.content });
     messages.push({ role: 'user', content: toolResults });
     response = await callModel();
+  }
+
+  if (response.stop_reason === 'max_tokens') {
+    console.error('chat: resposta cortada no teto de tokens (max_tokens=%d, rodadas=%d)', maxTokens || CHAT_MAX_TOKENS, toolRounds);
   }
 
   if (response.stop_reason === 'refusal') {
