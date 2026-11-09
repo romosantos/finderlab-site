@@ -250,7 +250,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
             <div class="fw field-w">
               <label for="f-nome">Nome completo</label>
               <input id="f-nome" class="field" type="text" autocomplete="name" placeholder="Como devemos te chamar" aria-describedby="e-nome">
-              <div class="err" id="e-nome" role="alert" style="display:none">Informe o seu nome completo.</div>
+              <div class="err" id="e-nome" role="alert" style="display:none">Informe nome e sobrenome.</div>
             </div>
             <div class="fw">
               <label for="f-email">Email</label>
@@ -630,7 +630,8 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   });
 
   function validate() {
-    var nomeOk = els.nome.value.trim().length >= 2;
+    // Nome e sobrenome: o Asaas recusa o pagamento com um nome só.
+    var nomeOk = /^\S{2,}(\s+\S+)+$/.test(els.nome.value.trim());
     var emailOk = /^\S+@\S+\.\S+$/.test(els.email.value.trim());
     var whatsOk = els.whats.value.replace(/\D/g, '').length >= 10;
     var cpfDigits = els.cpf.value.replace(/\D/g, '');
@@ -707,7 +708,12 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
       body: JSON.stringify({ leadId: leadId, parcelamento: currentParcelamento() })
     })
       .then(function (r) { return r.json().catch(function () { return {}; }); })
-      .then(function (data) { return data && data.url ? data.url : null; })
+      .then(function (data) {
+        if (data && data.url) return data.url;
+        // Dado recusado pelo Asaas: mostra o motivo, para a pessoa corrigir em vez de desistir.
+        if (data && data.corrigir && data.error) return { motivo: data.error };
+        return null;
+      })
       .catch(function () { return null; });
   }
 
@@ -720,8 +726,12 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
       els.paymentLink.textContent = 'Ir para o pagamento →';
       els.paymentLink.setAttribute('href', url);
       els.paymentLink.removeAttribute('aria-disabled');
+    } else if (state === 'corrigir') {
+      els.paymentLink.textContent = url + ' Toque em "Corrigir meus dados" e confira.';
+      els.paymentLink.setAttribute('href', '#');
+      els.paymentLink.setAttribute('aria-disabled', 'true');
     } else {
-      els.paymentLink.textContent = 'Não deu pra gerar o pagamento agora — chama a gente no WhatsApp (11) 3164-3783';
+      els.paymentLink.textContent = 'Não deu pra gerar o pagamento agora. Chama a gente no WhatsApp (11) 3164-3783';
       els.paymentLink.setAttribute('href', '#');
       els.paymentLink.setAttribute('aria-disabled', 'true');
     }
@@ -754,7 +764,8 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
       if (!leadId) { setPaymentLinkState('error'); return null; }
       return createPaymentCheckout(leadId);
     }).then(function (url) {
-      if (url) setPaymentLinkState('ready', url);
+      if (url && url.motivo) setPaymentLinkState('corrigir', url.motivo);
+      else if (url) setPaymentLinkState('ready', url);
       else setPaymentLinkState('error');
     });
   });

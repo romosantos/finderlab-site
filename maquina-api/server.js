@@ -1407,7 +1407,8 @@ async function saveLead(input, opts) {
   const indicadoPor = clean(b.indicadoPor, 120);
 
   const errors = {};
-  if (nome.length < 2) errors.nome = 'Informe o nome completo.';
+  // Nome e sobrenome: o Asaas recusa o pagamento com um nome só ("O campo name é inválido").
+  if (!/^\S{2,}(\s+\S+)+$/.test(nome)) errors.nome = 'Informe nome e sobrenome.';
   if (!/^\S+@\S+\.\S+$/.test(email)) errors.email = 'Informe um email válido.';
   if (whats.replace(/\D/g, '').length < 10) errors.whats = 'Informe o número com DDD.';
   if (!consent) errors.consent = 'É necessário aceitar os termos.';
@@ -1884,6 +1885,10 @@ app.post('/payments/checkout', publicCors, paymentLimiter, async (req, res) => {
     res.json({ ok: true, url: result.url });
   } catch (err) {
     console.error('POST /payments/checkout', err && err.message ? err.message : err, err && err.asaasBody);
+    // 400 do Asaas é dado recusado (nome, CPF, telefone, endereço): a página mostra o motivo para a pessoa corrigir.
+    if (err && err.asaasStatus === 400) {
+      return res.status(422).json({ error: 'O pagamento recusou um dado: ' + err.message, corrigir: true });
+    }
     res.status(502).json({ error: 'Não foi possível gerar o pagamento agora.' });
   }
 });
