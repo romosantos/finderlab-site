@@ -603,8 +603,15 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   });
   // Depois da primeira tentativa, os avisos acompanham a digitação: corrigiu o campo, o aviso some
   // (antes ficava na tela até clicar de novo e parecia que o dado certo continuava errado).
-  els.form.addEventListener('input', function () { if (tried) showErrors(validate()); });
-  els.form.addEventListener('change', function () { if (tried) showErrors(validate()); });
+  els.form.addEventListener('input', function () { showErrors(validate()); });
+  els.form.addEventListener('change', function () { showErrors(validate()); });
+  ['nome', 'email', 'whats', 'cpf', 'cep', 'endereco', 'numero', 'bairro'].forEach(function (k) {
+    els[k].addEventListener('blur', function () {
+      if (!els[k].value.trim()) return; // campo pulado não ganha aviso até a pessoa tentar enviar
+      tocados[k] = true;
+      showErrors(validate());
+    });
+  });
   // Busca endereço pelo CEP (ViaCEP) pra reduzir o quanto a pessoa precisa digitar.
   // Nunca bloqueia o envio se a busca falhar — os campos continuam editáveis.
   els.cep.addEventListener('blur', function () {
@@ -638,24 +645,27 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
       enderecoOk: enderecoOk, numeroOk: numeroOk, bairroOk: bairroOk, consentOk: consentOk
     };
   }
+  // Um campo mostra o aviso depois que a pessoa sai dele (blur) ou depois da primeira tentativa de envio.
+  var tocados = {};
+  function ver(k) { return tried || !!tocados[k]; }
   function showErrors(v) {
-    els.eNome.style.display = tried && !v.nomeOk ? '' : 'none';
-    els.eEmail.style.display = tried && !v.emailOk ? '' : 'none';
-    els.eWhats.style.display = tried && !v.whatsOk ? '' : 'none';
-    els.eCpf.style.display = tried && !v.cpfOk ? '' : 'none';
-    els.eCep.style.display = tried && !v.cepOk ? '' : 'none';
-    els.eEndereco.style.display = tried && !v.enderecoOk ? '' : 'none';
-    els.eNumero.style.display = tried && !v.numeroOk ? '' : 'none';
-    els.eBairro.style.display = tried && !v.bairroOk ? '' : 'none';
-    els.eConsent.style.display = tried && !v.consentOk ? '' : 'none';
-    els.nome.setAttribute('aria-invalid', tried && !v.nomeOk ? 'true' : 'false');
-    els.email.setAttribute('aria-invalid', tried && !v.emailOk ? 'true' : 'false');
-    els.whats.setAttribute('aria-invalid', tried && !v.whatsOk ? 'true' : 'false');
-    els.cpf.setAttribute('aria-invalid', tried && !v.cpfOk ? 'true' : 'false');
-    els.cep.setAttribute('aria-invalid', tried && !v.cepOk ? 'true' : 'false');
-    els.endereco.setAttribute('aria-invalid', tried && !v.enderecoOk ? 'true' : 'false');
-    els.numero.setAttribute('aria-invalid', tried && !v.numeroOk ? 'true' : 'false');
-    els.bairro.setAttribute('aria-invalid', tried && !v.bairroOk ? 'true' : 'false');
+    els.eNome.style.display = ver('nome') && !v.nomeOk ? '' : 'none';
+    els.eEmail.style.display = ver('email') && !v.emailOk ? '' : 'none';
+    els.eWhats.style.display = ver('whats') && !v.whatsOk ? '' : 'none';
+    els.eCpf.style.display = ver('cpf') && !v.cpfOk ? '' : 'none';
+    els.eCep.style.display = ver('cep') && !v.cepOk ? '' : 'none';
+    els.eEndereco.style.display = ver('endereco') && !v.enderecoOk ? '' : 'none';
+    els.eNumero.style.display = ver('numero') && !v.numeroOk ? '' : 'none';
+    els.eBairro.style.display = ver('bairro') && !v.bairroOk ? '' : 'none';
+    els.eConsent.style.display = ver('consent') && !v.consentOk ? '' : 'none';
+    els.nome.setAttribute('aria-invalid', ver('nome') && !v.nomeOk ? 'true' : 'false');
+    els.email.setAttribute('aria-invalid', ver('email') && !v.emailOk ? 'true' : 'false');
+    els.whats.setAttribute('aria-invalid', ver('whats') && !v.whatsOk ? 'true' : 'false');
+    els.cpf.setAttribute('aria-invalid', ver('cpf') && !v.cpfOk ? 'true' : 'false');
+    els.cep.setAttribute('aria-invalid', ver('cep') && !v.cepOk ? 'true' : 'false');
+    els.endereco.setAttribute('aria-invalid', ver('endereco') && !v.enderecoOk ? 'true' : 'false');
+    els.numero.setAttribute('aria-invalid', ver('numero') && !v.numeroOk ? 'true' : 'false');
+    els.bairro.setAttribute('aria-invalid', ver('bairro') && !v.bairroOk ? 'true' : 'false');
   }
 
   function saveLead() {
