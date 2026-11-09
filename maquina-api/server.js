@@ -1352,6 +1352,33 @@ const leadLimiter = rateLimit({
 // do site) quanto pela ferramenta registrar_inscricao que o agente de chat pode
 // chamar no meio da conversa, pra não duplicar a mesma lógica (nem o disparo do
 // WhatsApp) em dois lugares.
+// Dígitos verificadores de CPF (11) ou CNPJ (14), só com dígitos.
+function cpfCnpjValido(d) {
+  if (/^(\d)\1+$/.test(d)) return false;
+  const dv = (n, pesos) => {
+    let s = 0;
+    for (let i = 0; i < n; i++) s += Number(d[i]) * pesos[i];
+    return s;
+  };
+  if (d.length === 11) {
+    for (const n of [9, 10]) {
+      let r = (dv(n, Array.from({ length: n }, (_, i) => n + 1 - i)) * 10) % 11;
+      if (r === 10) r = 0;
+      if (r !== Number(d[n])) return false;
+    }
+    return true;
+  }
+  if (d.length === 14) {
+    const base = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    for (const n of [12, 13]) {
+      const r = dv(n, base.slice(13 - n)) % 11;
+      if ((r < 2 ? 0 : 11 - r) !== Number(d[n])) return false;
+    }
+    return true;
+  }
+  return false;
+}
+
 async function saveLead(input, opts) {
   const b = input || {};
   // turma vem só do servidor (opts), nunca do corpo da requisição nem do modelo
@@ -1384,6 +1411,9 @@ async function saveLead(input, opts) {
   if (!/^\S+@\S+\.\S+$/.test(email)) errors.email = 'Informe um email válido.';
   if (whats.replace(/\D/g, '').length < 10) errors.whats = 'Informe o número com DDD.';
   if (!consent) errors.consent = 'É necessário aceitar os termos.';
+  // CPF/CNPJ é opcional aqui (o chat registra sem ele), mas se veio tem que ser válido: o Asaas recusa e a pessoa
+  // ficava sem o link de pagamento sem saber por quê.
+  if (cpfCnpj && !cpfCnpjValido(cpfCnpj)) errors.cpfCnpj = 'CPF ou CNPJ inválido. Confira os números.';
   if (Object.keys(errors).length) return { ok: false, status: 400, error: 'Dados inválidos.', errors };
 
   // mesma pessoa reenviando: atualiza os dados e preserva o andamento

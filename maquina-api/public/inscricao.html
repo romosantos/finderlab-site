@@ -265,7 +265,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
             <div class="fw">
               <label for="f-cpf">CPF ou CNPJ</label>
               <input id="f-cpf" class="field" type="text" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" aria-describedby="e-cpf">
-              <div class="err" id="e-cpf" role="alert" style="display:none">Informe um CPF ou CNPJ válido.</div>
+              <div class="err" id="e-cpf" role="alert" style="display:none">CPF ou CNPJ inválido. Confira os números.</div>
             </div>
             <div class="fw">
               <label for="f-cep">CEP</label>
@@ -463,6 +463,31 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
   }
 
+  // Dígitos verificadores: sem isso, um número digitado errado só falhava no Asaas e a pessoa
+  // via "não deu pra gerar o pagamento" sem saber o que corrigir.
+  function cpfCnpjValido(d) {
+    if (/^(\d)\1+$/.test(d)) return false;
+    var i, s, r;
+    if (d.length === 11) {
+      for (var n = 9; n <= 10; n++) {
+        for (s = 0, i = 0; i < n; i++) s += +d[i] * (n + 1 - i);
+        r = (s * 10) % 11; if (r === 10) r = 0;
+        if (r !== +d[n]) return false;
+      }
+      return true;
+    }
+    if (d.length === 14) {
+      var pesos = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+      for (var m = 12; m <= 13; m++) {
+        for (s = 0, i = 0; i < m; i++) s += +d[i] * pesos[i + 13 - m];
+        r = s % 11; r = r < 2 ? 0 : 11 - r;
+        if (r !== +d[m]) return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
   function maskCpfCnpj(v) {
     var d = String(v).replace(/\D/g, '').slice(0, 14);
     if (d.length <= 11) {
@@ -598,7 +623,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     var emailOk = /^\S+@\S+\.\S+$/.test(els.email.value.trim());
     var whatsOk = els.whats.value.replace(/\D/g, '').length >= 10;
     var cpfDigits = els.cpf.value.replace(/\D/g, '');
-    var cpfOk = cpfDigits.length === 11 || cpfDigits.length === 14;
+    var cpfOk = cpfCnpjValido(cpfDigits);
     var cepOk = els.cep.value.replace(/\D/g, '').length === 8;
     var enderecoOk = els.endereco.value.trim().length >= 3;
     var numeroOk = els.numero.value.trim().length >= 1;
