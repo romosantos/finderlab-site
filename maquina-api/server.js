@@ -2504,6 +2504,21 @@ function makeThinkingFilter(emit) {
   };
 }
 
+// Uma linha por chamada ao modelo, para medir custo, cache e demora. Sem isto não dá para saber
+// quantas conversas pegam o cache do system prompt (~36k tokens) nem quanto cada uma custa.
+function logUso(tag, resp, ms) {
+  const u = (resp && resp.usage) || {};
+  console.log(
+    '[uso] %s modelo=%s in=%d cache_lido=%d cache_gravado=%d out=%d stop=%s %dms',
+    tag, resp && resp.model, u.input_tokens || 0, u.cache_read_input_tokens || 0,
+    u.cache_creation_input_tokens || 0, u.output_tokens || 0, resp && resp.stop_reason, ms
+  );
+}
+
+// O modelo pode recusar por filtro de segurança (HTTP 200 com stop_reason "refusal" e content vazio
+// ou cortado). Sem tratar, a resposta vinha vazia e o chat mostrava o erro genérico.
+const REFUSAL_REPLY = 'Essa eu não consigo responder por aqui. Me conta de outro jeito o que você precisa, ou fala direto com o Rodrigo no WhatsApp (11) 3164-3783.';
+
 // Chama o modelo com o loop de tool use (registrar_inscricao) até ele responder só com
 // texto ou até um limite de segurança. Compartilhado entre o chat do site e o WhatsApp,
 // pra não duplicar essa lógica em dois lugares.
@@ -2534,7 +2549,13 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
         params.tools = params.tools.filter((t) => t.name !== 'consultar_termos_privacidade');
       }
     }
-    if (!onEvent) return anthropic.messages.create(params);
+    const t0 = Date.now();
+    const tag = ctx && ctx.phone ? 'whatsapp' : onEvent ? 'chat-stream' : 'chat';
+    if (!onEvent) {
+      const resp = await anthropic.messages.create(params);
+      logUso(tag, resp, Date.now() - t0);
+      return resp;
+    }
     const stream = anthropic.messages.stream(params);
     // stripMarkdown só limpa a resposta final; sem isto, o balão (e a voz) mostrava "**" e travessão
     // enquanto o texto chegava. Remove todo asterisco já no pedaço, porque "**" pode vir partido em dois.
@@ -2542,7 +2563,9 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
       const d = delta.replace(/\*/g, '').replace(/ ?— ?/g, ', ');
       if (d) onEvent('delta', d);
     }));
-    return stream.finalMessage();
+    const resp = await stream.finalMessage();
+    logUso(tag, resp, Date.now() - t0);
+    return resp;
   }
 
   let response = await callModel();
@@ -2581,6 +2604,14 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
     response = await callModel();
   }
 
+  if (response.stop_reason === 'refusal') {
+    const cat = response.stop_details && response.stop_details.category;
+    console.error('chat: o modelo recusou (categoria=%s, rodadas=%d)', cat || '?', toolRounds);
+    // Recusa no meio do streaming: apaga do balão o texto parcial que já tinha chegado.
+    if (onEvent) onEvent('reset');
+    return { reply: REFUSAL_REPLY, toolRounds, listaRegistrada: !!(ctx && ctx.listaRegistrada), pagamentoToken: (ctx && ctx.pagamentoToken) || '' };
+  }
+
   const rawReply = (response.content || [])
     .filter((block) => block.type === 'text')
     .map((block) => block.text)
@@ -2593,7 +2624,7 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
 app.options('/chat', publicCors);
 // Resumo curto da conversa para o navegador guardar (primeiro nome + assunto) e retomar na
 // próxima visita. Chamada separada, em segundo plano, para não pesar na resposta do chat.
-const ANTHROPIC_MODEL_MEMORIA = process.env.ANTHROPIC_MODEL_MEMORIA || 'claude-haiku-4-5';
+const ANTHROPIC_MODEL_MEMORIA = process.env.ANTHROPIC_MODEL_MEMORIA || 'claude-haiku-5-5';
 const MEMORIA_SYSTEM =
   'Você resume uma conversa de chat para que ela seja retomada numa próxima visita. Responda APENAS um JSON no formato {"nome":"","resumo":""}.\n' +
   '- nome: o primeiro nome da pessoa, somente se ela mesma o disse na conversa; senão vazio.\n' +
@@ -2615,12 +2646,16 @@ app.post('/chat/memoria', publicCors, memoriaLimiter, async (req, res) => {
     if (!hist.some((l) => l.startsWith('Pessoa: '))) return res.json({ nome: '', resumo: '' });
     const params = { max_tokens: 150, system: MEMORIA_SYSTEM, messages: [{ role: 'user', content: hist.join('\n') }] };
     let resp;
+    const t0 = Date.now();
     try {
-      resp = await anthropic.messages.create({ ...params, model: ANTHROPIC_MODEL_MEMORIA });
+      // O Haiku 5.5 pensa por padrão; num resumo de uma linha com max_tokens 150 o raciocínio pode
+      // comer a saída inteira. Desligado só aqui: o modelo principal (fallback abaixo) não aceita.
+      resp = await anthropic.messages.create({ ...params, model: ANTHROPIC_MODEL_MEMORIA, thinking: { type: 'disabled' } });
     } catch (err) {
       console.error('chat/memoria: modelo %s falhou (%s), usando o modelo principal', ANTHROPIC_MODEL_MEMORIA, err && err.message ? err.message : err);
       resp = await anthropic.messages.create({ ...params, model: ANTHROPIC_MODEL });
     }
+    logUso('memoria', resp, Date.now() - t0);
     const text = (resp.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('');
     let parsed = {};
     const m = text.match(/\{[\s\S]*\}/);
@@ -2801,7 +2836,9 @@ app.post('/agente-demo', publicCors, demoLimiter, async (req, res) => {
       messages = hist.concat([{ role: 'user', content: msg }]);
       while (messages.length && messages[0].role !== 'user') messages.shift();
     }
+    const t0 = Date.now();
     const resp = await anthropic.messages.create({ model: ANTHROPIC_MODEL, max_tokens: 350, system: montaPrompt(ficha), messages });
+    logUso('demo', resp, Date.now() - t0);
     const reply = stripInternalReasoning((resp.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('')).slice(0, 1200);
     if (!reply) return res.status(502).json({ error: 'Sem resposta.' });
     const usados = abertura ? 0 : turnosUsados + 1;
