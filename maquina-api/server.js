@@ -4214,6 +4214,13 @@ footer{margin-top:32px;color:#777;font-size:13px}
 
 // ---------- Turmas fechadas (/turma/:slug?c=código) ----------
 const TURMA_FECHADA_HTML = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Link exclusivo · Finder Lab</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#05040C;color:#F1EEFB;font-family:Arial,Helvetica,sans-serif;padding:24px}main{max-width:460px;text-align:center;line-height:1.6}h1{font-size:22px;margin:0 0 12px}p{color:#AEA9C5;margin:0 0 10px}a{color:#A88BFF}</style></head><body><main><h1>Este link é exclusivo</h1><p>Ele não está mais válido ou foi digitado incompleto. Use o link completo que você recebeu.</p><p>Se o problema continuar, peça o link novamente a quem enviou para você.</p></main></body></html>`;
+// Lista de prioridade desligada enquanto as inscrições estão abertas: a página dizia que a turma
+// ainda ia abrir. Quem chega por link antigo vai para a página principal, com a mesma query (utm).
+// Para reativar a lista da próxima turma, apague esta rota e atualize os textos de lista.html.
+app.get(['/lista', '/lista.html'], (req, res) => {
+  const qs = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+  res.redirect(302, '/' + qs);
+});
 // Endereço curto e limpo de cada turma (sem código no link). Hoje só a turma de associados.
 const TURMA_ATALHOS = { imersao: 'associados' };
 app.get('/imersao', (req, res) => {
