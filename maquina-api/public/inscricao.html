@@ -311,6 +311,14 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
               <label for="f-indicado">Quem te indicou? <span style="opacity:.6">(opcional)</span></label>
               <input id="f-indicado" class="field" type="text" autocomplete="off" placeholder="Nome de quem te indicou" maxlength="120">
             </div>
+            <div class="fw">
+              <label for="f-cupom">Cupom de desconto <span style="opacity:.6">(opcional)</span></label>
+              <div style="display:flex;gap:8px">
+                <input id="f-cupom" class="field" type="text" autocomplete="off" placeholder="Digite o seu cupom" maxlength="30" style="text-transform:uppercase">
+                <button type="button" id="cupom-aplicar" style="flex:none;height:54px;padding:0 18px;border-radius:10px;border:1px solid rgba(124,84,245,.6);background:transparent;color:#F1EEFB;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer">Aplicar</button>
+              </div>
+              <div id="cupom-msg" role="status" style="display:none;margin-top:8px;font-size:13px"></div>
+            </div>
           </div>
           <label class="consent"><input id="f-consent" type="checkbox" aria-describedby="e-consent"><span>Li e concordo com os <button type="button" class="tlink" id="open-terms">termos de uso e privacidade dos dados</button> e autorizo a Finder Lab a entrar em contato sobre esta inscrição e sobre o curso, conforme a LGPD.</span></label>
           <div class="err" id="e-consent" role="alert" style="margin-top:8px;display:none">Para continuar, marque a autorização acima.</div>
@@ -572,14 +580,34 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
   }
   function currentIngresso() { return checkedValue(ingressoEls, 'completo') === 'imersao' ? 'imersao' : 'completo'; }
   function currentParcelamento() { return currentIngresso() === 'imersao' && checkedValue(parcEls, 'ate3') === '10x' ? '10x' : ''; }
+  // Cupom validado em /cupom. O servidor recalcula o valor a partir do cupom gravado na inscrição;
+  // aqui é só para a pessoa ver o desconto antes de pagar.
+  var cupomAtivo = null;
+  function brl(n) {
+    return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });
+  }
+  function comDesconto(v) { return cupomAtivo ? Math.round(v * (100 - cupomAtivo.percentual)) / 100 : v; }
   function renderIngresso() {
     var ing = currentIngresso();
     var pl = PLANOS[ing];
+    var p = currentParcelamento();
+    var cheio = ing === 'completo' ? 2000 : p === '10x' ? 1199 : 997;
     document.getElementById('sum-ticket').textContent = pl.ticket;
-    document.getElementById('sum-price').textContent = currentParcelamento() === '10x' ? 'R$ 1.199' : pl.price;
-    document.getElementById('sum-pay').innerHTML = pl.pay(currentParcelamento());
     document.getElementById('sum-agent').innerHTML = pl.agent;
     document.getElementById('parc-wrap').style.display = ing === 'imersao' ? '' : 'none';
+    if (!cupomAtivo) {
+      document.getElementById('sum-price').textContent = p === '10x' ? 'R$ 1.199' : pl.price;
+      document.getElementById('sum-pay').innerHTML = pl.pay(p);
+      return;
+    }
+    var v = comDesconto(cheio);
+    document.getElementById('sum-price').innerHTML = '<s style="opacity:.5;font-size:.55em;margin-right:8px">' + brl(cheio) + '</s>' + brl(v);
+    var cupomTxt = '<br><span style="color:#A88BFF">Cupom ' + cupomAtivo.codigo + ': ' + cupomAtivo.percentual + '% de desconto</span>';
+    document.getElementById('sum-pay').innerHTML = (ing === 'completo'
+      ? 'por pessoa<br>ou ' + PAY + '10x de ' + brl(Math.round(v * 10) / 100) + ' sem juros</strong> no cartão'
+      : p === '10x'
+        ? 'por pessoa<br>' + PAY + '10x de ' + brl(Math.round(v * 10) / 100) + '</strong> no cartão (total de ' + brl(v) + ')'
+        : 'por pessoa, à vista<br>ou ' + PAY + 'até 3x sem juros</strong> no cartão') + cupomTxt;
   }
   Array.prototype.forEach.call(ingressoEls, function (r) { r.addEventListener('change', renderIngresso); });
   Array.prototype.forEach.call(parcEls, function (r) { r.addEventListener('change', renderIngresso); });
@@ -588,6 +616,38 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
     if (m) Array.prototype.forEach.call(ingressoEls, function (r) { r.checked = r.value === m[1]; });
     renderIngresso();
   })();
+
+  var cupomEl = document.getElementById('f-cupom');
+  var cupomMsg = document.getElementById('cupom-msg');
+  function cupomAviso(texto, ok) {
+    cupomMsg.textContent = texto;
+    cupomMsg.style.color = ok ? '#A88BFF' : '#F0A35E';
+    cupomMsg.style.display = texto ? '' : 'none';
+  }
+  function aplicarCupom() {
+    var codigo = cupomEl.value.trim().toUpperCase();
+    if (!codigo) { cupomAtivo = null; cupomAviso(''); renderIngresso(); return; }
+    cupomAviso('Conferindo o cupom…', true);
+    fetch('/cupom?c=' + encodeURIComponent(codigo))
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (d) {
+        if (d && d.ok) {
+          cupomAtivo = { codigo: d.codigo, percentual: d.percentual };
+          cupomAviso('Cupom ' + d.codigo + ' aplicado: ' + d.percentual + '% de desconto.', true);
+        } else {
+          cupomAtivo = null;
+          cupomAviso((d && d.error) || 'Cupom inválido ou expirado.', false);
+        }
+        renderIngresso();
+      })
+      .catch(function () { cupomAtivo = null; cupomAviso('Não deu pra conferir o cupom agora. Tente de novo.', false); renderIngresso(); });
+  }
+  document.getElementById('cupom-aplicar').addEventListener('click', aplicarCupom);
+  cupomEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); aplicarCupom(); } });
+  // Mudou o código depois de aplicar: o desconto sai até aplicar de novo.
+  cupomEl.addEventListener('input', function () {
+    if (cupomAtivo && cupomEl.value.trim().toUpperCase() !== cupomAtivo.codigo) { cupomAtivo = null; cupomAviso(''); renderIngresso(); }
+  });
 
   els.whats.addEventListener('input', function () {
     els.whats.value = mask(els.whats.value);
@@ -689,6 +749,7 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
         empresa: els.empresa.value.trim(),
         cargo: els.cargo.value.trim(),
         indicadoPor: els.indicado.value.trim(),
+        cupom: cupomAtivo ? cupomAtivo.codigo : '',
         consent: true,
         ingresso: currentIngresso(),
         website: hp
@@ -751,6 +812,12 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
         var el = document.getElementById(firstId);
         if (el && el.focus) el.focus();
       }, 30);
+      return;
+    }
+    // Cupom digitado e não aplicado: a pessoa acharia que tem desconto e pagaria o valor cheio.
+    if (cupomEl.value.trim() && !cupomAtivo) {
+      cupomAviso('Toque em "Aplicar" para validar o cupom, ou apague o campo para seguir sem cupom.', false);
+      cupomEl.focus();
       return;
     }
     var first = els.nome.value.trim().split(' ')[0] || '';

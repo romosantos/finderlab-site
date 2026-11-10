@@ -1,0 +1,6 @@
+{
+  "_como_usar": "Cada chave é o código do cupom (a pessoa pode digitar em maiúscula ou minúscula). percentual: desconto em % sobre o ingresso (vale nos dois ingressos). ativo: false desliga o cupom sem apagar. Depois de editar, faça commit e push para publicar.",
+  "cupons": {
+    "LANCAMENTO10": { "percentual": 10, "ativo": false }
+  }
+}

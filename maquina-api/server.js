@@ -515,12 +515,35 @@ function ingressoDoLead(lead) {
   return lead && lead.ingresso === 'imersao' ? 'imersao' : 'completo';
 }
 
+// Cupons de desconto: knowledge/cupons.json. Desconto em % sobre o valor do ingresso (os dois
+// ingressos). Só vale o que está no arquivo e ativo; o código vem da pessoa, o percentual nunca.
+let CUPONS = {};
+try {
+  const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'knowledge', 'cupons.json'), 'utf8'));
+  for (const [cod, c] of Object.entries((raw && raw.cupons) || {})) {
+    const p = Number(c && c.percentual);
+    if (/^[A-Z0-9]{3,30}$/.test(cod) && c.ativo === true && p > 0 && p < 100) CUPONS[cod] = { codigo: cod, percentual: p };
+  }
+  console.log('Cupons ativos: ' + (Object.keys(CUPONS).join(', ') || 'nenhum'));
+} catch (err) {
+  console.error('knowledge/cupons.json não carregado. Nenhum cupom vale.', err.message);
+}
+function cupomPorCodigo(codigo) {
+  const k = String(codigo || '').trim().toUpperCase();
+  return Object.prototype.hasOwnProperty.call(CUPONS, k) ? CUPONS[k] : null;
+}
+
 // Valor total e teto de parcelas de um checkout fora de turma fechada.
 // Pix não parcela e usa sempre o valor à vista (nunca o total do 10x).
-function condicaoPagamento(ingresso, parcelamento, billingType) {
-  if (ingresso !== 'imersao') return { valor: COURSE_PRICE, parcelas: COURSE_MAX_INSTALLMENTS };
-  if (parcelamento === '10x' && billingType !== 'PIX') return { valor: INGRESSO_IMERSAO_PRICE_10X, parcelas: 10 };
-  return { valor: INGRESSO_IMERSAO_PRICE, parcelas: INGRESSO_IMERSAO_PARCELAS_SEM_JUROS };
+// cupom: código gravado na inscrição; se não estiver mais ativo, o valor volta ao cheio.
+function condicaoPagamento(ingresso, parcelamento, billingType, cupom) {
+  let c;
+  if (ingresso !== 'imersao') c = { valor: COURSE_PRICE, parcelas: COURSE_MAX_INSTALLMENTS };
+  else if (parcelamento === '10x' && billingType !== 'PIX') c = { valor: INGRESSO_IMERSAO_PRICE_10X, parcelas: 10 };
+  else c = { valor: INGRESSO_IMERSAO_PRICE, parcelas: INGRESSO_IMERSAO_PARCELAS_SEM_JUROS };
+  const cp = cupomPorCodigo(cupom);
+  if (cp) c.valor = Math.round(c.valor * (100 - cp.percentual)) / 100;
+  return c;
 }
 
 // Turmas fechadas (ex.: associados): knowledge/turmas.json. Cada turma tem o próprio preço,
@@ -683,7 +706,7 @@ async function createAsaasCheckout(lead, originUrl, billingType, parcelamento) {
   const turma = lead.turma ? turmaPorSlug(lead.turma) : null;
   const pessoas = turma ? Math.min(3, Math.max(1, Number(lead.pessoas) || 1)) : 1;
   const ingresso = turma ? '' : ingressoDoLead(lead);
-  const cond = turma ? null : condicaoPagamento(ingresso, parcelamento, billingType);
+  const cond = turma ? null : condicaoPagamento(ingresso, parcelamento, billingType, lead.cupom);
   const valor = turma ? precoPara(turma, pessoas) : cond.valor;
   const parcelas = turma ? turma.parcelasMax : cond.parcelas;
   const retorno = turma ? originUrl + '/turma/' + turma.slug : originUrl + '/';
@@ -909,6 +932,7 @@ async function migrate() {
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS estado      TEXT NOT NULL DEFAULT '';
     -- quem indicou (programa "3 ingressos vendidos, o quarto sai de graça"): texto livre ou ?ref= do link
     ALTER TABLE leads ADD COLUMN IF NOT EXISTS indicado_por TEXT NOT NULL DEFAULT '';
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS cupom TEXT NOT NULL DEFAULT '';
 
     CREATE TABLE IF NOT EXISTS chat_logs (
       id          SERIAL PRIMARY KEY,
@@ -1405,8 +1429,12 @@ async function saveLead(input, opts) {
   const estado = clean(b.estado, 2).toUpperCase();
   const consent = b.consent === true;
   const indicadoPor = clean(b.indicadoPor, 120);
+  // Cupom só no formulário do site, fora de turma fechada. Vazio = sem cupom; inválido = erro no campo.
+  const cupomDigitado = turma ? '' : clean(b.cupom, 30).toUpperCase();
+  const cupom = cupomDigitado && cupomPorCodigo(cupomDigitado) ? cupomPorCodigo(cupomDigitado).codigo : '';
 
   const errors = {};
+  if (cupomDigitado && !cupom) errors.cupom = 'Cupom inválido ou expirado.';
   // Nome e sobrenome: o Asaas recusa o pagamento com um nome só ("O campo name é inválido").
   if (!/^\S{2,}(\s+\S+)+$/.test(nome)) errors.nome = 'Informe nome e sobrenome.';
   if (!/^\S+@\S+\.\S+$/.test(email)) errors.email = 'Informe um email válido.';
@@ -1419,8 +1447,8 @@ async function saveLead(input, opts) {
 
   // mesma pessoa reenviando: atualiza os dados e preserva o andamento
   const { rows } = await pool.query(
-    `INSERT INTO leads (nome, email, whats, empresa, cargo, cpf_cnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes, ingresso, indicado_por)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+    `INSERT INTO leads (nome, email, whats, empresa, cargo, cpf_cnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes, ingresso, indicado_por, cupom)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
      ON CONFLICT (lower(email)) DO UPDATE
        SET nome=EXCLUDED.nome, whats=EXCLUDED.whats, empresa=EXCLUDED.empresa,
            cargo=EXCLUDED.cargo,
@@ -1438,9 +1466,11 @@ async function saveLead(input, opts) {
            participantes=CASE WHEN EXCLUDED.turma <> '' THEN EXCLUDED.participantes ELSE leads.participantes END,
            ingresso=CASE WHEN EXCLUDED.ingresso <> '' THEN EXCLUDED.ingresso ELSE leads.ingresso END,
            indicado_por=CASE WHEN EXCLUDED.indicado_por <> '' THEN EXCLUDED.indicado_por ELSE leads.indicado_por END,
+           -- o formulário sempre manda o cupom (ou vazio, se a pessoa tirou); o chat não mexe nele
+           cupom=CASE WHEN $21 THEN EXCLUDED.cupom ELSE leads.cupom END,
            updated_at=now()
      RETURNING id`,
-    [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes, ingresso, indicadoPor]
+    [nome, email, whats, empresa, cargo, cpfCnpj, cep, endereco, numero, complemento, bairro, cidade, estado, consent, turma, pessoas, participantes, ingresso, indicadoPor, cupom, typeof b.cupom === 'string']
   );
   notifyLeadWhatsApp({ id: rows[0].id, nome, email, whats, empresa, cargo });
   crmAtualiza({ whats, email, status: 'interessado' });
@@ -1839,7 +1869,7 @@ async function createCheckoutForLead(leadId, originUrl, billingType, parcelament
   }
   const valorCobrado = turmaLead
     ? precoPara(turmaLead, lead.pessoas)
-    : condicaoPagamento(ingressoDoLead(lead), parcelamento, billingType).valor;
+    : condicaoPagamento(ingressoDoLead(lead), parcelamento, billingType, lead.cupom).valor;
 
   const existing = await pool.query(
     `SELECT id, checkout_url FROM payments
@@ -1866,6 +1896,15 @@ async function createCheckoutForLead(leadId, originUrl, billingType, parcelament
 
   return { ok: true, url };
 }
+
+// Confere um cupom para a página mostrar o desconto antes de enviar. Limite baixo para não virar
+// força bruta de códigos; o valor cobrado é sempre recalculado no servidor a partir do cupom gravado.
+const cupomLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false, message: { ok: false, error: 'Muitas tentativas. Tente de novo mais tarde.' } });
+app.get('/cupom', cupomLimiter, (req, res) => {
+  const c = cupomPorCodigo(req.query.c);
+  if (!c) return res.status(404).json({ ok: false, error: 'Cupom inválido ou expirado.' });
+  res.json({ ok: true, codigo: c.codigo, percentual: c.percentual });
+});
 
 app.options('/payments/checkout', publicCors);
 app.post('/payments/checkout', publicCors, paymentLimiter, async (req, res) => {
