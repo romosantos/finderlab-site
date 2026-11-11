@@ -394,6 +394,18 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
 .drigo-slot .chat-x{display:none}
 .chat-fab.hide{display:none}
 @media (max-width:900px){.drigo-grid{grid-template-columns:1fr;gap:0;padding-top:72px;padding-bottom:72px}.drigo-slot{display:none}.drigo-mascot img{height:150px}.drigo-bubble{margin-bottom:34px;font-size:13.5px}}
+/* Onde vai ser: fotos do local (Be Next Eventos) */
+.local-grid{display:grid;grid-template-columns:1.9fr 1fr;gap:14px;margin-top:48px}
+.local-grid img{display:block;width:100%;height:100%;object-fit:cover;border-radius:18px;border:1px solid rgba(124,84,245,.28)}
+.local-main{position:relative;height:440px}
+.local-main::after{content:"";position:absolute;inset:0;border-radius:18px;background:linear-gradient(180deg,rgba(5,4,12,0) 45%,rgba(5,4,12,.9) 100%);pointer-events:none}
+.local-cap{position:absolute;left:26px;right:26px;bottom:22px;z-index:1}
+.local-cap b{display:block;font-size:26px;font-weight:700;color:#F1EEFB}
+.local-cap span{display:block;margin-top:6px;font-size:14px;color:#B9B4CE}
+.local-side{display:grid;grid-template-rows:1fr 1fr;gap:14px;height:440px}
+.local-info{display:flex;flex-wrap:wrap;gap:10px 24px;margin-top:22px;font-size:14px;color:#B9B4CE}
+.local-info a{color:var(--accent2)}
+@media (max-width:760px){.local-grid{grid-template-columns:1fr}.local-main{height:280px}.local-side{grid-template-rows:none;grid-template-columns:1fr 1fr;height:150px}.local-cap b{font-size:21px}}
 </style>
 </head>
 <body>
@@ -609,6 +621,30 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
     </div>
   </div>
 
+  <!-- LOCAL -->
+  <div id="local" class="sec" style="--ft:12%;--fb:16%">
+    <div class="sec-in">
+      <div class="pill" style="margin-bottom:28px">Onde vai ser</div>
+      <h2 class="t t-72">Be Next Eventos, <span class="hl">em Alphaville.</span></h2>
+      <p class="lead" style="margin-top:28px;max-width:680px">Auditório com telões e mesas de trabalho para cada participante: uma estrutura de evento profissional para dois dias de imersão.</p>
+      <div class="local-grid">
+        <div class="local-main">
+          <img src="/img/local-auditorio.webp" alt="Auditório da Be Next Eventos com telões e mesas de trabalho" loading="lazy" width="720" height="720" style="object-position:center 40%">
+          <div class="local-cap"><b>Be Next Eventos</b><span>Av. Copacabana, 238, 3º andar · Alphaville, Barueri (Grande SP)</span></div>
+        </div>
+        <div class="local-side">
+          <img src="/img/local-laranja.webp" alt="Vista lateral do auditório da Be Next" loading="lazy" width="720" height="720">
+          <img src="/img/local-mesas.webp" alt="Mesas de trabalho do auditório da Be Next" loading="lazy" width="720" height="720">
+        </div>
+      </div>
+      <div class="local-info">
+        <span>9 e 10 de dezembro, das 9h às 16h</span>
+        <span>Chegada a partir das 8h30, com coffee</span>
+        <a href="https://www.google.com/maps/search/?api=1&amp;query=Be+Next+Eventos+Av.+Copacabana+238+Alphaville+Barueri" target="_blank" rel="noopener">Ver no mapa →</a>
+      </div>
+    </div>
+  </div>
+
   <!-- PARA QUEM -->
   <div id="paraquem" class="sec alt" style="--ft:16%;--fb:20%">
     <img class="sec-img" src="/img/paraquem-bg.jpg" alt="" aria-hidden="true" style="object-position:20% 30%;opacity:.22">
@@ -788,6 +824,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
             <a href="#instrutor">Quem facilita</a>
             <a href="#conteudo">Conteúdo</a>
             <a href="#programacao">Programação</a>
+            <a href="#local">Onde vai ser</a>
           </div>
         </div>
         <div>
