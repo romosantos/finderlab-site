@@ -402,7 +402,8 @@ a:focus-visible,button:focus-visible{outline:2px solid #A88BFF;outline-offset:3p
 .local-cap{position:absolute;left:26px;right:26px;bottom:22px;z-index:1}
 .local-cap b{display:block;font-size:26px;font-weight:700;color:#F1EEFB}
 .local-cap span{display:block;margin-top:6px;font-size:14px;color:#B9B4CE}
-.local-side{display:grid;grid-template-rows:1fr 1fr;gap:14px;height:440px}
+.local-side{display:grid;grid-template-rows:repeat(2,minmax(0,1fr));gap:14px;height:440px}
+.local-side img{min-height:0}
 .local-info{display:flex;flex-wrap:wrap;gap:10px 24px;margin-top:22px;font-size:14px;color:#B9B4CE}
 .local-info a{color:var(--accent2)}
 @media (max-width:760px){.local-grid{grid-template-columns:1fr}.local-main{height:280px}.local-side{grid-template-rows:none;grid-template-columns:1fr 1fr;height:auto}.local-side img{height:150px}.local-cap b{font-size:21px}}
