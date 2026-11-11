@@ -633,7 +633,8 @@ a:focus-visible,button:focus-visible,.consent input:focus-visible{outline:2px so
       .then(function (d) {
         if (d && d.ok) {
           cupomAtivo = { codigo: d.codigo, percentual: d.percentual };
-          cupomAviso('Cupom ' + d.codigo + ' aplicado: ' + d.percentual + '% de desconto.', true);
+          cupomAviso('Cupom ' + d.codigo + ' aplicado: ' + d.percentual + '% de desconto.' +
+            (typeof d.restantes === 'number' ? ' Restam ' + d.restantes + (d.restantes === 1 ? ' vaga' : ' vagas') + ' com este cupom.' : ''), true);
         } else {
           cupomAtivo = null;
           cupomAviso((d && d.error) || 'Cupom inválido ou expirado.', false);

@@ -522,7 +522,8 @@ try {
   const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'knowledge', 'cupons.json'), 'utf8'));
   for (const [cod, c] of Object.entries((raw && raw.cupons) || {})) {
     const p = Number(c && c.percentual);
-    if (/^[A-Z0-9]{3,30}$/.test(cod) && c.ativo === true && p > 0 && p < 100) CUPONS[cod] = { codigo: cod, percentual: p };
+    const limite = Number(c && c.limite) > 0 ? Math.round(Number(c.limite)) : null;
+    if (/^[A-Z0-9]{3,30}$/.test(cod) && c.ativo === true && p > 0 && p < 100) CUPONS[cod] = { codigo: cod, percentual: p, limite };
   }
   console.log('Cupons ativos: ' + (Object.keys(CUPONS).join(', ') || 'nenhum'));
 } catch (err) {
@@ -532,6 +533,20 @@ function cupomPorCodigo(codigo) {
   const k = String(codigo || '').trim().toUpperCase();
   return Object.prototype.hasOwnProperty.call(CUPONS, k) ? CUPONS[k] : null;
 }
+// Vagas do cupom com limite: contam só inscrições PAGAS com ele (exceto a da própria pessoa, que
+// pode refazer o checkout). restantes = null quando o cupom não tem limite.
+async function vagasDoCupom(cp, leadIdIgnorar) {
+  if (!cp || !cp.limite) return { restantes: null, esgotado: false };
+  const { rows } = await pool.query(
+    `SELECT count(*)::int AS n FROM leads l
+      WHERE l.cupom = $1 AND l.id <> $2
+        AND (l.status = 'pago' OR EXISTS (SELECT 1 FROM payments p WHERE p.lead_id = l.id AND p.status = ANY($3)))`,
+    [cp.codigo, leadIdIgnorar || 0, PAGO_STATUS]
+  );
+  const restantes = Math.max(0, cp.limite - rows[0].n);
+  return { restantes, esgotado: restantes === 0 };
+}
+const CUPOM_ESGOTADO = 'As vagas com este cupom esgotaram.';
 
 // Valor total e teto de parcelas de um checkout fora de turma fechada.
 // Pix não parcela e usa sempre o valor à vista (nunca o total do 10x).
@@ -1435,6 +1450,7 @@ async function saveLead(input, opts) {
 
   const errors = {};
   if (cupomDigitado && !cupom) errors.cupom = 'Cupom inválido ou expirado.';
+  else if (cupom && (await vagasDoCupom(cupomPorCodigo(cupom))).esgotado) errors.cupom = CUPOM_ESGOTADO;
   // Nome e sobrenome: o Asaas recusa o pagamento com um nome só ("O campo name é inválido").
   if (!/^\S{2,}(\s+\S+)+$/.test(nome)) errors.nome = 'Informe nome e sobrenome.';
   if (!/^\S+@\S+\.\S+$/.test(email)) errors.email = 'Informe um email válido.';
@@ -1862,6 +1878,11 @@ async function createCheckoutForLead(leadId, originUrl, billingType, parcelament
     };
   }
 
+  // Cupom com limite que esgotou entre a inscrição e o pagamento: avisa em vez de cobrar o cheio calado.
+  if (lead.cupom && cupomPorCodigo(lead.cupom) && (await vagasDoCupom(cupomPorCodigo(lead.cupom), lead.id)).esgotado) {
+    return { ok: false, status: 409, corrigir: true, error: CUPOM_ESGOTADO + ' Apague o cupom em "Corrigir meus dados" para seguir pelo valor normal.' };
+  }
+
   // já existe um checkout aberto pra essa inscrição? reaproveita em vez de criar outro
   const turmaLead = lead.turma ? turmaPorSlug(lead.turma) : null;
   if (lead.turma && (!turmaLead || !precoPara(turmaLead, lead.pessoas))) {
@@ -1900,10 +1921,17 @@ async function createCheckoutForLead(leadId, originUrl, billingType, parcelament
 // Confere um cupom para a página mostrar o desconto antes de enviar. Limite baixo para não virar
 // força bruta de códigos; o valor cobrado é sempre recalculado no servidor a partir do cupom gravado.
 const cupomLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false, message: { ok: false, error: 'Muitas tentativas. Tente de novo mais tarde.' } });
-app.get('/cupom', cupomLimiter, (req, res) => {
+app.get('/cupom', cupomLimiter, async (req, res) => {
   const c = cupomPorCodigo(req.query.c);
   if (!c) return res.status(404).json({ ok: false, error: 'Cupom inválido ou expirado.' });
-  res.json({ ok: true, codigo: c.codigo, percentual: c.percentual });
+  try {
+    const v = await vagasDoCupom(c);
+    if (v.esgotado) return res.status(410).json({ ok: false, error: CUPOM_ESGOTADO });
+    res.json({ ok: true, codigo: c.codigo, percentual: c.percentual, restantes: v.restantes });
+  } catch (err) {
+    console.error('GET /cupom', err && err.message ? err.message : err);
+    res.status(500).json({ ok: false, error: 'Não deu pra conferir o cupom agora. Tente de novo.' });
+  }
 });
 
 app.options('/payments/checkout', publicCors);
@@ -1919,7 +1947,7 @@ app.post('/payments/checkout', publicCors, paymentLimiter, async (req, res) => {
     const originUrl = req.protocol + '://' + req.get('host');
     const parcelamento = req.body && req.body.parcelamento === '10x' ? '10x' : '';
     const result = await createCheckoutForLead(leadId, originUrl, undefined, parcelamento);
-    if (!result.ok) return res.status(result.status || 502).json({ error: result.error });
+    if (!result.ok) return res.status(result.status || 502).json({ error: result.error, corrigir: result.corrigir === true });
 
     res.json({ ok: true, url: result.url });
   } catch (err) {
