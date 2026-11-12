@@ -3105,6 +3105,48 @@ app.post('/agente-demo', publicCors, demoLimiter, async (req, res) => {
   }
 });
 
+// Áudio -> texto (Gemini). Usado pelo modo de voz do site e pelos áudios que chegam no WhatsApp do Drigo.
+// Devolve '' se não der para transcrever (sem chave, erro da Google ou resposta sem texto).
+async function transcreverAudio(buffer, mimeType, origem) {
+  if (!GEMINI_API_KEY || !Buffer.isBuffer(buffer) || !buffer.length) return '';
+  const geminiRes = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_STT_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: 'Transcreva o áudio a seguir em português do Brasil. Responda só com o texto transcrito, sem comentários nem pontuação extra.' },
+              { inline_data: { mime_type: mimeType, data: buffer.toString('base64') } },
+            ],
+          },
+        ],
+      }),
+    }
+  );
+  if (!geminiRes.ok) {
+    const errText = await geminiRes.text().catch(() => '');
+    console.error('%s: Gemini respondeu %d — %s', origem, geminiRes.status, errText.slice(0, 300));
+    return '';
+  }
+  const data = await geminiRes.json();
+  // O modelo dedicado de transcrição (gemini-*-transcribe) devolve o texto em
+  // parts[].audioTranscription.text, não em parts[].text como um generateContent comum.
+  // Aceita os dois formatos pra não quebrar se a Google mudar de novo.
+  const text = (data.candidates || [])
+    .flatMap((c) => (c.content && c.content.parts) || [])
+    .map((p) => p.text || (p.audioTranscription && p.audioTranscription.text) || '')
+    .join('')
+    .trim();
+  if (!text) {
+    const finishReason = data.candidates && data.candidates[0] && data.candidates[0].finishReason;
+    console.error('%s: Gemini respondeu 200 mas sem texto (finishReason=%s) — %s', origem, finishReason || '?', JSON.stringify(data).slice(0, 400));
+  }
+  return clean(text, CHAT_MAX_MESSAGE_LEN);
+}
+
 // ---------- /voice/transcribe: áudio -> texto (Gemini), cai no /chat normal depois ----------
 app.options('/voice/transcribe', publicCors);
 app.post(
@@ -3123,49 +3165,11 @@ app.post(
       }
 
       const mimeType = (req.headers['content-type'] || 'audio/webm').split(';')[0].trim();
-      const audioB64 = req.body.toString('base64');
       console.error('POST /voice/transcribe: recebido content-type=%s tamanho=%dB', req.headers['content-type'] || '(vazio)', req.body.length);
 
-      const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_STT_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  { text: 'Transcreva o áudio a seguir em português do Brasil. Responda só com o texto transcrito, sem comentários nem pontuação extra.' },
-                  { inline_data: { mime_type: mimeType, data: audioB64 } },
-                ],
-              },
-            ],
-          }),
-        }
-      );
-
-      if (!geminiRes.ok) {
-        const errText = await geminiRes.text().catch(() => '');
-        console.error('POST /voice/transcribe: Gemini respondeu %d — %s', geminiRes.status, errText.slice(0, 300));
-        return res.status(502).json({ error: 'Não consegui entender o áudio agora.' });
-      }
-
-      const data = await geminiRes.json();
-      // O modelo dedicado de transcrição (gemini-*-transcribe) devolve o texto em
-      // parts[].audioTranscription.text, não em parts[].text como um generateContent comum.
-      // Aceita os dois formatos pra não quebrar se a Google mudar de novo.
-      const text = (data.candidates || [])
-        .flatMap((c) => (c.content && c.content.parts) || [])
-        .map((p) => p.text || (p.audioTranscription && p.audioTranscription.text) || '')
-        .join('')
-        .trim();
-
-      if (!text) {
-        const finishReason = data.candidates && data.candidates[0] && data.candidates[0].finishReason;
-        console.error('POST /voice/transcribe: Gemini respondeu 200 mas sem texto (finishReason=%s) — %s', finishReason || '?', JSON.stringify(data).slice(0, 400));
-        return res.status(502).json({ error: 'Não consegui entender o áudio agora.' });
-      }
-      res.json({ text: clean(text, CHAT_MAX_MESSAGE_LEN) });
+      const text = await transcreverAudio(req.body, mimeType, 'POST /voice/transcribe');
+      if (!text) return res.status(502).json({ error: 'Não consegui entender o áudio agora.' });
+      res.json({ text });
     } catch (err) {
       console.error('POST /voice/transcribe', err && err.message ? err.message : err);
       res.status(500).json({ error: 'Não consegui entender o áudio agora.' });
@@ -3367,8 +3371,31 @@ function naFilaDoWhatsApp(phone, fn) {
   return atual;
 }
 
-async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
+// Baixa o áudio que a Twilio guardou (precisa da autenticação da conta) e transcreve. '' se não der.
+async function transcreverAudioWhatsApp(audio) {
   try {
+    if (!audio || !TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN) return '';
+    const auth = Buffer.from(TWILIO_ACCOUNT_SID + ':' + TWILIO_AUTH_TOKEN).toString('base64');
+    const r = await fetch(audio.url, { headers: { Authorization: 'Basic ' + auth }, redirect: 'follow' });
+    if (!r.ok) {
+      console.error('WhatsApp áudio: download falhou (%d)', r.status);
+      return '';
+    }
+    const buf = Buffer.from(await r.arrayBuffer());
+    if (buf.length > 15 * 1024 * 1024) return '';
+    return await transcreverAudio(buf, audio.type, 'WhatsApp áudio');
+  } catch (err) {
+    console.error('WhatsApp áudio', err && err.message ? err.message : err);
+    return '';
+  }
+}
+
+async function handleWhatsAppInbound({ phone, body, profileName, messageSid, audio }) {
+  try {
+    if (audio) {
+      const transcrito = await transcreverAudioWhatsApp(audio);
+      if (transcrito) body = '[áudio transcrito] ' + transcrito;
+    }
     await saveWhatsAppMessage({ phone, direction: 'in', body, profileName, messageSid });
 
     // Pedido de sair (PARAR): marca no CRM, confirma e não passa pelo agente.
@@ -3379,8 +3406,9 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
       await saveWhatsAppMessage({ phone, direction: 'out', body: adeus });
       return;
     }
-    await crmAtualiza({ whats: phone, status: 'respondeu' });
     const nomePerfil = nomeDePerfilValido(profileName);
+    // Quem chega sozinho no WhatsApp do Drigo (não estava no CRM) vira contato, para não sumir do funil.
+    if (!(await crmAtualiza({ whats: phone, status: 'respondeu' }))) await crmCriaDoWhatsApp(phone, nomePerfil, body);
     if (nomePerfil) await crmPreencheDados(phone, { nome: nomePerfil });
 
     if (!chatReady || !anthropic) {
@@ -3414,6 +3442,11 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid }) {
         ctx.termosSoSePedido = true;
       } else if (!turma) {
         ctx.contextoVisita = conversaConvite.contextoWhatsApp();
+      }
+      const nomeConversa = require('./lib/whatsapp-followup').primeiroNome(nomePerfil || (convite && convite.nome));
+      if (nomeConversa) {
+        ctx.contextoVisita = (ctx.contextoVisita ? ctx.contextoVisita + '\n\n' : '') +
+          `A pessoa se chama ${nomeConversa} (nome do perfil do WhatsApp). Chame pelo primeiro nome no cumprimento e de vez em quando, como numa conversa normal, sem repetir o nome em toda mensagem.`;
       }
       const { reply } = await getAgentReply(history, systemPrompt, SITE_ORIGIN, undefined, undefined, ctx);
       if (!reply) {
@@ -3456,8 +3489,14 @@ app.post('/whatsapp/inbound', whatsappWebhookParser, (req, res) => {
 
     const body = bodyText || (numMedia > 0 ? '[mensagem sem texto: áudio, imagem ou anexo]' : '');
     if (!body) return;
+    // Áudio sem texto: o handler baixa da Twilio e transcreve antes de passar para o Drigo.
+    const mediaType = clean(req.body && req.body.MediaContentType0, 80).toLowerCase();
+    const mediaUrl = clean(req.body && req.body.MediaUrl0, 500);
+    const audio = !bodyText && numMedia > 0 && mediaType.startsWith('audio/') && /^https:\/\/api\.twilio\.com\//.test(mediaUrl)
+      ? { url: mediaUrl, type: mediaType.split(';')[0].trim() }
+      : null;
 
-    handleWhatsAppInbound({ phone: from, body, profileName, messageSid });
+    handleWhatsAppInbound({ phone: from, body, profileName, messageSid, audio });
   } catch (err) {
     console.error('POST /whatsapp/inbound', err && err.message ? err.message : err);
   }
@@ -3647,6 +3686,29 @@ function crmLimpa(b, { exigeNome }) {
 // registra o pagamento, e a autorização continua "não"). Nunca derruba o fluxo que chamou: falha só loga.
 const CRM_RANK = { novo: 0, convite_enviado: 1, respondeu: 2, sem_interesse: 2, interessado: 3, inscrito: 4 };
 // Preenche nome, empresa e cargo do contato só onde está vazio: o que o Rodrigo já cadastrou nunca é sobrescrito.
+// Contato novo vindo do WhatsApp do Drigo. Entra como "respondeu" (nunca "novo"), então o disparo automático
+// não pega; autorização fica como não informada porque foi a pessoa que escreveu primeiro.
+async function crmCriaDoWhatsApp(phone, nome, primeiraMensagem) {
+  try {
+    const w = crmNormalizaWhats(phone);
+    if (!w) return false;
+    const dia = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit' }).format(new Date());
+    const obs = `${dia}: chegou sozinho pelo WhatsApp do Drigo. Primeira mensagem: "${clean(primeiraMensagem, 200)}"`;
+    const r = await pool.query(
+      `INSERT INTO crm_contatos (nome, email, whats, empresa, cargo, status, origem, consentimento, observacoes, ultima_interacao)
+       SELECT $1, '', $2, '', '', 'respondeu', 'WhatsApp do Drigo', 'nao_informado', $3, now()
+       WHERE NOT EXISTS (SELECT 1 FROM crm_contatos WHERE substr(whats,1,4) = substr($2,1,4) AND right(whats,8) = right($2,8))
+       ON CONFLICT DO NOTHING`,
+      [clean(nome, 120), w, obs]
+    );
+    if (r.rowCount) console.log('crm: contato novo do WhatsApp, final %s', w.slice(-4));
+    return r.rowCount > 0;
+  } catch (err) {
+    console.error('crmCriaDoWhatsApp', err && err.message ? err.message : err);
+    return false;
+  }
+}
+
 async function crmPreencheDados(whats, dados) {
   try {
     const nome = clean(dados.nome, 120), empresa = clean(dados.empresa, 160), cargo = clean(dados.cargo, 120);
@@ -3962,9 +4024,25 @@ const alertaRodrigo = require('./lib/alerta-rodrigo').init({
 });
 
 // ---------- WhatsApp: follow-up de quem respondeu e ficou sem resposta (lib/whatsapp-followup.js) ----------
+// O lembrete é escrito pelo modelo a partir da conversa (retoma o assunto dela; link só se ela mostrou interesse).
+async function gerarFollowupWhatsApp({ phone, nome }) {
+  if (!anthropic || !chatReady) return '';
+  const history = await loadWhatsAppHistory(phone);
+  if (!history.length) return '';
+  const messages = [...history, { role: 'user', content: require('./lib/whatsapp-followup').pedidoFollowup(nome) }];
+  const resp = await anthropic.messages.create({
+    model: ANTHROPIC_MODEL, max_tokens: 600, output_config: { effort: ANTHROPIC_EFFORT },
+    system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }, { type: 'text', text: conversaConvite.contextoWhatsApp() }],
+    messages,
+  });
+  const texto = stripMarkdown(stripInternalReasoning((resp.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('').trim()));
+  return texto.length >= 10 && texto.length <= 700 ? texto : '';
+}
+
 const whatsappFollowup = require('./lib/whatsapp-followup').init({
   pool, crmChaveSql, sendWhatsAppFreeform, saveWhatsAppMessage, respostaAutomatica: conversaConvite.respostaAutomatica,
   ativo: !/^(0|off|false|nao|não)$/i.test(process.env.WHATSAPP_FOLLOWUP || ''),
+  gerarTexto: gerarFollowupWhatsApp,
 });
 
 app.get('/admin/api/crm.csv', async (_req, res) => {

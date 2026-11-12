@@ -1,7 +1,7 @@
 'use strict';
 // Follow-up automático no WhatsApp. Nas conversas do convite, quem respondia "sim" e depois ficava em
 // silêncio nunca recebia uma segunda mensagem. Aqui, uma única vez por pessoa, o Drigo manda um lembrete
-// curto com o link de inscrição quando:
+// curto, escrito a partir da conversa (retoma o assunto dela; o link só vai se ela mostrou interesse na imersão), quando:
 //   a pessoa escreveu (não foi resposta automática), o Drigo respondeu por último, e já se passaram
 //   de 14 a 23h30 desde a última mensagem dela (ainda dentro da janela de 24h do WhatsApp, em que
 //   texto livre é permitido sem template);
@@ -25,6 +25,18 @@ function primeiroNome(nome) {
 function textoFollowup(nome) {
   const n = primeiroNome(nome);
   return `Oi${n ? ', ' + n : ''}, passando só pra não deixar nossa conversa solta.. se fizer sentido garantir sua vaga na Máquina de Decisões (9 e 10 de dezembro, em Alphaville), a inscrição é por aqui: ${LINK}\n\nSe ficou alguma dúvida, me responde aqui que eu te ajudo.`;
+}
+
+// Instrução para o modelo escrever o lembrete a partir da conversa. A conversa vai como histórico normal e
+// esta instrução entra como última mensagem do "usuário" pedindo o texto.
+function pedidoFollowup(nome) {
+  return [
+    '[INSTRUÇÃO INTERNA, não é mensagem da pessoa] A pessoa parou de responder há algumas horas. Escreva UMA mensagem curta de WhatsApp para retomar a conversa, como o Rodrigo escreveria de verdade.',
+    nome ? `Ela se chama ${nome}: comece com "Oi ${nome},".` : 'Comece com "Oi,".',
+    'Retome o assunto específico que ela trouxe (o negócio, a dúvida, a decisão dela) com algo útil e novo: um passo seguinte, um exemplo ou uma pergunta simples sobre o caso dela. Não repita o que já foi dito.',
+    `Só fale da imersão e só mande o link ${LINK} se, nesta conversa, ela mesma perguntou da imersão, de valor, de data, ou disse que tem interesse. Se ela só pediu ajuda com o negócio, não cite a imersão nem mande link.`,
+    'Nada de "passando só pra não deixar nossa conversa solta", "só pra lembrar" ou cobrança. No máximo 3 linhas, no máximo uma pergunta, sem emoji, sem travessão, sem lista, sem markdown. Responda só com o texto da mensagem.',
+  ].join(' ');
 }
 
 function agoraBrasilia(d = new Date()) {
@@ -94,7 +106,16 @@ function init(deps) {
       lock = (await client.query('SELECT pg_try_advisory_lock($1) AS ok', [LOCK_ID])).rows[0].ok;
       if (!lock) return;
       for (const c of await candidatos(5)) {
-        const texto = textoFollowup(c.nome || c.profile_name);
+        // O texto é escrito a partir da conversa (gerarTexto). Se não der para gerar, não manda nada nesta rodada:
+        // um lembrete genérico de "garanta sua vaga" para quem só pediu ajuda faz mais mal do que bem.
+        let texto = '';
+        if (deps.gerarTexto) {
+          try { texto = String((await deps.gerarTexto({ phone: c.phone, nome: primeiroNome(c.nome || c.profile_name) })) || '').trim(); }
+          catch (err) { console.error('whatsapp-followup: falha ao escrever o lembrete', err && err.message ? err.message : err); }
+        } else {
+          texto = textoFollowup(c.nome || c.profile_name);
+        }
+        if (!texto) continue;
         // Reserva antes de enviar: se outra instância ou rodada pegar a mesma pessoa, o INSERT falha e ninguém manda duas vezes.
         const reservado = await pool.query(
           'INSERT INTO whatsapp_followups (chave, phone, texto) VALUES ($1,$2,$3) ON CONFLICT (chave) DO NOTHING RETURNING chave',
@@ -129,4 +150,4 @@ function init(deps) {
   return { migrate, start, tick, candidatos };
 }
 
-module.exports = { init, textoFollowup, primeiroNome };
+module.exports = { init, textoFollowup, primeiroNome, pedidoFollowup };
