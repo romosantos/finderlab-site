@@ -2,6 +2,7 @@
   "_como_usar": "Cada chave é o código do cupom (a pessoa pode digitar em maiúscula ou minúscula). percentual: desconto em % sobre o ingresso (vale nos dois ingressos). ativo: false desliga o cupom sem apagar. limite (opcional): quantas inscrições PAGAS podem usar o cupom; ao chegar nele, o cupom para de valer sozinho. Depois de editar, faça commit e push para publicar.",
   "cupons": {
     "LANCAMENTO10": { "percentual": 10, "ativo": false },
-    "EDUCRATIZAR": { "percentual": 50, "ativo": true, "limite": 15 }
+    "EDUCRATIZAR": { "percentual": 50, "ativo": true, "limite": 15 },
+    "LIDERSOCIAL": { "percentual": 10, "ativo": true }
   }
 }
