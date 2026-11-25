@@ -6,5 +6,6 @@ Disallow: /maquina-api/
 Disallow: /scripts/
 Disallow: /Sistemas-prints/
 Disallow: /crmzelus/
+Disallow: /zeluslifecrm/
 
 Sitemap: https://finderlab.com.br/sitemap.xml
