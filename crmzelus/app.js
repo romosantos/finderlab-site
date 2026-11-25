@@ -224,6 +224,7 @@
       '<button data-aba="contatos" class="' + (st.aba === 'contatos' ? 'on' : '') + '">Contatos</button>' +
       '<button data-aba="retornos" class="' + (st.aba === 'retornos' ? 'on' : '') + '">Retornos' + (n ? '<span class="badge">' + n + '</span>' : '') + '</button>' +
       (admin ? '<button data-aba="painel" class="' + (st.aba === 'painel' ? 'on' : '') + '">Painel</button>' : '') +
+      '<button data-aba="materiais" class="' + (st.aba === 'materiais' ? 'on' : '') + '">Materiais</button>' +
       '<button data-aba="manual" class="' + (st.aba === 'manual' ? 'on' : '') + '">Manual</button>' +
       '</nav><div class="quem"><span class="nomeu">' + esc(st.usuario ? st.usuario.nome : '') + '</span><button id="bSair">Sair</button></div></div>' +
       '<main id="conteudo"></main><div id="camada"></div>';
@@ -231,6 +232,7 @@
     document.getElementById('bSair').onclick = function () { sair(false); };
     if (st.aba === 'painel' && admin) painel();
     else if (st.aba === 'manual') manual();
+    else if (st.aba === 'materiais') materiais();
     else if (st.aba === 'retornos') retornos();
     else contatos();
     if (st.aberto) abrirFicha(st.aberto);
@@ -335,6 +337,38 @@
   }
 
   // ── retornos ───────────────────────────────────────────────────────────
+  // Materiais para mandar às clínicas (arquivos em crmzelus/materiais).
+  var MATERIAIS = [
+    {
+      titulo: 'Apresentação Vet Friday',
+      desc: 'Zelus Vet com a oferta do Vet Friday na capa: 12 meses pelo preço de 8, faixas e preços, como aproveitar, escriba de IA, exames, app do tutor e a conta do tempo devolvido. 11 páginas em PDF.',
+      quando: 'Mande depois da ligação ou da demonstração, junto com a mensagem de WhatsApp ou o e-mail.',
+      arquivo: 'materiais/Zelus-Vet-Vet-Friday.pdf',
+      capa: 'materiais/vet-friday-capa.png',
+      ate: '2026-12-31',
+    },
+  ];
+  function materiais() {
+    var c = document.getElementById('conteudo');
+    var lista = MATERIAIS.filter(function (m) { return !m.ate || hoje() <= m.ate; });
+    c.innerHTML = '<div class="materiais"><h2>Materiais</h2><p class="sub">Para mandar às clínicas. "Copiar link" copia o endereço do PDF para colar no WhatsApp ou no e-mail.</p>' +
+      (lista.length ? lista.map(function (m, i) {
+        var url = new URL(m.arquivo, location.href).href;
+        return '<div class="material"><a class="mat-capa" href="' + esc(m.arquivo) + '" target="_blank" rel="noopener"><img src="' + esc(m.capa) + '" alt=""></a>' +
+          '<div class="mat-txt"><h3>' + esc(m.titulo) + '</h3><p>' + esc(m.desc) + '</p><p class="sub"><b>Quando usar:</b> ' + esc(m.quando) + '</p>' +
+          '<div class="mat-acoes"><a class="btn" href="' + esc(m.arquivo) + '" target="_blank" rel="noopener">Abrir</a>' +
+          '<a class="btn claro" href="' + esc(m.arquivo) + '" download>Baixar PDF</a>' +
+          '<button type="button" class="btn cyan" data-link="' + esc(url) + '" data-i="' + i + '">Copiar link</button></div></div></div>';
+      }).join('') : '<p class="sub">Nenhum material disponível no momento.</p>') + '</div>';
+    c.querySelectorAll('[data-link]').forEach(function (b) {
+      b.onclick = function () {
+        (navigator.clipboard ? navigator.clipboard.writeText(b.dataset.link) : Promise.reject())
+          .then(function () { b.textContent = 'Link copiado!'; setTimeout(function () { b.textContent = 'Copiar link'; }, 1800); })
+          .catch(function () { prompt('Copie o link:', b.dataset.link); });
+      };
+    });
+  }
+
   // Manual da prospecção (manual.html): roteiro, objeções, mensagens e uso do CRM.
   function manual() {
     var c = document.getElementById('conteudo');
