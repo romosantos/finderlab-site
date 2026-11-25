@@ -149,3 +149,7 @@ main { padding: 18px 20px 60px; max-width: 1320px; margin: 0 auto; }
   .abas button { padding: 8px 9px; }
   main { padding: 12px; }
 }
+
+/* e-mails no histórico */
+.hist details.mail summary { cursor: pointer; color: var(--ink); }
+.hist details.mail .corpo { white-space: pre-wrap; margin-top: 6px; padding: 10px 12px; background: #f6f8fb; border-radius: 8px; font-size: 13px; }
