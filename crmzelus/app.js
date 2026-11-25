@@ -34,6 +34,7 @@
     ['sem_interesse', 'Sem interesse'],
     ['enviado', 'Mensagem enviada'],
     ['voltou', 'E-mail voltou'],
+    ['respondeu', 'Respondeu por e-mail'],
     ['outro', 'Outro'],
   ];
   var FAIXAS = [['300', 'Até 300 pets', 99], ['600', 'Até 600 pets', 120], ['1000', 'Até 1.000 pets', 150], ['2000', 'Até 2.000 pets', 220], ['ilimitado', 'Ilimitado', 498]];
@@ -419,7 +420,7 @@
 
       '<section><h3>Histórico (' + hist.length + ')</h3>' +
       (hist.length ? '<ul class="hist">' + hist.map(function (h) {
-        return '<li><div class="q">' + quando(h.created_at) + ' · ' + esc(rotulo(CANAIS, h.canal)) + ' · ' + esc(h.usuario ? h.usuario.nome : 'Importado da planilha') + '</div>' +
+        return '<li><div class="q">' + quando(h.created_at) + ' · ' + esc(rotulo(CANAIS, h.canal)) + ' · ' + esc(h.usuario ? h.usuario.nome : h.email_direcao === 'recebido' ? 'Resposta da clínica' : 'Importado da planilha') + '</div>' +
           '<div class="r">' + esc(rotulo(RESULTADOS, h.resultado)) + (h.status_depois ? ' → ' + esc(rotulo(STATUS, h.status_depois)) : '') + '</div>' +
           (h.email_assunto
             ? '<details class="mail"><summary>' + (h.email_direcao === 'recebido' ? 'Resposta de ' : 'Para ') + esc(h.email_para || '') + ' · ' + esc(h.email_assunto) + '</summary><div class="corpo">' + esc(h.nota || '') + '</div></details>'
@@ -559,7 +560,9 @@
       st.leads = r.leads;
       var dias = st.painelDias;
       var desde = Date.now() - dias * 86400000;
-      var ints = r.interacoes.filter(function (i) { return new Date(i.created_at).getTime() >= desde && i.usuario; });
+      var todas = r.interacoes.filter(function (i) { return new Date(i.created_at).getTime() >= desde; });
+      var ints = todas.filter(function (i) { return i.usuario; });
+      var respostas = todas.filter(function (i) { return i.resultado === 'respondeu'; }).length;
       var clinicas = {};
       ints.forEach(function (i) { if (i.lead) clinicas[i.lead.id] = 1; });
       var conta = function (st_) { return st.leads.filter(function (l) { return l.status === st_; }).length; };
@@ -604,6 +607,7 @@
         kpi(ints.length, 'tentativas no período') +
         kpi(Object.keys(clinicas).length, 'clínicas trabalhadas') +
         kpi(conversas, 'conversas') +
+        kpi(respostas, 'respostas por e-mail') +
         kpi(conta('demo_marcada'), 'demonstrações marcadas') +
         kpi(conta('em_teste'), 'em teste') +
         kpi(fechados.length, 'fecharam') +
@@ -625,8 +629,8 @@
           return '<div><span>' + esc(f[0]) + '</span><i style="width:' + Math.max(2, Math.round(f[1] / maxF * 100)) + '%"></i><b>' + f[1] + '</b></div>';
         }).join('') + '</div></div>' +
         '</div><div>' +
-        '<div class="card"><h3>Últimas atividades</h3><ul class="feed">' + (ints.length ? ints.slice(0, 80).map(function (i) {
-          return '<li><div class="sub">' + quando(i.created_at) + ' · ' + esc(i.usuario.nome) + ' · ' + esc(rotulo(CANAIS, i.canal)) + '</div>' +
+        '<div class="card"><h3>Últimas atividades</h3><ul class="feed">' + (todas.length ? todas.slice(0, 80).map(function (i) {
+          return '<li><div class="sub">' + quando(i.created_at) + ' · ' + esc(i.usuario ? i.usuario.nome : 'Clínica') + ' · ' + esc(rotulo(CANAIS, i.canal)) + '</div>' +
             (i.lead ? '<a data-id="' + esc(i.lead.id) + '">' + esc(i.lead.nome) + '</a> ' : '') + '<span>' + esc(rotulo(RESULTADOS, i.resultado)) + '</span>' +
             (i.email_assunto ? '<div>E-mail: ' + esc(i.email_assunto) + '</div>' : (i.nota ? '<div>' + esc(i.nota) + '</div>' : '')) + '</li>';
         }).join('') : '<li class="sub">Nenhuma atividade no período.</li>') + '</ul></div>' +
