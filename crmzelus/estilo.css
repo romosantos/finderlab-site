@@ -153,3 +153,39 @@ main { padding: 18px 20px 60px; max-width: 1320px; margin: 0 auto; }
 /* e-mails no histórico */
 .hist details.mail summary { cursor: pointer; color: var(--ink); }
 .hist details.mail .corpo { white-space: pre-wrap; margin-top: 6px; padding: 10px 12px; background: #f6f8fb; border-radius: 8px; font-size: 13px; }
+
+/* Manual da prospecção */
+.manual { max-width: 860px; margin: 0 auto; color: var(--txt, #1f2937); line-height: 1.6; font-size: 15px; }
+.manual .m-capa { background: var(--navy); color: #fff; border-radius: 16px; padding: 24px 26px; margin-bottom: 14px; position: relative; }
+.manual .m-tag { display: inline-block; background: var(--cyan); color: var(--navy); font-weight: 800; font-size: 11px; letter-spacing: 1.4px; padding: 4px 10px; border-radius: 999px; text-transform: uppercase; }
+.manual .m-capa h1 { font-size: 26px; margin: 10px 0 4px; line-height: 1.2; }
+.manual .m-capa p { margin: 0 0 14px; color: rgba(255, 255, 255, .75); }
+.manual .m-indice { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; position: sticky; top: 56px; background: var(--bg); padding: 8px 0; z-index: 5; }
+.manual .m-indice a { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 600; color: var(--ink); text-decoration: none; }
+.manual section { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 6px 22px 16px; margin-top: 14px; scroll-margin-top: 110px; }
+.manual h2 { font-size: 19px; color: var(--ink); margin: 14px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--cyan); }
+.manual h3 { font-size: 15px; color: var(--ink); margin: 16px 0 6px; }
+.manual ul, .manual ol { padding-left: 20px; margin: 0 0 10px; }
+.manual li { margin-bottom: 4px; }
+.manual .m-passos li { margin-bottom: 8px; }
+.manual .m-fala { background: #eefaff; border-left: 4px solid var(--cyan); border-radius: 10px; padding: 10px 14px; margin: 8px 0 12px; }
+.manual .m-zap { background: #f1fdf4; border-left: 4px solid #25d366; border-radius: 10px; padding: 12px 14px 40px; margin: 6px 0 14px; white-space: pre-line; position: relative; }
+.manual .m-copiar { position: absolute; right: 10px; bottom: 8px; border: 1px solid #b7e4c7; background: #fff; color: #166534; border-radius: 8px; padding: 4px 12px; font-weight: 700; font-size: 12.5px; cursor: pointer; }
+.manual .m-obj { margin-bottom: 12px; }
+.manual .m-obj p { margin: 4px 0 0; }
+.manual .m-box { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin: 10px 0; background: #f8fafc; }
+.manual .m-nao { border-color: #f5c2c0; background: #fff6f5; }
+.manual .m-pq { font-size: 13px; color: var(--mut); }
+.manual .m-tabela { overflow-x: auto; margin: 8px 0 12px; }
+.manual table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.manual th { background: var(--navy); color: #fff; text-align: left; padding: 8px 10px; white-space: nowrap; }
+.manual td { padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.manual tr:nth-child(even) td { background: #f8fafc; }
+.manual .m-vf { font-weight: 800; color: #0b6e85; }
+@media print {
+  .topo, .manual .m-indice, .manual .m-imprimir, .manual .m-copiar { display: none !important; }
+  main { padding: 0; }
+  .manual section { break-inside: auto; border: 0; padding: 0 0 8px; }
+  .manual .m-capa { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .manual th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

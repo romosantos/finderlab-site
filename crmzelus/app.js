@@ -224,11 +224,13 @@
       '<button data-aba="contatos" class="' + (st.aba === 'contatos' ? 'on' : '') + '">Contatos</button>' +
       '<button data-aba="retornos" class="' + (st.aba === 'retornos' ? 'on' : '') + '">Retornos' + (n ? '<span class="badge">' + n + '</span>' : '') + '</button>' +
       (admin ? '<button data-aba="painel" class="' + (st.aba === 'painel' ? 'on' : '') + '">Painel</button>' : '') +
+      '<button data-aba="manual" class="' + (st.aba === 'manual' ? 'on' : '') + '">Manual</button>' +
       '</nav><div class="quem"><span class="nomeu">' + esc(st.usuario ? st.usuario.nome : '') + '</span><button id="bSair">Sair</button></div></div>' +
       '<main id="conteudo"></main><div id="camada"></div>';
     app.querySelectorAll('[data-aba]').forEach(function (b) { b.onclick = function () { st.aba = b.dataset.aba; st.limite = 100; render(); }; });
     document.getElementById('bSair').onclick = function () { sair(false); };
     if (st.aba === 'painel' && admin) painel();
+    else if (st.aba === 'manual') manual();
     else if (st.aba === 'retornos') retornos();
     else contatos();
     if (st.aberto) abrirFicha(st.aberto);
@@ -333,6 +335,35 @@
   }
 
   // ── retornos ───────────────────────────────────────────────────────────
+  // Manual da prospecção (manual.html): roteiro, objeções, mensagens e uso do CRM.
+  function manual() {
+    var c = document.getElementById('conteudo');
+    c.innerHTML = '<div class="carregando">Abrindo o manual…</div>';
+    fetch('manual.html?v=' + Date.now())
+      .then(function (r) { if (!r.ok) throw new Error('Não foi possível abrir o manual.'); return r.text(); })
+      .then(function (html) {
+        if (st.aba !== 'manual') return;
+        c.innerHTML = html;
+        c.querySelectorAll('.m-indice a').forEach(function (a) {
+          a.onclick = function (e) { e.preventDefault(); var alvo = c.querySelector(a.getAttribute('href')); if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+        });
+        var imp = c.querySelector('[data-imprimir]');
+        if (imp) imp.onclick = function () { window.print(); };
+        c.querySelectorAll('[data-copiar]').forEach(function (el) {
+          var texto = el.innerText.trim();
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'm-copiar'; b.textContent = 'Copiar';
+          b.onclick = function () {
+            (navigator.clipboard ? navigator.clipboard.writeText(texto) : Promise.reject())
+              .then(function () { b.textContent = 'Copiado!'; setTimeout(function () { b.textContent = 'Copiar'; }, 1800); })
+              .catch(function () { b.textContent = 'Selecione e copie'; });
+          };
+          el.appendChild(b);
+        });
+      })
+      .catch(function (err) { c.innerHTML = '<div class="carregando">' + esc(err.message) + '</div>'; });
+  }
+
   function retornos() {
     var h = hoje();
     var em7 = new Date(Date.now() - 3 * 3600000 + 7 * 86400000).toISOString().slice(0, 10);
