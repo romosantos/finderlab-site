@@ -37,6 +37,35 @@
     ['outro', 'Outro'],
   ];
   var FAIXAS = [['300', 'Até 300 pets', 99], ['600', 'Até 600 pets', 120], ['1000', 'Até 1.000 pets', 150], ['2000', 'Até 2.000 pets', 220], ['ilimitado', 'Ilimitado', 498]];
+  // Modelos de e-mail. {saudacao}, {clinica} e a assinatura entram sozinhos;
+  // a pessoa pode editar tudo antes de enviar.
+  var PRECOS = 'Depois do teste, o preço segue o número de pets cadastrados na clínica: até 300 pets R$ 99 por mês, até 600 R$ 120, até 1.000 R$ 150, até 2.000 R$ 220 e ilimitado R$ 498. No anual, são 12 meses pelo preço de 10, em até 6x sem juros no cartão.';
+  var MODELOS = [
+    ['branco', 'Em branco', '', '{saudacao}\n\n\n\n{assinatura}'],
+    ['primeiro', 'Primeiro contato', 'Menos tempo no prontuário na {clinica}',
+      '{saudacao}\n\nSou a {eu}, do Zelus Vet. Escrevo porque a {clinica} é bem avaliada, e acho que o que construímos pode ajudar o dia a dia de vocês.\n\n' +
+      'O Zelus Vet é um sistema para clínicas veterinárias com três coisas principais:\n' +
+      '- Escriba de IA: ouve a consulta, separa o que é clínico e monta anamnese e prontuário para o vet revisar e aprovar.\n' +
+      '- App do tutor: o tutor recebe o resumo da consulta, a receita e os lembretes de medicação, e sobe exames que já aparecem para a clínica.\n' +
+      '- Leitura de exames: cada marcador vira uma linha do tempo do paciente.\n\n' +
+      'Na clínica onde rodamos o piloto, o escriba devolveu de 8 a 10 minutos por consulta e as mensagens dos tutores para a clínica caíram.\n\n' +
+      'Dá para testar 14 dias de graça, com tudo liberado: zelusvet.com.br. Se preferir, marco uma demonstração de 15 minutos no horário de vocês.\n\n' +
+      'Se não fizer sentido para vocês, é só responder este e-mail que eu não envio mais nada.\n\n{assinatura}'],
+    ['ligacao', 'Depois da ligação', 'Zelus Vet: o que conversamos',
+      '{saudacao}\n\nObrigada pela conversa de hoje. Como combinamos, mando um resumo do Zelus Vet.\n\n' +
+      '- Escriba de IA: ouve a consulta e entrega anamnese e prontuário prontos para o vet revisar e aprovar. No nosso piloto, foram 8 a 10 minutos a menos por consulta.\n' +
+      '- App do tutor: resumo da consulta, receita e lembretes de medicação, o que diminui as mensagens e ligações para a clínica.\n' +
+      '- Leitura de exames: os resultados viram uma linha do tempo de cada paciente.\n\n' +
+      'São 14 dias grátis com tudo liberado, sem compromisso: zelusvet.com.br. ' + PRECOS + '\n\n' +
+      'Se quiser, marco uma demonstração de 15 minutos para mostrar funcionando. É só me dizer o melhor horário.\n\n{assinatura}'],
+    ['retorno', 'Retorno (sem resposta)', 'Zelus Vet para a {clinica}',
+      '{saudacao}\n\nPassando só para não deixar meu último e-mail perdido. Dá para testar o Zelus Vet 14 dias de graça, com tudo liberado e sem compromisso: zelusvet.com.br\n\n' +
+      'Se preferir, faço uma demonstração de 15 minutos no horário que for melhor para vocês. E se não for o momento, tudo bem também.\n\n{assinatura}'],
+    ['demo', 'Depois da demonstração', 'Obrigada pela demonstração',
+      '{saudacao}\n\nObrigada pelo tempo na demonstração de hoje. Para começar os 14 dias grátis, é só criar a conta da clínica em zelusvet.com.br, com tudo liberado.\n\n' +
+      PRECOS + '\n\nSe surgir qualquer dúvida no teste, é só responder este e-mail.\n\n{assinatura}'],
+  ];
+
   var REGIOES = [['capital', 'São Paulo (capital)'], ['grande_sp', 'Grande SP e litoral'], ['outros', 'Pet shops e outros']];
 
   var st = {
@@ -87,6 +116,19 @@
     if (d.length < 10) return '';
     if (d.length <= 11) d = '55' + d;
     return 'https://wa.me/' + d;
+  }
+  function eu() { var u = st.usuario || {}; return String(u.email_nome || u.nome || '').split(/ [/-] /)[0].trim(); }
+  function preencherModelo(chave, l) {
+    var m = MODELOS.filter(function (x) { return x[0] === chave; })[0] || MODELOS[0];
+    var primeiro = String(l.contato || '').trim().replace(/^((dra?|sra?|srta|prof|profa)\.?\s+)+/i, '').split(/[\s,(·-]+/)[0];
+    var vars = {
+      saudacao: primeiro ? 'Olá, ' + primeiro + ',' : 'Olá, pessoal da ' + l.nome + ',',
+      clinica: l.nome,
+      eu: eu().split(' ')[0],
+      assinatura: 'Abraço,\n' + eu() + '\nZelus Vet · Finder Lab\nzelusvet.com.br',
+    };
+    var troca = function (t) { return t.replace(/\{(\w+)\}/g, function (a, k) { return vars[k] != null ? vars[k] : a; }); };
+    return { assunto: troca(m[2]), texto: troca(m[3]) };
   }
   function chip(s) { return '<span class="chip st-' + esc(s) + '">' + esc(rotulo(STATUS, s)) + '</span>'; }
   function proximo(l) {
@@ -337,8 +379,22 @@
       (zap ? '<a class="btn cyan" target="_blank" rel="noopener" href="' + zap + '">WhatsApp</a>' : '') +
       (insta ? '<a class="btn claro" target="_blank" rel="noopener" href="' + esc(insta) + '">Instagram</a>' : '') +
       (site ? '<a class="btn claro" target="_blank" rel="noopener" href="' + esc(site) + '">Site</a>' : '') +
+      '<button type="button" class="btn cyan" id="bEmail">E-mail</button>' +
       '<a class="btn claro" target="_blank" rel="noopener" href="' + maps + '">Mapa</a>' +
       '</div><button class="fechar" aria-label="Fechar">×</button></header>' +
+
+      '<section id="sEmail" hidden><h3>Enviar e-mail</h3>' +
+      (st.usuario && st.usuario.email
+        ? '<label for="mModelo">Modelo</label><select id="mModelo">' + opcoes(MODELOS.map(function (m) { return [m[0], m[1]]; }), l.tentativas ? 'retorno' : 'primeiro') + '</select>' +
+          '<label for="mPara">Para</label><input type="text" id="mPara" inputmode="email" value="' + esc(l.email || '') + '" placeholder="email@clinica.com.br">' +
+          '<label for="mAssunto">Assunto</label><input type="text" id="mAssunto">' +
+          '<label for="mTexto">Mensagem</label><textarea id="mTexto" style="min-height:300px"></textarea>' +
+          '<div class="duas"><div><label for="mPasso">Próximo passo</label><input type="text" id="mPasso" value="' + esc(l.proximo_passo || '') + '" placeholder="Ex.: ligar para ver se leu"></div>' +
+          '<div><label for="mData">Quando</label><input type="date" id="mData" value="' + esc(l.proximo_em || '') + '"></div></div>' +
+          '<p class="sub" style="margin:10px 0 0">Sai como ' + esc(st.usuario.email_nome) + ' &lt;' + esc(st.usuario.email) + '&gt;. As respostas da clínica chegam na caixa comercial.</p>' +
+          '<button class="btn cheio" id="bEnviar">Enviar e-mail</button><div class="erro" id="mErro"></div>'
+        : '<p class="sub">Seu usuário ainda não tem e-mail de envio. Peça para o Rodrigo cadastrar.</p>') +
+      '</section>' +
 
       '<section><h3>Registrar tentativa</h3>' +
       '<div class="canais" id="canais">' + CANAIS.map(function (c) { return '<button type="button" data-c="' + c[0] + '" class="' + (c[0] === canal ? 'on' : '') + '">' + c[1] + '</button>'; }).join('') + '</div>' +
@@ -365,7 +421,9 @@
       (hist.length ? '<ul class="hist">' + hist.map(function (h) {
         return '<li><div class="q">' + quando(h.created_at) + ' · ' + esc(rotulo(CANAIS, h.canal)) + ' · ' + esc(h.usuario ? h.usuario.nome : 'Importado da planilha') + '</div>' +
           '<div class="r">' + esc(rotulo(RESULTADOS, h.resultado)) + (h.status_depois ? ' → ' + esc(rotulo(STATUS, h.status_depois)) : '') + '</div>' +
-          (h.nota ? '<div>' + esc(h.nota) + '</div>' : '') + '</li>';
+          (h.email_assunto
+            ? '<details class="mail"><summary>' + (h.email_direcao === 'recebido' ? 'Resposta de ' : 'Para ') + esc(h.email_para || '') + ' · ' + esc(h.email_assunto) + '</summary><div class="corpo">' + esc(h.nota || '') + '</div></details>'
+            : (h.nota ? '<div>' + esc(h.nota) + '</div>' : '')) + '</li>';
       }).join('') + '</ul>' : '<p class="sub">Nenhuma tentativa ainda.</p>') + '</section>' +
 
       '<section><h3>Dados da clínica</h3><dl class="dados">' +
@@ -384,6 +442,40 @@
         if (canal === 'whatsapp' || canal === 'email') document.getElementById('iRes').value = 'enviado';
       };
     });
+
+    var sEmail = document.getElementById('sEmail');
+    document.getElementById('bEmail').onclick = function () {
+      sEmail.hidden = !sEmail.hidden;
+      if (!sEmail.hidden) sEmail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    var mModelo = document.getElementById('mModelo');
+    if (mModelo) {
+      var mAssunto = document.getElementById('mAssunto'), mTexto = document.getElementById('mTexto'), mexeu = false;
+      var aplicar = function () { var p = preencherModelo(mModelo.value, l); mAssunto.value = p.assunto; mTexto.value = p.texto; mexeu = false; };
+      aplicar();
+      mTexto.oninput = mAssunto.oninput = function () { mexeu = true; };
+      var anterior = mModelo.value;
+      mModelo.onchange = function () {
+        if (mexeu && !confirm('Trocar o modelo apaga o que você escreveu. Continuar?')) { mModelo.value = anterior; return; }
+        anterior = mModelo.value; aplicar();
+      };
+      document.getElementById('bEnviar').onclick = function (e) {
+        var b = e.target, erro = document.getElementById('mErro');
+        var body = {
+          para: document.getElementById('mPara').value.trim(),
+          assunto: mAssunto.value.trim(),
+          texto: mTexto.value.trim(),
+          proximo_passo: document.getElementById('mPasso').value.trim() || null,
+          proximo_em: document.getElementById('mData').value || null,
+        };
+        if (!body.para || !body.assunto || !body.texto) { erro.textContent = 'Preencha para quem, o assunto e a mensagem.'; return; }
+        if (!confirm('Enviar este e-mail para ' + body.para + '?')) return;
+        b.disabled = true; b.textContent = 'Enviando…'; erro.textContent = '';
+        api('/crm-zelus/leads/' + l.id + '/email', { method: 'POST', body: body })
+          .then(function (r) { atualizarLocal(r.lead); refrescarFundo(); desenharFicha(r.lead, r.interacoes); })
+          .catch(function (err) { b.disabled = false; b.textContent = 'Enviar e-mail'; erro.textContent = err.message; });
+      };
+    }
 
     var faixa = document.getElementById('eFaixa'), ciclo = document.getElementById('eCiclo'), valor = document.getElementById('eValor');
     var sugerir = function () { var v = valorFaixa(faixa.value, ciclo.value); if (v != null) valor.value = v; };
@@ -536,7 +628,7 @@
         '<div class="card"><h3>Últimas atividades</h3><ul class="feed">' + (ints.length ? ints.slice(0, 80).map(function (i) {
           return '<li><div class="sub">' + quando(i.created_at) + ' · ' + esc(i.usuario.nome) + ' · ' + esc(rotulo(CANAIS, i.canal)) + '</div>' +
             (i.lead ? '<a data-id="' + esc(i.lead.id) + '">' + esc(i.lead.nome) + '</a> ' : '') + '<span>' + esc(rotulo(RESULTADOS, i.resultado)) + '</span>' +
-            (i.nota ? '<div>' + esc(i.nota) + '</div>' : '') + '</li>';
+            (i.email_assunto ? '<div>E-mail: ' + esc(i.email_assunto) + '</div>' : (i.nota ? '<div>' + esc(i.nota) + '</div>' : '')) + '</li>';
         }).join('') : '<li class="sub">Nenhuma atividade no período.</li>') + '</ul></div>' +
         (fechados.length ? '<div class="card"><h3>Fechamentos</h3><table class="tab"><tbody>' + fechados.map(function (l) {
           return '<tr><td><a data-id="' + esc(l.id) + '" style="cursor:pointer;font-weight:700">' + esc(l.nome) + '</a></td><td>' + esc(rotulo(FAIXAS.map(function (x) { return [x[0], x[1]]; }), l.faixa)) + ' · ' + esc(l.ciclo || '') + '</td><td>' + (l.valor != null ? brl(l.valor) : '') + '</td></tr>';
