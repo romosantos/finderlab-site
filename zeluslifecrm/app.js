@@ -1,7 +1,7 @@
 /* Mini CRM da prospecção do Zelus Life · finderlab.com.br/zeluslifecrm
  * Cópia do crmzelus para a campanha de dezembro/2026 do Zelus Life. Mesma API,
  * dados separados: o login envia crm: 'life' e a API filtra tudo por ele.
- * A Tatiane registra cada ligação; o Rodrigo acompanha no Painel.
+ * A Tatiana registra cada ligação; o Rodrigo acompanha no Painel.
  * Dados na API do Zelus (/v1/crm-zelus), login próprio por usuário e senha. */
 (function () {
   'use strict';
