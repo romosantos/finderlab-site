@@ -1,5 +1,5 @@
 /* Mini CRM da prospecção do Zelus Vet · finderlab.com.br/crmzelus
- * A Tatiane registra cada ligação; o Rodrigo acompanha no Painel.
+ * A Tatiana registra cada ligação; o Rodrigo acompanha no Painel.
  * Dados na API do Zelus (/v1/crm-zelus), login próprio por usuário e senha. */
 (function () {
   'use strict';
