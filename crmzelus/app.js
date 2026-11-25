@@ -41,8 +41,19 @@
   // Modelos de e-mail. {saudacao}, {clinica} e a assinatura entram sozinhos;
   // a pessoa pode editar tudo antes de enviar.
   var PRECOS = 'Depois do teste, o preço segue o número de pets cadastrados na clínica: até 300 pets R$ 99 por mês, até 600 R$ 120, até 1.000 R$ 150, até 2.000 R$ 220 e ilimitado R$ 498. No anual, são 12 meses pelo preço de 10, em até 6x sem juros no cartão.';
+  // Vet Friday: anual por 8 mensalidades, só até 31/12/2026.
+  var VET_FRIDAY_ATE = '2026-12-31';
   var MODELOS = [
     ['branco', 'Em branco', '', '{saudacao}\n\n\n\n{assinatura}'],
+    ['vetfriday', 'Vet Friday (até 31/12)', 'Vet Friday: 12 meses de Zelus Vet pagando 8',
+      '{saudacao}\n\nSou a {eu}, do Zelus Vet. Neste fim de ano estamos com o Vet Friday, e acho que vale a pena para a {clinica}.\n\n' +
+      'O Zelus Vet é um sistema para clínicas veterinárias com prontuário, agenda, exames, receitas e financeiro, e com três diferenciais:\n' +
+      '- Escriba de IA: ouve a consulta e entrega anamnese e prontuário prontos para o vet revisar e aprovar. No nosso piloto, foram 8 a 10 minutos a menos por consulta.\n' +
+      '- App do tutor: resumo da consulta, receita e lembretes de remédio e vacina. As consultas só para tirar dúvida caíram 30%.\n' +
+      '- Leitura de exames: os resultados viram uma linha do tempo de cada paciente.\n\n' +
+      'A condição do Vet Friday: fechando o plano anual até 31 de dezembro, a clínica leva 12 meses pagando 8, à vista ou em até 6x sem juros no cartão. Por exemplo, para até 300 pets cadastrados, o ano sai R$ 792 (6x de R$ 132), em vez de R$ 990. O sistema é o mesmo em todas as faixas; muda só o número de pets. A implantação é guiada, com treinamento da equipe.\n\n' +
+      'Antes de pagar qualquer coisa, dá para testar 14 dias grátis com tudo liberado: zelusvet.com.br. Se preferir, marco uma demonstração de 15 minutos no horário de vocês.\n\n' +
+      'Se não fizer sentido para vocês, é só responder este e-mail que eu não envio mais nada.\n\n{assinatura}'],
     ['primeiro', 'Primeiro contato', 'Menos tempo no prontuário na {clinica}',
       '{saudacao}\n\nSou a {eu}, do Zelus Vet. Escrevo porque a {clinica} é bem avaliada, e acho que o que construímos pode ajudar o dia a dia de vocês.\n\n' +
       'O Zelus Vet é um sistema para clínicas veterinárias com três coisas principais:\n' +
@@ -386,7 +397,7 @@
 
       '<section id="sEmail" hidden><h3>Enviar e-mail</h3>' +
       (st.usuario && st.usuario.email
-        ? '<label for="mModelo">Modelo</label><select id="mModelo">' + opcoes(MODELOS.map(function (m) { return [m[0], m[1]]; }), l.tentativas ? 'retorno' : 'primeiro') + '</select>' +
+        ? '<label for="mModelo">Modelo</label><select id="mModelo">' + opcoes(MODELOS.filter(function (m) { return m[0] !== 'vetfriday' || hoje() <= VET_FRIDAY_ATE; }).map(function (m) { return [m[0], m[1]]; }), l.tentativas ? 'retorno' : (hoje() <= VET_FRIDAY_ATE ? 'vetfriday' : 'primeiro')) + '</select>' +
           '<label for="mPara">Para</label><input type="text" id="mPara" inputmode="email" value="' + esc(l.email || '') + '" placeholder="email@clinica.com.br">' +
           '<label for="mAssunto">Assunto</label><input type="text" id="mAssunto">' +
           '<label for="mTexto">Mensagem</label><textarea id="mTexto" style="min-height:300px"></textarea>' +
