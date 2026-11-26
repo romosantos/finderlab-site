@@ -34,7 +34,7 @@
     ['sem_interesse', 'Sem interesse'],
     ['enviado', 'Mensagem enviada'],
     ['voltou', 'E-mail voltou'],
-    ['respondeu', 'Respondeu por e-mail'],
+    ['respondeu', 'Respondeu'],
     ['outro', 'Outro'],
   ];
   var FAIXAS = [['300', 'Até 300 pets', 99], ['600', 'Até 600 pets', 120], ['1000', 'Até 1.000 pets', 150], ['2000', 'Até 2.000 pets', 220], ['ilimitado', 'Ilimitado', 498]];
@@ -85,7 +85,7 @@
     usuario: null,
     leads: [],
     aba: 'contatos',
-    filtro: { q: '', status: '', prio: '', regiao: '', local: '', celular: false },
+    filtro: { q: '', status: '', prio: '', regiao: '', local: '', celular: false, drigo: '' },
     limite: 100,
     aberto: null,
     painelDias: 30,
@@ -249,6 +249,8 @@
       if (f.regiao && l.regiao !== f.regiao) return false;
       if (f.local && (l.regiao === 'capital' ? l.zona : l.cidade) !== f.local) return false;
       if (f.celular && !l.celular) return false;
+      if (f.drigo === 'drigo' && !l.drigo) return false;
+      if (f.drigo === 'respondeu' && !l.respondeu_whatsapp) return false;
       if (q) {
         var alvo = (l.nome + ' ' + (l.bairro || '') + ' ' + (l.cidade || '') + ' ' + (l.contato || '')).toLowerCase();
         if (alvo.indexOf(q) < 0 && !(qd.length >= 4 && digitos(l.telefone).indexOf(qd) >= 0)) return false;
@@ -277,7 +279,7 @@
       : '<span class="sub">sem telefone</span>';
     return '<div class="linha' + (l.drigo ? ' drigo' : '') + '" data-id="' + esc(l.id) + '">' +
       '<div><span class="prio ' + esc(l.prioridade || 'C') + '">' + esc(l.prioridade || '·') + '</span></div>' +
-      '<div><div class="nome">' + esc(l.nome) + (l.drigo ? ' <span class="tag-drigo">Drigo</span>' : '') + '</div><div class="sub">' + esc([l.bairro, l.regiao === 'capital' ? l.zona : l.cidade].filter(Boolean).join(' · ')) +
+      '<div><div class="nome">' + esc(l.nome) + (l.drigo ? ' <span class="tag-drigo">Drigo</span>' : '') + (l.respondeu_whatsapp ? ' <span class="tag-resp">Respondeu</span>' : '') + '</div><div class="sub">' + esc([l.bairro, l.regiao === 'capital' ? l.zona : l.cidade].filter(Boolean).join(' · ')) +
       (l.nota ? ' · ★ ' + esc(l.nota) + ' (' + esc(l.avaliacoes || 0) + ')' : '') + '</div></div>' +
       '<div class="tel">' + tel + '</div>' +
       '<div>' + chip(l.status) + '</div>' +
@@ -299,11 +301,15 @@
       '<select id="fRegiao">' + opcoes(REGIOES, f.regiao, 'Todas as regiões') + '</select>' +
       '<select id="fLocal">' + opcoes(locais(), f.local, 'Zona ou cidade') + '</select>' +
       '<select id="fStatus">' + opcoes(STATUS, f.status, 'Todos os status') + '</select>' +
+      '<select id="fDrigo">' + opcoes([['drigo', 'Contatadas pelo Drigo'], ['respondeu', 'Responderam no WhatsApp']], f.drigo, 'Drigo: todas') + '</select>' +
       '<label class="chk"><input type="checkbox" id="fCel"' + (f.celular ? ' checked' : '') + '> Com WhatsApp</label>' +
       '</div>' +
       '<div class="resumo">' + STATUS.map(function (s) {
         return porStatus[s[0]] ? '<button data-st="' + s[0] + '" class="' + (f.status === s[0] ? 'on' : '') + '">' + esc(s[1]) + ': ' + porStatus[s[0]] + '</button>' : '';
-      }).join('') + '<button id="bNovo">+ Nova clínica</button></div>' +
+      }).join('') + (function () {
+        var n = st.leads.filter(function (l) { return l.respondeu_whatsapp; }).length;
+        return n ? '<button id="bResp" class="resp' + (f.drigo === 'respondeu' ? ' on' : '') + '">Responderam no WhatsApp: ' + n + '</button>' : '';
+      })() + '<button id="bNovo">+ Nova clínica</button></div>' +
       '<p class="contagem">' + lista.length + ' clínica(s)</p>' +
       '<div class="lista"><div class="linha cab"><div></div><div>Clínica</div><div>Telefone</div><div>Status</div><div>Próximo passo</div><div>Última tentativa</div></div>' +
       (lista.length ? lista.slice(0, st.limite).map(linhaHtml).join('') : '<div class="vazio">Nenhuma clínica com esses filtros.</div>') +
@@ -316,6 +322,9 @@
     document.getElementById('fLocal').onchange = function (e) { f.local = e.target.value; st.limite = 100; contatos(); };
     document.getElementById('fStatus').onchange = function (e) { f.status = e.target.value; st.limite = 100; contatos(); };
     document.getElementById('fCel').onchange = function (e) { f.celular = e.target.checked; st.limite = 100; contatos(); };
+    document.getElementById('fDrigo').onchange = function (e) { f.drigo = e.target.value; st.limite = 100; contatos(); };
+    var bResp = document.getElementById('bResp');
+    if (bResp) bResp.onclick = function () { f.drigo = f.drigo === 'respondeu' ? '' : 'respondeu'; st.limite = 100; contatos(); };
     c.querySelectorAll('[data-st]').forEach(function (b) { b.onclick = function () { f.status = f.status === b.dataset.st ? '' : b.dataset.st; contatos(); }; });
     document.getElementById('bNovo').onclick = novaClinica;
     var bm = document.getElementById('bMais');
@@ -425,7 +434,7 @@
     var camada = document.getElementById('camada');
     camada.innerHTML = '<div class="fundo"></div><aside class="ficha"><header><h2>Carregando…</h2><button class="fechar" aria-label="Fechar">×</button></header></aside>';
     ligarFechar();
-    api('/crm-zelus/leads/' + id).then(function (r) { if (st.aberto === id) desenharFicha(r.lead, r.interacoes); })
+    api('/crm-zelus/leads/' + id).then(function (r) { if (st.aberto === id) desenharFicha(r.lead, r.interacoes, r.mensagens); })
       .catch(function (err) { camada.querySelector('h2').textContent = err.message; });
   }
 
@@ -443,7 +452,17 @@
     st.leads.unshift(lead);
   }
 
-  function desenharFicha(l, hist) {
+  // Conversa do WhatsApp do Drigo em formato de chat (Drigo à direita, clínica à esquerda).
+  function conversaHtml(l, msgs) {
+    if (!msgs || !msgs.length) return '';
+    return '<section><h3>Conversa no WhatsApp (' + msgs.length + ')</h3><div class="chat">' + msgs.map(function (m) {
+      var eu = m.direcao === 'enviada';
+      return '<div class="bolha ' + (eu ? 'drigo' : 'clinica') + '"><div class="autor">' + (eu ? 'Drigo' : esc(l.contato || 'Clínica')) + ' · ' + quando(m.enviada_em) + '</div>' +
+        '<div class="txt">' + esc(m.texto) + '</div></div>';
+    }).join('') + '</div></section>';
+  }
+
+  function desenharFicha(l, hist, msgs) {
     var camada = document.getElementById('camada');
     var zap = l.celular ? zapLink(l.telefone) : '';
     var maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(l.endereco || (l.nome + ' ' + (l.bairro || '') + ' ' + (l.cidade || '')));
@@ -497,6 +516,7 @@
       '<label class="chk" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="eCel"' + (l.celular ? ' checked' : '') + '> O telefone é celular (tem WhatsApp)</label>' +
       '<button class="btn cheio claro" id="bSalvar">Salvar alterações</button><div class="erro" id="eErro"></div></section>' +
 
+      conversaHtml(l, msgs) +
       '<section><h3>Histórico (' + hist.length + ')</h3>' +
       (hist.length ? '<ul class="hist">' + hist.map(function (h) {
         return '<li' + (ehDrigo(h) ? ' class="drigo"' : '') + '><div class="q">' + quando(h.created_at) + ' · ' + esc(rotulo(CANAIS, h.canal)) + ' · ' + esc(h.usuario ? h.usuario.nome : ehDrigo(h) ? 'Drigo' : h.email_direcao === 'recebido' ? 'Resposta da clínica' : 'Importado da planilha') + '</div>' +
@@ -552,7 +572,7 @@
         if (!confirm('Enviar este e-mail para ' + body.para + '?')) return;
         b.disabled = true; b.textContent = 'Enviando…'; erro.textContent = '';
         api('/crm-zelus/leads/' + l.id + '/email', { method: 'POST', body: body })
-          .then(function (r) { atualizarLocal(r.lead); refrescarFundo(); desenharFicha(r.lead, r.interacoes); })
+          .then(function (r) { atualizarLocal(r.lead); refrescarFundo(); desenharFicha(r.lead, r.interacoes, r.mensagens); })
           .catch(function (err) { b.disabled = false; b.textContent = 'Enviar e-mail'; erro.textContent = err.message; });
       };
     }
@@ -573,7 +593,7 @@
       var s = document.getElementById('iStatus').value;
       if (s) body.status = s;
       api('/crm-zelus/leads/' + l.id + '/interacoes', { method: 'POST', body: body })
-        .then(function (r) { atualizarLocal(r.lead); refrescarFundo(); desenharFicha(r.lead, r.interacoes); })
+        .then(function (r) { atualizarLocal(r.lead); refrescarFundo(); desenharFicha(r.lead, r.interacoes, r.mensagens); })
         .catch(function (err) { b.disabled = false; document.getElementById('iErro').textContent = err.message; });
     };
 

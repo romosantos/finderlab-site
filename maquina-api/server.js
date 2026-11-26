@@ -3240,11 +3240,15 @@ function fromWhatsAppAddress(raw) {
 }
 
 async function saveWhatsAppMessage({ phone, direction, body, profileName, messageSid }) {
-  await pool.query(
+  const { rows } = await pool.query(
     `INSERT INTO whatsapp_messages (phone, direction, body, profile_name, message_sid)
-     VALUES ($1,$2,$3,$4,$5)`,
+     VALUES ($1,$2,$3,$4,$5) RETURNING id, created_at`,
     [phone, direction, body, profileName || '', messageSid || '']
   );
+  // Perfil Zelus Vet: a conversa também vai para a ficha da clínica no CRM do Zelus (sem esperar).
+  if (perfilVet && rows[0]) {
+    crmZelus.mensagem(phone, direction === 'in' ? 'recebida' : 'enviada', body, 'wm:' + rows[0].id, rows[0].created_at).catch(() => {});
+  }
 }
 
 // O WhatsApp devolve alguns números brasileiros sem o 9 (o convite foi para +5531994932776 e a resposta volta de

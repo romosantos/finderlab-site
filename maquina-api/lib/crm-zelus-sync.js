@@ -44,7 +44,29 @@ function init({ url, token, fetchFn } = {}) {
     }
   }
 
-  return { registrar, eventoDoMotivo: (m) => EVENTO_DO_MOTIVO[m] || 'humano' };
+  // Cada mensagem da conversa (a ficha da clínica mostra como chat). ref evita duplicar.
+  const destinoMensagem = destino.replace(/\/?$/, '') + '/mensagem';
+  async function mensagem(telefone, direcao, texto, ref, quando) {
+    if (!ligado || !telefone || !texto) return false;
+    try {
+      const r = await f(destinoMensagem, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Zelus-Integracao': token },
+        body: JSON.stringify({
+          telefone: String(telefone), direcao, texto: String(texto).slice(0, 8000),
+          ...(ref ? { ref: String(ref) } : {}), ...(quando ? { enviada_em: new Date(quando).toISOString() } : {}),
+        }),
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!r.ok) console.error('crm-zelus-sync: mensagem para final %s respondeu %d', String(telefone).slice(-4), r.status);
+      return r.ok;
+    } catch (err) {
+      console.error('crm-zelus-sync: mensagem para final %s falhou: %s', String(telefone).slice(-4), err && err.message ? err.message : err);
+      return false;
+    }
+  }
+
+  return { registrar, mensagem, eventoDoMotivo: (m) => EVENTO_DO_MOTIVO[m] || 'humano' };
 }
 
 module.exports = { init, EVENTO_DO_MOTIVO };
