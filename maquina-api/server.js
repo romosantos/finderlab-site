@@ -2554,11 +2554,13 @@ async function runChatToolBase(name, toolInput, originUrl, ctx) {
   if (name === 'avisar_rodrigo') {
     const r = await alertaRodrigo.executar(toolInput, ctx);
     if (r.ok && ctx && ctx.phone) await crmAtualiza({ whats: ctx.phone, status: 'interessado', texto: 'Drigo avisou o Rodrigo' });
+    if (ctx && ctx.phone && ctx.perfil === 'zelus-vet') crmZelus.registrar(ctx.phone, crmZelus.eventoDoMotivo(toolInput && toolInput.motivo), toolInput && toolInput.resumo);
     return r;
   }
   if (name === 'atualizar_status_crm') {
     const st = toolInput && ['interessado', 'sem_interesse', 'nao_quer_receber'].includes(toolInput.status) ? toolInput.status : null;
     if (st && ctx && ctx.phone) await crmAtualiza({ whats: ctx.phone, status: st, texto: 'pediu ao Drigo na conversa' });
+    if (st && ctx && ctx.phone && ctx.perfil === 'zelus-vet') crmZelus.registrar(ctx.phone, st);
     return {
       ok: true,
       instrucao: st === 'nao_quer_receber'
@@ -3283,6 +3285,11 @@ const conversaConvite = require('./lib/conversa-convite');
 // O chat do site não muda com isso.
 const WHATSAPP_PERFIL = String(process.env.WHATSAPP_PERFIL || 'zelus-vet').trim().toLowerCase();
 const perfilVet = WHATSAPP_PERFIL === 'zelus-vet' ? require('./lib/perfil-zelus-vet') : null;
+// CRM do Zelus (o da Tatiana): o Drigo registra lá cada abertura enviada e o que a clínica responde.
+const crmZelus = require('./lib/crm-zelus-sync').init({
+  url: process.env.ZELUS_CRM_INTEGRACAO_URL || '',
+  token: perfilVet ? process.env.ZELUS_CRM_INTEGRACAO_TOKEN || '' : '',
+});
 console.log('WhatsApp do Drigo: perfil ' + (perfilVet ? 'zelus-vet' : 'maquina'));
 async function dadosDoConvite(phone, history) {
   try {
@@ -3408,6 +3415,7 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid, aud
     // Pedido de sair (PARAR): marca no CRM, confirma e não passa pelo agente.
     if (CRM_OPTOUT_RE.test(body)) {
       await crmAtualiza({ whats: phone, status: 'nao_quer_receber', texto: body });
+      if (perfilVet) crmZelus.registrar(phone, 'nao_quer_receber', body);
       const adeus = 'Combinado, não envio mais mensagens por aqui. Se mudar de ideia, é só me chamar. Obrigado!';
       await sendWhatsAppFreeform(phone, adeus);
       await saveWhatsAppMessage({ phone, direction: 'out', body: adeus });
@@ -3452,6 +3460,12 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid, aud
           // Máquina no mesmo número, aberturas anteriores) só confundia o modelo.
           const ini = perfilVet.inicioDaConversaVet(history);
           if (ini > 0) history = history.slice(ini);
+          // Primeira resposta da clínica a esta abertura: vai para o CRM do Zelus com o texto dela.
+          // (o Drigo ainda não respondeu nada depois da abertura; se a clínica mandou várias mensagens seguidas, vão juntas)
+          if (history.filter((m) => m.role === 'assistant').length === 1) {
+            const textos = history.filter((m) => m.role === 'user').map((m) => String(m.content || '')).join('\n');
+            if (textos) crmZelus.registrar(phone, 'respondeu', textos);
+          }
         } else {
           ctx.contextoVisita = perfilVet.contextoWhatsApp();
         }
@@ -4051,6 +4065,7 @@ const crmDisparo = require('./lib/crm-disparo').init(app, {
   pool, twilioClient, from: TWILIO_WHATSAPP_FROM, templateSid: process.env.TWILIO_CONVITE_TEMPLATE_SID || '', templateSidGeral: process.env.TWILIO_CONVITE_GERAL_TEMPLATE_SID || '',
   saveWhatsAppMessage, toWhatsAppAddress, crmChaveSql, clean, ownerWhats: TWILIO_OWNER_WHATSAPP,
   perfilVet, templateSidVet: process.env.TWILIO_VET_TEMPLATE_SID || '',
+  aoEnviar: (whats) => crmZelus.registrar(whats, 'enviado'),
   avisa: (assunto, texto) => avisaRodrigo(assunto, texto).catch((err) => console.error('crm-disparo: aviso', err.message)),
 });
 

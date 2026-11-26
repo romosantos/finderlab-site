@@ -186,6 +186,8 @@ function init(app, deps) {
       await pool.query(`UPDATE crm_disparos SET status='enviado', message_sid=$2, status_final=$3, enviado_em=now() WHERE id=$1`, [id, m.sid || '', m.status || '']);
       await saveWhatsAppMessage({ phone: '+' + contato.whats, direction: 'out', body: textoDoConvite(nome), messageSid: m.sid || '' });
       await pool.query(`UPDATE crm_contatos SET status='convite_enviado', ultima_interacao=now(), updated_at=now() WHERE id=$1 AND status='novo'`, [contato.id]);
+      // Perfil Zelus Vet: a abertura enviada vira tentativa no CRM do Zelus (sem esperar a resposta).
+      if (vet && deps.aoEnviar) Promise.resolve(deps.aoEnviar(contato.whats)).catch(() => {});
       return 'enviado';
     } catch (e) {
       await pool.query(`UPDATE crm_disparos SET status='erro', erro=$2 WHERE id=$1`, [id, clean(e && e.message ? e.message : e, 300)]);
