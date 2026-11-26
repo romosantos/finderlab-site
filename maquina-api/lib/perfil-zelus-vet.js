@@ -166,7 +166,7 @@ const TOOLS = [
   },
 ];
 
-const INSTRUCAO_AVISO_OK = 'Equipe avisada. Agora escreva a resposta completa para a pessoa: primeiro responda ao que ela perguntou com o que você sabe da base (o texto que você escreveu antes de chamar a ferramenta não chega a ela, então não pule nada), e termine com uma frase dizendo que a equipe do Zelus Vet vai chamar por aqui para seguir, sem prometer prazo e sem citar e-mail. Se for demonstração, diga que a equipe confirma o horário; não diga que está marcada.';
+const INSTRUCAO_AVISO_OK = 'Equipe avisada. Agora escreva a resposta completa para a pessoa (o texto que você escreveu antes de chamar a ferramenta não chega a ela). Se for pedido de demonstração e ela ainda não disse um horário: só a frase curta com o link https://cal.com/rodrigomoraes/zelus-vet-apresentacao para ela escolher o horário, e nada depois do link (sem "a equipe vai chamar" e sem pergunta). Se ela já disse o horário: confirme que anotou e que a equipe confirma por aqui; não diga que está marcada. Nos outros casos: responda ao que ela perguntou com o que você sabe da base e termine com uma frase dizendo que a equipe do Zelus Vet vai chamar por aqui, sem prometer prazo e sem citar e-mail.';
 
 module.exports = {
   PERFIL, ORIGEM_CLINICAS, ULTIMO_DIA_FOLLOWUP, PROMPT, TEXTO_CONVITE, BOTOES_CONVITE, NOME_MODELO, TOOLS, MOTIVOS_VET, INSTRUCAO_AVISO_OK,
