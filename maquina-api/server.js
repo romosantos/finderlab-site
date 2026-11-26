@@ -2761,7 +2761,7 @@ async function getAgentReply(messages, systemPromptOverride, originUrl, onEvent,
       model: ANTHROPIC_MODEL, max_tokens: maxTokens || CHAT_MAX_TOKENS,
       output_config: { effort: ANTHROPIC_EFFORT }, system: systemBlocks, messages,
     };
-    params.tools = ctx && ctx.semFerramentas ? LISTA_TOOLS : CHAT_TOOLS;
+    params.tools = ctx && ctx.perfil === 'zelus-vet' && perfilVet ? perfilVet.TOOLS : ctx && ctx.semFerramentas ? LISTA_TOOLS : CHAT_TOOLS;
     // Salvar dados no CRM só faz sentido no WhatsApp (é lá que sabemos qual contato é). O filtro é fixo
     // por canal; nada aqui pode variar de uma mensagem para outra, porque as ferramentas vêm antes do
     // system no cache e, dentro de uma rodada de ferramentas, mudá-las invalida os blocos de raciocínio.
@@ -3278,26 +3278,33 @@ const WHATSAPP_TURMA_GATILHO_RE = /vim pela p[aá]gina da imers[aã]o/i;
 // e entra como bloco extra depois do prompt em cache. A conversa é "do convite" se o contato tem um disparo registrado ou se
 // a primeira mensagem do histórico é do Drigo (testes e convites antigos).
 const conversaConvite = require('./lib/conversa-convite');
+// Perfil do WhatsApp do Drigo. Desde 26/11/2026 o número atende o Zelus Vet (lib/perfil-zelus-vet.js):
+// prompt, ferramentas, convite e lembrete das clínicas. WHATSAPP_PERFIL=maquina volta ao Drigo da imersão.
+// O chat do site não muda com isso.
+const WHATSAPP_PERFIL = String(process.env.WHATSAPP_PERFIL || 'zelus-vet').trim().toLowerCase();
+const perfilVet = WHATSAPP_PERFIL === 'zelus-vet' ? require('./lib/perfil-zelus-vet') : null;
+console.log('WhatsApp do Drigo: perfil ' + (perfilVet ? 'zelus-vet' : 'maquina'));
 async function dadosDoConvite(phone, history) {
   try {
     const { rows } = await pool.query(
-      `SELECT c.nome, c.origem FROM crm_contatos c
+      `SELECT c.nome, c.origem, c.empresa, c.observacoes FROM crm_contatos c
        JOIN crm_disparos d ON d.contato_id = c.id
        WHERE ${crmChaveSql('c.whats')} = ${crmChaveSql('$1::text')}
        ORDER BY d.id DESC LIMIT 1`,
       [phone]
     );
-    if (rows[0]) return { origem: rows[0].origem, nome: rows[0].nome };
+    if (rows[0]) return { origem: rows[0].origem, nome: rows[0].nome, empresa: rows[0].empresa, observacoes: rows[0].observacoes };
   } catch (err) {
     // tabela de disparos ainda não existe ou falha de consulta: cai no teste pelo histórico
   }
   if (history && history.length > 0 && history[0].role === 'assistant') {
     try {
       const { rows } = await pool.query(
-        `SELECT nome, origem FROM crm_contatos WHERE ${crmChaveSql('whats')} = ${crmChaveSql('$1::text')} ORDER BY id LIMIT 1`,
+        `SELECT nome, origem, empresa, observacoes FROM crm_contatos WHERE ${crmChaveSql('whats')} = ${crmChaveSql('$1::text')} ORDER BY id LIMIT 1`,
         [phone]
       );
-      return { origem: rows[0] ? rows[0].origem : '', nome: rows[0] ? rows[0].nome : '' };
+      const r = rows[0] || {};
+      return { origem: r.origem || '', nome: r.nome || '', empresa: r.empresa || '', observacoes: r.observacoes || '' };
     } catch (_) { return { origem: '', nome: '' }; }
   }
   return null;
@@ -3425,28 +3432,52 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid, aud
       if (!ultima || ultima.role !== 'user') return; // já respondida por outro processamento
       if (String(ultima.content) !== String(body)) return; // chegou mensagem mais nova: ela responde por todas
 
-      const turma = await resolveWhatsAppTurma(phone, body);
-      const systemPrompt = turma ? SYSTEM_PROMPT + '\n\n---\n\n' + TURMA_ADDENDUM + '\n\n---\n\n' + turmaFatos(turma) + WHATSAPP_TURMA_CANAL : undefined;
-      const ctx = turma ? { turma: turma.slug, phone } : { phone };
-      const convite = await dadosDoConvite(phone, history);
-      if (convite) {
-        // Convite respondido só por atendimento automático: não responde (nem vira conversa com robô).
-        const pendentes = conversaConvite.pendentesDoFim(history);
-        const respostasDoDrigo = history.filter((m) => m.role === 'assistant').length;
-        if (respostasDoDrigo <= 1 && pendentes.length > 0 && pendentes.every(conversaConvite.respostaAutomatica)) {
-          console.log('WhatsApp inbound: resposta automática ignorada para %s', phone);
-          for (const texto of pendentes) await crmAnotaObservacao(phone, texto);
-          return;
+      let systemPrompt;
+      let ctx;
+      if (perfilVet) {
+        // WhatsApp do Zelus Vet: prompt e ferramentas das clínicas, nada da imersão.
+        systemPrompt = perfilVet.PROMPT;
+        ctx = { phone, perfil: perfilVet.PERFIL };
+        const convite = await dadosDoConvite(phone, history);
+        if (convite) {
+          const pendentes = conversaConvite.pendentesDoFim(history);
+          const respostasDoDrigo = history.filter((m) => m.role === 'assistant').length;
+          if (respostasDoDrigo <= 1 && pendentes.length > 0 && pendentes.every(conversaConvite.respostaAutomatica)) {
+            console.log('WhatsApp inbound: resposta automática ignorada para %s', phone);
+            for (const texto of pendentes) await crmAnotaObservacao(phone, texto);
+            return;
+          }
+          ctx.contextoVisita = perfilVet.contextoConvite(convite);
+        } else {
+          ctx.contextoVisita = perfilVet.contextoWhatsApp();
         }
-        ctx.contextoVisita = conversaConvite.contextoConvite(convite);
-        ctx.termosSoSePedido = true;
-      } else if (!turma) {
-        ctx.contextoVisita = conversaConvite.contextoWhatsApp();
-      }
-      const nomeConversa = require('./lib/whatsapp-followup').primeiroNome(nomePerfil || (convite && convite.nome));
-      if (nomeConversa) {
-        ctx.contextoVisita = (ctx.contextoVisita ? ctx.contextoVisita + '\n\n' : '') +
-          `A pessoa se chama ${nomeConversa} (nome do perfil do WhatsApp). Chame pelo primeiro nome no cumprimento e de vez em quando, como numa conversa normal, sem repetir o nome em toda mensagem.`;
+        if (nomePerfil) {
+          ctx.contextoVisita += `\n- Nome no perfil do WhatsApp: ${nomePerfil} (pode ser o nome da pessoa ou da clínica). Só chame alguém pelo nome se tiver certeza de que é o nome da pessoa.`;
+        }
+      } else {
+        const turma = await resolveWhatsAppTurma(phone, body);
+        systemPrompt = turma ? SYSTEM_PROMPT + '\n\n---\n\n' + TURMA_ADDENDUM + '\n\n---\n\n' + turmaFatos(turma) + WHATSAPP_TURMA_CANAL : undefined;
+        ctx = turma ? { turma: turma.slug, phone } : { phone };
+        const convite = await dadosDoConvite(phone, history);
+        if (convite) {
+          // Convite respondido só por atendimento automático: não responde (nem vira conversa com robô).
+          const pendentes = conversaConvite.pendentesDoFim(history);
+          const respostasDoDrigo = history.filter((m) => m.role === 'assistant').length;
+          if (respostasDoDrigo <= 1 && pendentes.length > 0 && pendentes.every(conversaConvite.respostaAutomatica)) {
+            console.log('WhatsApp inbound: resposta automática ignorada para %s', phone);
+            for (const texto of pendentes) await crmAnotaObservacao(phone, texto);
+            return;
+          }
+          ctx.contextoVisita = conversaConvite.contextoConvite(convite);
+          ctx.termosSoSePedido = true;
+        } else if (!turma) {
+          ctx.contextoVisita = conversaConvite.contextoWhatsApp();
+        }
+        const nomeConversa = require('./lib/whatsapp-followup').primeiroNome(nomePerfil || (convite && convite.nome));
+        if (nomeConversa) {
+          ctx.contextoVisita = (ctx.contextoVisita ? ctx.contextoVisita + '\n\n' : '') +
+            `A pessoa se chama ${nomeConversa} (nome do perfil do WhatsApp). Chame pelo primeiro nome no cumprimento e de vez em quando, como numa conversa normal, sem repetir o nome em toda mensagem.`;
+        }
       }
       const { reply } = await getAgentReply(history, systemPrompt, SITE_ORIGIN, undefined, undefined, ctx);
       if (!reply) {
@@ -4015,6 +4046,7 @@ async function avisaRodrigo(assunto, texto) {
 const crmDisparo = require('./lib/crm-disparo').init(app, {
   pool, twilioClient, from: TWILIO_WHATSAPP_FROM, templateSid: process.env.TWILIO_CONVITE_TEMPLATE_SID || '', templateSidGeral: process.env.TWILIO_CONVITE_GERAL_TEMPLATE_SID || '',
   saveWhatsAppMessage, toWhatsAppAddress, crmChaveSql, clean, ownerWhats: TWILIO_OWNER_WHATSAPP,
+  perfilVet, templateSidVet: process.env.TWILIO_VET_TEMPLATE_SID || '',
   avisa: (assunto, texto) => avisaRodrigo(assunto, texto).catch((err) => console.error('crm-disparo: aviso', err.message)),
 });
 
@@ -4029,10 +4061,13 @@ async function gerarFollowupWhatsApp({ phone, nome }) {
   if (!anthropic || !chatReady) return '';
   const history = await loadWhatsAppHistory(phone);
   if (!history.length) return '';
-  const messages = [...history, { role: 'user', content: require('./lib/whatsapp-followup').pedidoFollowup(nome) }];
+  const pedido = perfilVet ? perfilVet.pedidoFollowup(nome) : require('./lib/whatsapp-followup').pedidoFollowup(nome);
+  const messages = [...history, { role: 'user', content: pedido }];
   const resp = await anthropic.messages.create({
     model: ANTHROPIC_MODEL, max_tokens: 600, output_config: { effort: ANTHROPIC_EFFORT },
-    system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }, { type: 'text', text: conversaConvite.contextoWhatsApp() }],
+    system: perfilVet
+      ? [{ type: 'text', text: perfilVet.PROMPT, cache_control: { type: 'ephemeral' } }]
+      : [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }, { type: 'text', text: conversaConvite.contextoWhatsApp() }],
     messages,
   });
   const texto = stripMarkdown(stripInternalReasoning((resp.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('').trim()));
@@ -4043,6 +4078,7 @@ const whatsappFollowup = require('./lib/whatsapp-followup').init({
   pool, crmChaveSql, sendWhatsAppFreeform, saveWhatsAppMessage, respostaAutomatica: conversaConvite.respostaAutomatica,
   ativo: !/^(0|off|false|nao|não)$/i.test(process.env.WHATSAPP_FOLLOWUP || ''),
   gerarTexto: gerarFollowupWhatsApp,
+  ultimoDia: perfilVet ? perfilVet.ULTIMO_DIA_FOLLOWUP : undefined,
 });
 
 app.get('/admin/api/crm.csv', async (_req, res) => {

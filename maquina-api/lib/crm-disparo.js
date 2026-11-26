@@ -52,8 +52,15 @@ function agoraBrasilia(d = new Date()) {
 function init(app, deps) {
   const { pool, twilioClient, from, templateSid: tplEnv, templateSidGeral: tplGeralEnv, saveWhatsAppMessage, toWhatsAppAddress, crmChaveSql, clean, avisa, ownerWhats } = deps;
   const relogio = deps.agora || agoraBrasilia;
-  const TEMPLATE_SID = tplEnv || TEMPLATE_PADRAO;
-  const TEMPLATE_GERAL_SID = tplGeralEnv || TEMPLATE_GERAL_PADRAO;
+  // Perfil Zelus Vet (deps.perfilVet = lib/perfil-zelus-vet): o convite é o das clínicas, com o nome da clínica
+  // na variável {{1}}, e não existe versão sem nome (contato sem nome útil fica de fora).
+  const vet = deps.perfilVet || null;
+  const TEMPLATE_SID = vet ? (deps.templateSidVet || '') : (tplEnv || TEMPLATE_PADRAO);
+  const TEMPLATE_GERAL_SID = vet ? '' : (tplGeralEnv || TEMPLATE_GERAL_PADRAO);
+  const nomeDoContato = (c) => (vet ? vet.nomeClinica((c && (c.empresa || c.nome)) || '') : primeiroNome(c && c.nome));
+  const textoDoConvite = (nome) => (vet ? vet.TEXTO_CONVITE.replace('{{1}}', nome) : nome ? TEXTO_CONVITE.replace('{{1}}', nome) : TEXTO_GERAL);
+  const assuntoPausa = vet ? 'Disparos do Zelus Vet pausados' : 'Disparos do convite pausados';
+  const textoPausa = vet ? 'Os disparos da mensagem do Zelus Vet para as clínicas foram pausados automaticamente.' : 'Os disparos do convite da Máquina de Decisões foram pausados automaticamente.';
   let tickRodando = false;
   let proximoEm = 0;
   const cacheAprov = {};
@@ -103,7 +110,8 @@ function init(app, deps) {
 
   // ---- aprovação do template (Content API da Twilio), com cache curto ----
   async function aprovacao(forca, sid) {
-    sid = sid || TEMPLATE_SID;
+    sid = sid === undefined ? TEMPLATE_SID : sid;
+    if (!sid) return 'sem_template';
     const c = cacheAprov[sid] || { em: 0, st: 'desconhecido' };
     if (!forca && Date.now() - c.em < (c.st === 'approved' ? 30 * 60e3 : 3 * 60e3)) return c.st;
     let st = 'desconhecido';
@@ -121,7 +129,7 @@ function init(app, deps) {
   async function pausar(motivo) {
     await pool.query(`UPDATE crm_disparo_config SET ativo=false, motivo_pausa=$1, pausado_em=now(), updated_at=now() WHERE id=1`, [motivo]);
     console.error('disparo: pausado. ' + motivo);
-    try { await avisa('Disparos do convite pausados', 'Os disparos do convite da Máquina de Decisões foram pausados automaticamente.\n\nMotivo: ' + motivo + '\n\nConfira a qualidade do número na Meta e, se estiver tudo certo, reative em /admin/crm (botão Disparos).'); } catch (_) { /* aviso é best-effort */ }
+    try { await avisa(assuntoPausa, textoPausa + '\n\nMotivo: ' + motivo + '\n\nConfira a qualidade do número na Meta e, se estiver tudo certo, reative em /admin/crm (botão Disparos).'); } catch (_) { /* aviso é best-effort */ }
   }
 
   // Atualiza o andamento das mensagens recentes e pausa se houver sinal de problema.
@@ -162,7 +170,8 @@ function init(app, deps) {
   }
 
   async function enviaConvite(contato, dia) {
-    const nome = primeiroNome(contato.nome);
+    const nome = nomeDoContato(contato);
+    if (vet && !nome) return 'repetido';
     const ins = await pool.query(
       `INSERT INTO crm_disparos (contato_id, whats, dia, status) VALUES ($1,$2,$3,'pendente') ON CONFLICT DO NOTHING RETURNING id`,
       [contato.id, contato.whats, dia]);
@@ -175,7 +184,7 @@ function init(app, deps) {
         ...(nome ? { contentVariables: JSON.stringify({ 1: nome }) } : {}),
       });
       await pool.query(`UPDATE crm_disparos SET status='enviado', message_sid=$2, status_final=$3, enviado_em=now() WHERE id=$1`, [id, m.sid || '', m.status || '']);
-      await saveWhatsAppMessage({ phone: '+' + contato.whats, direction: 'out', body: nome ? TEXTO_CONVITE.replace('{{1}}', nome) : TEXTO_GERAL, messageSid: m.sid || '' });
+      await saveWhatsAppMessage({ phone: '+' + contato.whats, direction: 'out', body: textoDoConvite(nome), messageSid: m.sid || '' });
       await pool.query(`UPDATE crm_contatos SET status='convite_enviado', ultima_interacao=now(), updated_at=now() WHERE id=$1 AND status='novo'`, [contato.id]);
       return 'enviado';
     } catch (e) {
@@ -201,9 +210,12 @@ function init(app, deps) {
     if (Date.now() < proximoEm) return;
 
     const geralOk = (await aprovacao(false, TEMPLATE_GERAL_SID)) === 'approved';
-    const cand = (await pool.query(sqlElegiveis('c.id, c.nome, c.whats', 25, geralOk), [plano.origens])).rows;
+    // No perfil Zelus Vet o convite só vai para as clínicas, seja qual for a origem configurada no dia:
+    // os contatos antigos da Máquina nunca recebem a mensagem do Zelus Vet.
+    const origens = vet ? [vet.ORIGEM_CLINICAS] : plano.origens;
+    const cand = (await pool.query(sqlElegiveis('c.id, c.nome, c.empresa, c.whats', 25, vet ? true : geralOk), [origens])).rows;
     for (const c of cand) {
-      if (!geralOk && !primeiroNome(c.nome)) continue; // nome inútil e sem template geral aprovado: espera
+      if (!geralOk && !nomeDoContato(c)) continue; // nome inútil e sem template geral aprovado: espera
       const r = await enviaConvite(c, dia);
       if (r === 'repetido') continue;
       const enviadosAgora = hoje.n + (r === 'enviado' ? 1 : 0);
@@ -254,7 +266,7 @@ function init(app, deps) {
                                            count(*) FILTER (WHERE status_final = 'delivered' OR status_final = 'read')::int AS entregues
                                       FROM crm_disparos WHERE dia = $1`, [d.dia]);
         Object.assign(d, r.rows[0]);
-        d.elegiveis = (await pool.query(`SELECT count(*)::int AS n FROM (${sqlElegiveis('c.id', 0, geralOk)}) x`, [d.origens])).rows[0].n;
+        d.elegiveis = (await pool.query(`SELECT count(*)::int AS n FROM (${sqlElegiveis('c.id', 0, vet ? true : geralOk)}) x`, [vet ? [vet.ORIGEM_CLINICAS] : d.origens])).rows[0].n;
       }
       const tot = (await pool.query(
         `SELECT count(*) FILTER (WHERE d.status IN ('pendente','enviado'))::int AS enviados,
@@ -319,10 +331,10 @@ function init(app, deps) {
       if ((await aprovacao(true, geral ? TEMPLATE_GERAL_SID : TEMPLATE_SID)) !== 'approved') return res.status(409).json({ error: 'Esse template ainda não foi aprovado pela Meta.' });
       const alvo = String((req.body && req.body.whats) || ownerWhats || '');
       if (!alvo) return res.status(400).json({ error: 'Informe um WhatsApp.' });
-      const nome = primeiroNome((req.body && req.body.nome) || 'Rodrigo') || 'Rodrigo';
+      const nome = vet ? (vet.nomeClinica((req.body && req.body.nome) || '') || 'Clínica Teste') : (primeiroNome((req.body && req.body.nome) || 'Rodrigo') || 'Rodrigo');
       const m = await twilioClient.messages.create({ from, to: toWhatsAppAddress(alvo), contentSid: geral ? TEMPLATE_GERAL_SID : TEMPLATE_SID, ...(geral ? {} : { contentVariables: JSON.stringify({ 1: nome }) }) });
       // Grava o convite na conversa, como no envio real, para o Drigo ter o contexto quando você responder ao teste.
-      try { await saveWhatsAppMessage({ phone: '+' + String(alvo).replace(/\D/g, ''), direction: 'out', body: geral ? TEXTO_GERAL : TEXTO_CONVITE.replace('{{1}}', nome), messageSid: m.sid || '' }); } catch (_) { /* só contexto */ }
+      try { await saveWhatsAppMessage({ phone: '+' + String(alvo).replace(/\D/g, ''), direction: 'out', body: geral ? TEXTO_GERAL : textoDoConvite(nome), messageSid: m.sid || '' }); } catch (_) { /* só contexto */ }
       res.json({ ok: true, sid: m.sid });
     } catch (e) {
       res.status(500).json({ error: 'Falha no envio de teste: ' + clean(e && e.message ? e.message : e, 200) });
