@@ -220,6 +220,7 @@
       '<button data-aba="contatos" class="' + (st.aba === 'contatos' ? 'on' : '') + '">Contatos</button>' +
       '<button data-aba="retornos" class="' + (st.aba === 'retornos' ? 'on' : '') + '">Retornos' + (n ? '<span class="badge">' + n + '</span>' : '') + '</button>' +
       (admin ? '<button data-aba="painel" class="' + (st.aba === 'painel' ? 'on' : '') + '">Painel</button>' : '') +
+      '<button data-aba="materiais" class="' + (st.aba === 'materiais' ? 'on' : '') + '">Materiais</button>' +
 
       '</nav><div class="quem"><span class="nomeu">' + esc(st.usuario ? st.usuario.nome : '') + '</span><button id="bSair">Sair</button></div></div>' +
       '<main id="conteudo"></main><div id="camada"></div>';
@@ -334,13 +335,21 @@
     c.querySelectorAll('.linha[data-id]').forEach(function (r) { r.onclick = function () { abrirFicha(r.dataset.id); }; });
   }
 
-  // ── retornos ───────────────────────────────────────────────────────────
-  // Materiais para mandar às clínicas (arquivos em crmzelus/materiais).
-  var MATERIAIS = [];
+  // Materiais para mandar aos profissionais (arquivos em zeluslifecrm/materiais).
+  var MATERIAIS = [
+    {
+      titulo: 'Apresentação Life Friday',
+      desc: 'Zelus Life com a oferta da Life Friday: 12 meses pelo preço de 8, os planos e preços, o app de consultório (pré-sessão, escriba, evolução e agenda), o app do paciente, a conta de como um paciente novo paga o plano e os três passos para garantir a vaga. 3 páginas em PDF.',
+      quando: 'Mande depois da ligação ou da conversa, junto com a mensagem de WhatsApp ou o e-mail.',
+      arquivo: 'materiais/Zelus-Life-Life-Friday.pdf',
+      capa: 'materiais/life-friday-capa.png',
+      ate: '2026-12-31',
+    },
+  ];
   function materiais() {
     var c = document.getElementById('conteudo');
     var lista = MATERIAIS.filter(function (m) { return !m.ate || hoje() <= m.ate; });
-    c.innerHTML = '<div class="materiais"><h2>Materiais</h2><p class="sub">Para mandar às clínicas. "Copiar link" copia o endereço do PDF para colar no WhatsApp ou no e-mail.</p>' +
+    c.innerHTML = '<div class="materiais"><h2>Materiais</h2><p class="sub">Para mandar aos profissionais. "Copiar link" copia o endereço do PDF para colar no WhatsApp ou no e-mail.</p>' +
       (lista.length ? lista.map(function (m, i) {
         var url = new URL(m.arquivo, location.href).href;
         return '<div class="material"><a class="mat-capa" href="' + esc(m.arquivo) + '" target="_blank" rel="noopener"><img src="' + esc(m.capa) + '" alt=""></a>' +
@@ -358,6 +367,7 @@
     });
   }
 
+  // ── retornos ───────────────────────────────────────────────────────────
   // Manual da prospecção (manual.html): roteiro, objeções, mensagens e uso do CRM.
   function manual() {
     var c = document.getElementById('conteudo');
