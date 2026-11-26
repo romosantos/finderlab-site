@@ -19,20 +19,34 @@ const ULTIMO_DIA_FOLLOWUP = '2026-12-31';
 
 const PROMPT = fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'zelus-vet.md'), 'utf8');
 
-// Texto igual ao do template aprovado pela Meta (zelus_vet_convite_clinica). É o que fica gravado na
+// Texto igual ao do template aprovado pela Meta (NOME_MODELO). É o que fica gravado na
 // conversa para o Drigo saber o que a clínica recebeu. {{1}} = nome da clínica.
 const TEXTO_CONVITE = [
-  'Oi, pessoal da {{1}}! Aqui é o Drigo, assistente de IA do Zelus Vet.',
+  'Oi, pessoal da {{1}}! Tudo bem?',
   '',
-  'Criamos um sistema para clínica veterinária com escriba de IA: ele ouve a consulta e entrega o prontuário pronto para o veterinário só revisar e aprovar. No nosso piloto, foram de 8 a 10 minutos a menos por consulta.',
+  'Aqui é o Drigo, do Zelus Vet. Queria apresentar uma solução que pode mudar bastante a rotina de vocês.',
   '',
-  'Até 31/12 tem o Vet Friday: no plano anual, a clínica leva 12 meses pagando 8, em até 6x sem juros. E dá para testar 14 dias grátis antes.',
+  'Uma pergunta: quanto tempo do dia de vocês vai em prontuário, exames e tarefas administrativas?',
   '',
-  'Posso mostrar como funciona?',
+  'O Zelus Vet nasceu para resolver isso.',
   '',
-  'Para não receber mais mensagens, responda PARAR.',
+  'O veterinário conversa com o paciente, a IA estrutura o prontuário e ele só precisa revisar e assinar. Quem já utiliza relata uma economia de 8 a 10 minutos por consulta.',
+  '',
+  'E não para por aí. A clínica também tem, em um único sistema:',
+  '🐾 Histórico dos pacientes, com a evolução dos exames e dos marcadores.',
+  '📅 Agenda, financeiro, estoque e notas fiscais.',
+  '📱 App para os tutores, com receitas, exames e lembretes, que aproximam o tutor da clínica.',
+  '',
+  'E tem uma oportunidade especial chegando: a *VET FRIDAY!*',
+  'Até 31/12, o plano anual sai por 8 mensalidades, a partir de R$ 66/mês.',
+  '',
+  'Quero te mostrar como funciona na prática. Podemos marcar uma demonstração rápida?',
+  '',
+  'Se não quiser receber, responda PARAR.',
 ].join('\n');
-const BOTOES_CONVITE = ['Quero ver', 'Agora não', 'Não tenho interesse'];
+const BOTOES_CONVITE = ['Quero a demonstração', 'Agora não', 'Não tenho interesse'];
+// Modelo aprovado na Meta com este texto (o nome muda a cada versão do texto).
+const NOME_MODELO = 'zelus_vet_abertura_clinica_v4';
 
 const MINUSCULAS = new Set(['a', 'as', 'o', 'os', 'e', 'de', 'da', 'das', 'do', 'dos', 'em', 'na', 'no', 'para', 'com']);
 const SIGLAS = /^(vet|pet|sp|24h|hv|cv|ltda|me|eireli)$/i;
@@ -145,6 +159,6 @@ const TOOLS = [
 const INSTRUCAO_AVISO_OK = 'Equipe avisada. Agora escreva a resposta completa para a pessoa: primeiro responda ao que ela perguntou com o que você sabe da base (o texto que você escreveu antes de chamar a ferramenta não chega a ela, então não pule nada), e termine com uma frase dizendo que a equipe do Zelus Vet vai chamar por aqui para seguir, sem prometer prazo e sem citar e-mail. Se for demonstração, diga que a equipe confirma o horário; não diga que está marcada.';
 
 module.exports = {
-  PERFIL, ORIGEM_CLINICAS, ULTIMO_DIA_FOLLOWUP, PROMPT, TEXTO_CONVITE, BOTOES_CONVITE, TOOLS, MOTIVOS_VET, INSTRUCAO_AVISO_OK,
+  PERFIL, ORIGEM_CLINICAS, ULTIMO_DIA_FOLLOWUP, PROMPT, TEXTO_CONVITE, BOTOES_CONVITE, NOME_MODELO, TOOLS, MOTIVOS_VET, INSTRUCAO_AVISO_OK,
   nomeClinica, contextoConvite, contextoWhatsApp, pedidoFollowup,
 };
