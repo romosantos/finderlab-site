@@ -49,7 +49,35 @@
     '- App do paciente para registrar humor, sono e combinados entre as sessões.\n' +
     '- Ficha, agenda, sessões que se repetem, questionários e documentos.\n' +
     '- Copiloto com IA para preparar a sessão (a leitura clínica é sempre do profissional).\n\n';
-  var MODELOS = [
+  // Life Friday (até 31/12 ou 100 vagas): os modelos levam a oferta e o link da landing.
+  // A data não entra no texto, só as 100 vagas (pedido do Rodrigo).
+  var LIFE_FRIDAY = hoje() <= '2026-12-31';
+  var APRESENTACAO = 'https://www.zeluslife.com.br/lifefriday/Zelus-Life-Life-Friday.pdf';
+  var OFERTA = 'Estamos com a Life Friday, um presente para os 100 primeiros profissionais que assinarem o plano anual: 12 meses pelo preço de 8. A Vitrine em destaque sai por R$ 384 no ano (R$ 32 por mês, em vez de R$ 49) e o Pacote completo por R$ 624 no ano (R$ 52 por mês, em vez de R$ 79). Sem comissão sobre as sessões, e dá para pagar no Pix ou no cartão.';
+  var LINK_LF = 'Os detalhes e a assinatura estão aqui: zeluslife.com.br/lifefriday\nE a apresentação em PDF: ' + APRESENTACAO;
+  var MODELOS = LIFE_FRIDAY ? [
+    ['branco', 'Em branco', '', '{saudacao}\n\n\n\n{assinatura}'],
+    ['primeiro', 'Primeiro contato (profissional)', 'Life Friday: 12 meses do Zelus Life pelo preço de 8',
+      '{saudacao}\n\nAqui é {eu}, do Zelus Life. Estamos montando uma rede enxuta de psicólogos e terapeutas, e acho que o seu trabalho combina com ela.\n\n' +
+      'No Zelus Life, a divulgação é por nossa conta (Google, Instagram e vídeos). A gente conversa com quem procura terapia, faz a triagem e encaminha a pessoa para um único profissional, com a ficha preenchida e a autorização dela.\n\n' +
+      VEM_JUNTO + OFERTA + '\n\n' + LINK_LF + '\n\n' +
+      'Se preferir começar sem pagar nada, o Perfil básico é grátis, com perfil na vitrine e até 3 pacientes ativos.\n\n' +
+      'Se não fizer sentido, é só responder este e-mail que eu não envio mais nada.\n\n{assinatura}'],
+    ['clinica', 'Primeiro contato (clínica)', 'Life Friday para a equipe da {clinica}: 12 meses pelo preço de 8',
+      '{saudacao}\n\nAqui é {eu}, do Zelus Life. Escrevo porque acho que o que construímos pode ajudar a equipe da {clinica}.\n\n' +
+      'O Zelus Life divulga a rede (Google, Instagram e vídeos), conversa com quem procura terapia, faz a triagem e encaminha a pessoa para o profissional certo. Cada profissional da clínica pode ter o seu perfil e usar o consultório online também com os pacientes que já atende.\n\n' +
+      VEM_JUNTO + OFERTA + ' Cada profissional da equipe pode garantir a própria vaga.\n\n' + LINK_LF + '\n\n' +
+      'Posso apresentar em 15 minutos, no horário de vocês? Se não fizer sentido, é só responder este e-mail que eu não envio mais nada.\n\n{assinatura}'],
+    ['ligacao', 'Depois da ligação', 'Zelus Life: o que conversamos e a Life Friday',
+      '{saudacao}\n\nFoi bom conversar com você hoje. Como combinamos, mando um resumo do Zelus Life.\n\n' +
+      'A divulgação é por nossa conta, e as indicações da triagem chegam com a ficha preenchida e a autorização da pessoa.\n\n' +
+      VEM_JUNTO + OFERTA + '\n\n' + LINK_LF + '\n\n' +
+      'A assinatura leva 2 minutos e a conta já sai criada. Qualquer dúvida, é só responder este e-mail.\n\n{assinatura}'],
+    ['retorno', 'Retorno (sem resposta)', 'Life Friday: 12 meses pelo preço de 8, só 100 vagas',
+      '{saudacao}\n\nPassando só para não deixar meu último e-mail perdido. No Zelus Life, a gente divulga, faz a triagem e encaminha pacientes, e você cobra direto, sem comissão.\n\n' +
+      'Na Life Friday, as 100 primeiras assinaturas do plano anual levam 12 meses pelo preço de 8, a partir de R$ 32 por mês: zeluslife.com.br/lifefriday\n\n' +
+      'Se não for o momento, tudo bem também.\n\n{assinatura}'],
+  ] : [
     ['branco', 'Em branco', '', '{saudacao}\n\n\n\n{assinatura}'],
     ['primeiro', 'Primeiro contato (profissional)', 'Pacientes indicados e consultório online no Zelus Life',
       '{saudacao}\n\nAqui é {eu}, do Zelus Life. Estamos montando uma rede enxuta de psicólogos e terapeutas, e acho que o seu trabalho combina com ela.\n\n' +
@@ -343,6 +371,7 @@
       quando: 'Mande depois da ligação ou da conversa, junto com a mensagem de WhatsApp ou o e-mail.',
       arquivo: 'materiais/Zelus-Life-Life-Friday.pdf',
       capa: 'materiais/life-friday-capa.png',
+      link: APRESENTACAO,   // o link que vai para o cliente fica no site do Zelus Life, não no CRM
       ate: '2026-12-31',
     },
   ];
@@ -351,7 +380,7 @@
     var lista = MATERIAIS.filter(function (m) { return !m.ate || hoje() <= m.ate; });
     c.innerHTML = '<div class="materiais"><h2>Materiais</h2><p class="sub">Para mandar aos profissionais. "Copiar link" copia o endereço do PDF para colar no WhatsApp ou no e-mail.</p>' +
       (lista.length ? lista.map(function (m, i) {
-        var url = new URL(m.arquivo, location.href).href;
+        var url = m.link || new URL(m.arquivo, location.href).href;
         return '<div class="material"><a class="mat-capa" href="' + esc(m.arquivo) + '" target="_blank" rel="noopener"><img src="' + esc(m.capa) + '" alt=""></a>' +
           '<div class="mat-txt"><h3>' + esc(m.titulo) + '</h3><p>' + esc(m.desc) + '</p><p class="sub"><b>Quando usar:</b> ' + esc(m.quando) + '</p>' +
           '<div class="mat-acoes"><a class="btn" href="' + esc(m.arquivo) + '" target="_blank" rel="noopener">Abrir</a>' +
