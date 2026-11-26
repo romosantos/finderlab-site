@@ -142,7 +142,7 @@ const TOOLS = [
   },
 ];
 
-const INSTRUCAO_AVISO_OK = 'Equipe avisada. Diga em uma frase que a equipe do Zelus Vet vai chamar por aqui (ou ligar) para seguir, sem prometer prazo e sem citar e-mail. Se for demonstração, diga que a equipe confirma o horário. Não diga que está marcada.';
+const INSTRUCAO_AVISO_OK = 'Equipe avisada. Agora escreva a resposta completa para a pessoa: primeiro responda ao que ela perguntou com o que você sabe da base (o texto que você escreveu antes de chamar a ferramenta não chega a ela, então não pule nada), e termine com uma frase dizendo que a equipe do Zelus Vet vai chamar por aqui para seguir, sem prometer prazo e sem citar e-mail. Se for demonstração, diga que a equipe confirma o horário; não diga que está marcada.';
 
 module.exports = {
   PERFIL, ORIGEM_CLINICAS, ULTIMO_DIA_FOLLOWUP, PROMPT, TEXTO_CONVITE, BOTOES_CONVITE, TOOLS, MOTIVOS_VET, INSTRUCAO_AVISO_OK,
