@@ -52,7 +52,7 @@ textarea { min-height: 70px; resize: vertical; }
 main { padding: 18px 20px 60px; max-width: 1320px; margin: 0 auto; }
 
 /* Filtros */
-.filtros { display: grid; grid-template-columns: 2fr repeat(4, 1fr) auto; gap: 8px; margin-bottom: 12px; align-items: center; }
+.filtros { display: grid; grid-template-columns: 2fr repeat(5, 1fr) auto; gap: 8px; margin-bottom: 12px; align-items: center; }
 .filtros label.chk { margin: 0; display: flex; align-items: center; gap: 6px; font-weight: 500; white-space: nowrap; }
 .resumo { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .resumo button { border: 1px solid var(--line); background: #fff; border-radius: 99px; padding: 5px 11px; font-size: 12.5px; cursor: pointer; }
