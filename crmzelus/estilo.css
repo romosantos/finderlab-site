@@ -201,3 +201,10 @@ main { padding: 18px 20px 60px; max-width: 1320px; margin: 0 auto; }
 .mat-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .mat-acoes a { text-decoration: none; }
 @media (max-width: 720px) { .material { grid-template-columns: 1fr; } }
+
+/* Registros do Drigo (WhatsApp do Zelus Vet) em roxo claro */
+.linha.drigo { background: #F4EFFF; }
+.linha.drigo:hover { background: #ECE3FF; }
+.tag-drigo { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: #E4D8FF; color: #5B3FA8; font-size: 11px; font-weight: 700; vertical-align: 1px; }
+.hist li.drigo { background: #F4EFFF; border-left-color: #B79CF5; border-radius: 0 8px 8px 0; padding-top: 6px; padding-right: 10px; }
+.feed li.drigo { background: #F4EFFF; padding-left: 8px; padding-right: 8px; border-radius: 8px; }

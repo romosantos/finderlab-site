@@ -267,14 +267,17 @@
     return Object.keys(s).sort().map(function (k) { return [k, k + ' (' + s[k] + ')']; });
   }
 
+  // Registro feito pelo Drigo (WhatsApp do Zelus Vet): canal WhatsApp e sem usuário.
+  function ehDrigo(i) { return !!i && i.canal === 'whatsapp' && !i.usuario; }
+
   function linhaHtml(l) {
     var tel = l.telefone
       ? '<a href="tel:' + esc(digitos(l.telefone)) + '" onclick="event.stopPropagation()">' + esc(l.telefone) + '</a>' +
         (l.celular && zapLink(l.telefone) ? '<a class="zap" target="_blank" rel="noopener" href="' + zapLink(l.telefone) + '" onclick="event.stopPropagation()">WhatsApp</a>' : '')
       : '<span class="sub">sem telefone</span>';
-    return '<div class="linha" data-id="' + esc(l.id) + '">' +
+    return '<div class="linha' + (l.drigo ? ' drigo' : '') + '" data-id="' + esc(l.id) + '">' +
       '<div><span class="prio ' + esc(l.prioridade || 'C') + '">' + esc(l.prioridade || '·') + '</span></div>' +
-      '<div><div class="nome">' + esc(l.nome) + '</div><div class="sub">' + esc([l.bairro, l.regiao === 'capital' ? l.zona : l.cidade].filter(Boolean).join(' · ')) +
+      '<div><div class="nome">' + esc(l.nome) + (l.drigo ? ' <span class="tag-drigo">Drigo</span>' : '') + '</div><div class="sub">' + esc([l.bairro, l.regiao === 'capital' ? l.zona : l.cidade].filter(Boolean).join(' · ')) +
       (l.nota ? ' · ★ ' + esc(l.nota) + ' (' + esc(l.avaliacoes || 0) + ')' : '') + '</div></div>' +
       '<div class="tel">' + tel + '</div>' +
       '<div>' + chip(l.status) + '</div>' +
@@ -496,7 +499,7 @@
 
       '<section><h3>Histórico (' + hist.length + ')</h3>' +
       (hist.length ? '<ul class="hist">' + hist.map(function (h) {
-        return '<li><div class="q">' + quando(h.created_at) + ' · ' + esc(rotulo(CANAIS, h.canal)) + ' · ' + esc(h.usuario ? h.usuario.nome : h.email_direcao === 'recebido' ? 'Resposta da clínica' : 'Importado da planilha') + '</div>' +
+        return '<li' + (ehDrigo(h) ? ' class="drigo"' : '') + '><div class="q">' + quando(h.created_at) + ' · ' + esc(rotulo(CANAIS, h.canal)) + ' · ' + esc(h.usuario ? h.usuario.nome : ehDrigo(h) ? 'Drigo' : h.email_direcao === 'recebido' ? 'Resposta da clínica' : 'Importado da planilha') + '</div>' +
           '<div class="r">' + esc(rotulo(RESULTADOS, h.resultado)) + (h.status_depois ? ' → ' + esc(rotulo(STATUS, h.status_depois)) : '') + '</div>' +
           (h.email_assunto
             ? '<details class="mail"><summary>' + (h.email_direcao === 'recebido' ? 'Resposta de ' : 'Para ') + esc(h.email_para || '') + ' · ' + esc(h.email_assunto) + '</summary><div class="corpo">' + esc(h.nota || '') + '</div></details>'
@@ -637,7 +640,7 @@
       var dias = st.painelDias;
       var desde = Date.now() - dias * 86400000;
       var todas = r.interacoes.filter(function (i) { return new Date(i.created_at).getTime() >= desde; });
-      var ints = todas.filter(function (i) { return i.usuario; });
+      var ints = todas.filter(function (i) { return i.usuario || ehDrigo(i); });
       var respostas = todas.filter(function (i) { return i.resultado === 'respondeu'; }).length;
       var clinicas = {};
       ints.forEach(function (i) { if (i.lead) clinicas[i.lead.id] = 1; });
@@ -661,7 +664,7 @@
       // por pessoa
       var pessoas = {};
       ints.forEach(function (i) {
-        var n = i.usuario.nome;
+        var n = i.usuario ? i.usuario.nome : 'Drigo';
         var p = pessoas[n] = pessoas[n] || { t: 0, conv: 0, demo: 0, fech: 0, ult: '' };
         p.t++;
         if (['conversou', 'interessado', 'pediu_retorno'].indexOf(i.resultado) >= 0) p.conv++;
@@ -706,7 +709,7 @@
         }).join('') + '</div></div>' +
         '</div><div>' +
         '<div class="card"><h3>Últimas atividades</h3><ul class="feed">' + (todas.length ? todas.slice(0, 80).map(function (i) {
-          return '<li><div class="sub">' + quando(i.created_at) + ' · ' + esc(i.usuario ? i.usuario.nome : 'Clínica') + ' · ' + esc(rotulo(CANAIS, i.canal)) + '</div>' +
+          return '<li' + (ehDrigo(i) ? ' class="drigo"' : '') + '><div class="sub">' + quando(i.created_at) + ' · ' + esc(i.usuario ? i.usuario.nome : ehDrigo(i) ? 'Drigo' : 'Clínica') + ' · ' + esc(rotulo(CANAIS, i.canal)) + '</div>' +
             (i.lead ? '<a data-id="' + esc(i.lead.id) + '">' + esc(i.lead.nome) + '</a> ' : '') + '<span>' + esc(rotulo(RESULTADOS, i.resultado)) + '</span>' +
             (i.email_assunto ? '<div>E-mail: ' + esc(i.email_assunto) + '</div>' : (i.nota ? '<div>' + esc(i.nota) + '</div>' : '')) + '</li>';
         }).join('') : '<li class="sub">Nenhuma atividade no período.</li>') + '</ul></div>' +
