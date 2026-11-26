@@ -44,9 +44,10 @@ const TEXTO_CONVITE = [
   '',
   'Se não quiser receber, responda PARAR.',
 ].join('\n');
-const BOTOES_CONVITE = ['Quero a demonstração', 'Agora não', 'Não tenho interesse'];
+// Sem botões (pedido do Rodrigo, 26/11): a mensagem é texto puro e quem quiser sair escreve PARAR.
+const BOTOES_CONVITE = [];
 // Modelo aprovado na Meta com este texto (o nome muda a cada versão do texto).
-const NOME_MODELO = 'zelus_vet_abertura_clinica_v4';
+const NOME_MODELO = 'zelus_vet_abertura_clinica_v5';
 
 const MINUSCULAS = new Set(['a', 'as', 'o', 'os', 'e', 'de', 'da', 'das', 'do', 'dos', 'em', 'na', 'no', 'para', 'com']);
 const SIGLAS = /^(vet|pet|sp|24h|hv|cv|ltda|me|eireli)$/i;
@@ -88,6 +89,16 @@ function contextoConvite({ nome, empresa, observacoes } = {}) {
   if (obs) linhas.push('- Dados públicos da lista (bairro, nota, avaliações): ' + obs.slice(0, 400) + '. Use no máximo um detalhe, com naturalidade, e só se ajudar.');
   linhas.push('- Você ainda não sabe quem está respondendo (pode ser a recepção, um veterinário ou o dono).');
   return linhas.join('\n');
+}
+
+// Posição da última abertura do Zelus Vet no histórico (mensagem do Drigo que começa com "Oi, pessoal da"),
+// ou -1 se não houver. O histórico usado pelo modelo começa nela.
+function inicioDaConversaVet(history) {
+  for (let i = (history || []).length - 1; i >= 0; i -= 1) {
+    const m = history[i];
+    if (m && m.role === 'assistant' && /^Oi, pessoal d[ao] /.test(String(m.content || ''))) return i;
+  }
+  return -1;
 }
 
 // Conversa que a pessoa começou no WhatsApp (sem convite).
@@ -156,9 +167,9 @@ const TOOLS = [
   },
 ];
 
-const INSTRUCAO_AVISO_OK = 'Equipe avisada. Agora escreva a resposta completa para a pessoa: primeiro responda ao que ela perguntou com o que você sabe da base (o texto que você escreveu antes de chamar a ferramenta não chega a ela, então não pule nada), e termine com uma frase dizendo que a equipe do Zelus Vet vai chamar por aqui para seguir, sem prometer prazo e sem citar e-mail. Se for demonstração, diga que a equipe confirma o horário; não diga que está marcada.';
+const INSTRUCAO_AVISO_OK = 'Equipe avisada. Agora escreva a resposta completa para a pessoa (o texto que você escreveu antes de chamar a ferramenta não chega a ela). Se for pedido de demonstração e ela ainda não disse um horário: só a frase curta com o link https://cal.com/rodrigomoraes/zelus-vet-apresentacao para ela escolher o horário, e nada depois do link (sem "a equipe vai chamar" e sem pergunta). Se ela já disse o horário: confirme que anotou e que a equipe confirma por aqui; não diga que está marcada. Nos outros casos: responda ao que ela perguntou com o que você sabe da base e termine com uma frase dizendo que a equipe do Zelus Vet vai chamar por aqui, sem prometer prazo e sem citar e-mail.';
 
 module.exports = {
   PERFIL, ORIGEM_CLINICAS, ULTIMO_DIA_FOLLOWUP, PROMPT, TEXTO_CONVITE, BOTOES_CONVITE, NOME_MODELO, TOOLS, MOTIVOS_VET, INSTRUCAO_AVISO_OK,
-  nomeClinica, contextoConvite, contextoWhatsApp, pedidoFollowup,
+  nomeClinica, contextoConvite, contextoWhatsApp, pedidoFollowup, inicioDaConversaVet,
 };
