@@ -132,7 +132,7 @@ const TOOLS = [
       type: 'object',
       properties: {
         motivo: { type: 'string', enum: MOTIVOS_VET, description: 'Por que a equipe precisa entrar.' },
-        resumo: { type: 'string', description: 'Duas ou três frases para a equipe: quem respondeu (cargo), o que a clínica quer, a faixa de pets se souber, o dia e horário pedidos para a demonstração e qualquer objeção.' },
+        resumo: { type: 'string', description: 'Duas ou três frases para a equipe: quem respondeu (cargo), o que a clínica quer, a faixa (quantidade de licenças do Zelus Pet) se souber, o dia e horário pedidos para a demonstração e qualquer objeção.' },
         nome: { type: 'string', description: 'Nome que a pessoa disse. Omita se ela não disse.' },
         empresa: { type: 'string', description: 'Nome da clínica.' },
       },
