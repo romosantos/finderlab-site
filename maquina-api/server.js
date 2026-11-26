@@ -3414,7 +3414,9 @@ function naoEnviar(reply) {
   const t = String(reply || '').replace(/<[^>]*>/g, ' ').trim();
   if (!/\p{L}{2,}/u.test(t)) return true;
   if (/\bSEM[_ ]RESPOSTA\b/i.test(t)) return true;
-  if (/(atendimento|resposta|mensagem) autom[aá]tic/i.test(t) && /n[aã]o (vou|irei|preciso|devo) respond/i.test(t)) return true;
+  // Bastidor: o Drigo nunca fala com a clínica sobre atendimento automático nem sobre não responder.
+  if (/(atendimento|resposta|mensagem|robô|bot) autom[aá]tic/i.test(t)) return true;
+  if (/n[aã]o (vou |irei |preciso |devo )?respond(o|er)\b/i.test(t) && t.length < 220) return true;
   return false;
 }
 
