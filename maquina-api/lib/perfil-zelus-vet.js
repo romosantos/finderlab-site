@@ -24,25 +24,22 @@ const PROMPT = fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'zelus-ve
 const TEXTO_CONVITE = [
   'Oi, pessoal da {{1}}! Aqui é o Drigo, do Zelus Vet.',
   '',
-  'Imagina a clínica de vocês atendendo mais e melhor, com o veterinário olhando para o paciente e não para o computador.',
+  'No Zelus Vet, o veterinário atende e a IA escreve o prontuário. Ele só revisa e assina. Quem usa conta que ganha de 8 a 10 minutos por consulta.',
   '',
-  'O Zelus Vet é IA de verdade trabalhando dentro da clínica:',
-  '• A consulta vira prontuário sozinha. O vet só revisa e assina.',
+  'No mesmo sistema:',
   '• Cada exame vira histórico, com a tendência de cada marcador.',
-  '• Agenda, financeiro, estoque e nota fiscal num lugar só, com a clínica sob controle.',
+  '• Agenda, financeiro, estoque e nota fiscal juntos.',
   '• O tutor sai com o app da clínica no celular, com receita e lembretes, e volta para vocês.',
   '',
-  'Na clínica piloto: 8 a 10 minutos a menos por consulta e 40% mais engajamento preventivo dos tutores.',
+  'No Vet Friday, até 31/12, o ano sai por 8 mensalidades, a partir de R$ 66 por mês.',
   '',
-  'No Vet Friday, até 31/12, o ano inteiro sai por 8 mensalidades, a partir de R$ 66 por mês.',
-  '',
-  'Querem ver o Zelus funcionando na clínica de vocês?',
+  'Querem ver funcionando?',
   '',
   'Se não quiser receber, responda PARAR.',
 ].join('\n');
 const BOTOES_CONVITE = ['Quero ver', 'Agora não', 'Não tenho interesse'];
 // Modelo aprovado na Meta com este texto (o nome muda a cada versão do texto).
-const NOME_MODELO = 'zelus_vet_abertura_clinica_v2';
+const NOME_MODELO = 'zelus_vet_abertura_clinica_v3';
 
 const MINUSCULAS = new Set(['a', 'as', 'o', 'os', 'e', 'de', 'da', 'das', 'do', 'dos', 'em', 'na', 'no', 'para', 'com']);
 const SIGLAS = /^(vet|pet|sp|24h|hv|cv|ltda|me|eireli)$/i;
