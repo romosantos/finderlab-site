@@ -3420,11 +3420,41 @@ function naoEnviar(reply) {
   return false;
 }
 
-async function handleWhatsAppInbound({ phone, body, profileName, messageSid, audio }) {
+// Anexos que o modelo consegue ler: imagens e PDF.
+const ANEXO_TIPOS = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+const ANEXO_MAX_BYTES = { image: 4.5 * 1024 * 1024, pdf: 15 * 1024 * 1024 };
+
+// Baixa o anexo que a Twilio guardou e devolve o bloco de conteúdo para o modelo (ou null se não der).
+async function baixarAnexoWhatsApp(anexo) {
+  try {
+    if (!anexo || !TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN) return null;
+    const auth = Buffer.from(TWILIO_ACCOUNT_SID + ':' + TWILIO_AUTH_TOKEN).toString('base64');
+    const r = await fetch(anexo.url, { headers: { Authorization: 'Basic ' + auth }, redirect: 'follow' });
+    if (!r.ok) { console.error('WhatsApp anexo: download falhou (%d)', r.status); return null; }
+    const buf = Buffer.from(await r.arrayBuffer());
+    const pdf = anexo.type === 'application/pdf';
+    if (buf.length > (pdf ? ANEXO_MAX_BYTES.pdf : ANEXO_MAX_BYTES.image)) { console.error('WhatsApp anexo: grande demais (%d bytes)', buf.length); return null; }
+    const source = { type: 'base64', media_type: anexo.type, data: buf.toString('base64') };
+    return pdf ? { type: 'document', source } : { type: 'image', source };
+  } catch (err) {
+    console.error('WhatsApp anexo', err && err.message ? err.message : err);
+    return null;
+  }
+}
+
+async function handleWhatsAppInbound({ phone, body, profileName, messageSid, audio, anexo }) {
   try {
     if (audio) {
       const transcrito = await transcreverAudioWhatsApp(audio);
       if (transcrito) body = '[áudio transcrito] ' + transcrito;
+    }
+    // Imagem ou PDF: o texto guardado diz o que chegou (com a legenda, se houver) e o arquivo vai ao modelo nesta resposta.
+    let blocoAnexo = null;
+    if (anexo) {
+      blocoAnexo = await baixarAnexoWhatsApp(anexo);
+      const legenda = body && !body.startsWith('[mensagem sem texto') ? body : '';
+      const rotulo = anexo.type === 'application/pdf' ? '[a clínica enviou um PDF]' : '[a clínica enviou uma imagem]';
+      body = blocoAnexo ? (legenda ? rotulo + ' ' + legenda : rotulo) : body;
     }
     await saveWhatsAppMessage({ phone, direction: 'in', body, profileName, messageSid });
 
@@ -3515,6 +3545,11 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid, aud
             `A pessoa se chama ${nomeConversa} (nome do perfil do WhatsApp). Chame pelo primeiro nome no cumprimento e de vez em quando, como numa conversa normal, sem repetir o nome em toda mensagem.`;
         }
       }
+      // O anexo entra junto da última mensagem da pessoa (só nesta resposta; o histórico guarda o rótulo).
+      if (blocoAnexo && history.length && history[history.length - 1].role === 'user') {
+        const ult = history[history.length - 1];
+        history[history.length - 1] = { role: 'user', content: [blocoAnexo, { type: 'text', text: String(ult.content || '') }] };
+      }
       const { reply } = await getAgentReply(history, systemPrompt, SITE_ORIGIN, undefined, undefined, ctx);
       if (!reply) {
         console.error('WhatsApp inbound: sem resposta do modelo pra %s', phone);
@@ -3570,8 +3605,13 @@ app.post('/whatsapp/inbound', whatsappWebhookParser, (req, res) => {
     const audio = !bodyText && numMedia > 0 && mediaType.startsWith('audio/') && /^https:\/\/api\.twilio\.com\//.test(mediaUrl)
       ? { url: mediaUrl, type: mediaType.split(';')[0].trim() }
       : null;
+    // Imagem ou PDF (com ou sem legenda): o handler baixa e mostra ao modelo.
+    const tipoAnexo = mediaType.split(';')[0].trim();
+    const anexo = numMedia > 0 && ANEXO_TIPOS.includes(tipoAnexo) && /^https:\/\/api\.twilio\.com\//.test(mediaUrl)
+      ? { url: mediaUrl, type: tipoAnexo }
+      : null;
 
-    handleWhatsAppInbound({ phone: from, body, profileName, messageSid, audio });
+    handleWhatsAppInbound({ phone: from, body, profileName, messageSid, audio, anexo });
   } catch (err) {
     console.error('POST /whatsapp/inbound', err && err.message ? err.message : err);
   }
