@@ -22,24 +22,31 @@ const PROMPT = fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'zelus-ve
 // Texto igual ao do template aprovado pela Meta (NOME_MODELO). É o que fica gravado na
 // conversa para o Drigo saber o que a clínica recebeu. {{1}} = nome da clínica.
 const TEXTO_CONVITE = [
-  'Oi, pessoal da {{1}}! Aqui é o Drigo, do Zelus Vet.',
+  'Oi, pessoal da {{1}}! Tudo bem?',
   '',
-  'No Zelus Vet, o veterinário atende e a IA escreve o prontuário. Ele só revisa e assina. Quem usa conta que ganha de 8 a 10 minutos por consulta.',
+  'Aqui é o Drigo, do Zelus Vet. Queria apresentar uma solução que pode mudar bastante a rotina de vocês.',
   '',
-  'No mesmo sistema:',
-  '• Cada exame vira histórico, com a tendência de cada marcador.',
-  '• Agenda, financeiro, estoque e nota fiscal juntos.',
-  '• O tutor sai com o app da clínica no celular, com receita e lembretes, e volta para vocês.',
+  'Uma pergunta: quanto tempo do dia de vocês vai em prontuário, exames e tarefas administrativas?',
   '',
-  'No Vet Friday, até 31/12, o ano sai por 8 mensalidades, a partir de R$ 66 por mês.',
+  'O Zelus Vet nasceu para resolver isso.',
   '',
-  'Querem ver funcionando?',
+  'O veterinário conversa com o paciente, a IA estrutura o prontuário e ele só precisa revisar e assinar. Quem já utiliza relata uma economia de 8 a 10 minutos por consulta.',
+  '',
+  'E não para por aí. A clínica também tem, em um único sistema:',
+  '🐾 Histórico dos pacientes, com a evolução dos exames e dos marcadores.',
+  '📅 Agenda, financeiro, estoque e notas fiscais.',
+  '📱 App para os tutores, com receitas, exames e lembretes, que aproximam o tutor da clínica.',
+  '',
+  'E tem uma oportunidade especial chegando: a *VET FRIDAY!*',
+  'Até 31/12, o plano anual sai por 8 mensalidades, a partir de R$ 66/mês.',
+  '',
+  'Quero te mostrar como funciona na prática. Podemos marcar uma demonstração rápida?',
   '',
   'Se não quiser receber, responda PARAR.',
 ].join('\n');
-const BOTOES_CONVITE = ['Quero ver', 'Agora não', 'Não tenho interesse'];
+const BOTOES_CONVITE = ['Quero a demonstração', 'Agora não', 'Não tenho interesse'];
 // Modelo aprovado na Meta com este texto (o nome muda a cada versão do texto).
-const NOME_MODELO = 'zelus_vet_abertura_clinica_v3';
+const NOME_MODELO = 'zelus_vet_abertura_clinica_v4';
 
 const MINUSCULAS = new Set(['a', 'as', 'o', 'os', 'e', 'de', 'da', 'das', 'do', 'dos', 'em', 'na', 'no', 'para', 'com']);
 const SIGLAS = /^(vet|pet|sp|24h|hv|cv|ltda|me|eireli)$/i;
