@@ -44,9 +44,10 @@ const TEXTO_CONVITE = [
   '',
   'Se não quiser receber, responda PARAR.',
 ].join('\n');
-const BOTOES_CONVITE = ['Quero a demonstração', 'Agora não', 'Não tenho interesse'];
+// Sem botões (pedido do Rodrigo, 26/11): a mensagem é texto puro e quem quiser sair escreve PARAR.
+const BOTOES_CONVITE = [];
 // Modelo aprovado na Meta com este texto (o nome muda a cada versão do texto).
-const NOME_MODELO = 'zelus_vet_abertura_clinica_v4';
+const NOME_MODELO = 'zelus_vet_abertura_clinica_v5';
 
 const MINUSCULAS = new Set(['a', 'as', 'o', 'os', 'e', 'de', 'da', 'das', 'do', 'dos', 'em', 'na', 'no', 'para', 'com']);
 const SIGLAS = /^(vet|pet|sp|24h|hv|cv|ltda|me|eireli)$/i;
