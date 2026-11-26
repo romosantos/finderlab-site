@@ -40,7 +40,7 @@
     ['outro', 'Outro'],
   ];
   var FAIXAS = [['gratis', 'Perfil básico (grátis)', 0], ['20', 'Vitrine em destaque (R$ 49)', 49], ['ilimitado', 'Pacote completo (R$ 79)', 79]];
-  var TIPOS = [['Psicólogo(a)', 'Psicólogo(a)'], ['Terapeuta', 'Terapeuta'], ['Clínica de psicologia', 'Clínica de psicologia'], ['Outro', 'Outro']];
+  var TIPOS = [['Psicólogo(a) autônomo(a)', 'Psicólogo(a) autônomo(a)'], ['Terapeuta autônomo(a)', 'Terapeuta autônomo(a)'], ['Clínica de psicologia', 'Clínica de psicologia'], ['Clínica de terapias', 'Clínica de terapias'], ['Outro', 'Outro']];
   // Modelos de e-mail. {saudacao}, {clinica} e a assinatura entram sozinhos;
   // a pessoa pode editar tudo antes de enviar.
   var PLANOS = 'Os planos: Perfil básico grátis (perfil na vitrine e consultório completo para até 3 pacientes ativos), Vitrine em destaque por R$ 49 por mês (até 20 pacientes, topo da busca e rodízio de indicações) e Pacote completo por R$ 79 por mês (pacientes ilimitados, Escriba e botão de WhatsApp no perfil). Sem comissão e sem fidelidade.';
@@ -73,14 +73,14 @@
       'Se não for o momento, tudo bem também.\n\n{assinatura}'],
   ];
 
-  var REGIOES = [['capital', 'São Paulo (capital)'], ['grande_sp', 'Grande SP'], ['outros', 'Outras cidades e online']];
+  var REGIOES = [['capital', 'São Paulo (capital)'], ['grande_sp', 'Grande SP'], ['recife', 'Recife e região'], ['outros', 'Outras cidades e online']];
 
   var st = {
     token: localStorage.getItem('zeluslife_token') || '',
     usuario: null,
     leads: [],
     aba: 'contatos',
-    filtro: { q: '', status: '', prio: '', regiao: '', local: '', celular: false },
+    filtro: { q: '', status: '', prio: '', regiao: '', local: '', celular: false, tipo: '' },
     limite: 100,
     aberto: null,
     painelDias: 30,
@@ -130,7 +130,7 @@
     var ehClinica = /cl[ií]nica/i.test(l.tipo || '');
     var primeiro = String(l.contato || '').trim().replace(/^((dra?|sra?|srta|prof|profa)\.?\s+)+/i, '').split(/[\s,(·-]+/)[0];
     var vars = {
-      saudacao: primeiro ? 'Olá, ' + primeiro + ',' : ehClinica ? 'Olá, pessoal da ' + l.nome + ',' : 'Olá, ' + String(l.nome).split(' ')[0] + ',',
+      saudacao: primeiro ? 'Olá, ' + primeiro + ',' : ehClinica ? 'Olá, pessoal da ' + l.nome + ',' : 'Olá, tudo bem?',
       clinica: l.nome,
       eu: eu(),
       assinatura: 'Abraço,\n' + eu() + '\nZelus Life · Finder Lab\nzeluslife.com.br',
@@ -242,10 +242,11 @@
       if (f.status && l.status !== f.status) return false;
       if (f.prio && l.prioridade !== f.prio) return false;
       if (f.regiao && l.regiao !== f.regiao) return false;
+      if (f.tipo && l.tipo !== f.tipo) return false;
       if (f.local && (l.regiao === 'capital' ? l.zona : l.cidade) !== f.local) return false;
       if (f.celular && !l.celular) return false;
       if (q) {
-        var alvo = (l.nome + ' ' + (l.bairro || '') + ' ' + (l.cidade || '') + ' ' + (l.contato || '')).toLowerCase();
+        var alvo = (l.nome + ' ' + (l.bairro || '') + ' ' + (l.cidade || '') + ' ' + (l.contato || '') + ' ' + (l.rede || '')).toLowerCase();
         if (alvo.indexOf(q) < 0 && !(qd.length >= 4 && digitos(l.telefone).indexOf(qd) >= 0)) return false;
       }
       return true;
@@ -286,8 +287,9 @@
     st.leads.forEach(function (l) { porStatus[l.status] = (porStatus[l.status] || 0) + 1; });
     c.innerHTML =
       '<div class="filtros">' +
-      '<input class="busca" type="search" id="fQ" placeholder="Buscar nome, bairro, cidade ou telefone" value="' + esc(f.q) + '">' +
+      '<input class="busca" type="search" id="fQ" placeholder="Buscar nome, abordagem, bairro, cidade ou telefone" value="' + esc(f.q) + '">' +
       '<select id="fPrio">' + opcoes([['A', 'Prioridade A'], ['B', 'Prioridade B'], ['C', 'Prioridade C']], f.prio, 'Todas as prioridades') + '</select>' +
+      '<select id="fTipo">' + opcoes(TIPOS, f.tipo, 'Todos os tipos') + '</select>' +
       '<select id="fRegiao">' + opcoes(REGIOES, f.regiao, 'Todas as regiões') + '</select>' +
       '<select id="fLocal">' + opcoes(locais(), f.local, 'Zona ou cidade') + '</select>' +
       '<select id="fStatus">' + opcoes(STATUS, f.status, 'Todos os status') + '</select>' +
@@ -296,7 +298,7 @@
       '<div class="resumo">' + STATUS.map(function (s) {
         return porStatus[s[0]] ? '<button data-st="' + s[0] + '" class="' + (f.status === s[0] ? 'on' : '') + '">' + esc(s[1]) + ': ' + porStatus[s[0]] + '</button>' : '';
       }).join('') + '<button id="bNovo">+ Novo contato</button></div>' +
-      '<p class="contagem">' + lista.length + ' clínica(s)</p>' +
+      '<p class="contagem">' + lista.length + ' contato(s)</p>' +
       '<div class="lista"><div class="linha cab"><div></div><div>Contato</div><div>Telefone</div><div>Status</div><div>Próximo passo</div><div>Última tentativa</div></div>' +
       (lista.length ? lista.slice(0, st.limite).map(linhaHtml).join('') : '<div class="vazio">Nenhum contato com esses filtros.</div>') +
       '</div>' + (lista.length > st.limite ? '<button class="btn claro mais" id="bMais">Mostrar mais (' + (lista.length - st.limite) + ')</button>' : '');
@@ -304,6 +306,7 @@
     var q = document.getElementById('fQ');
     q.oninput = function () { f.q = q.value; st.limite = 100; atualizarLista(); };
     document.getElementById('fPrio').onchange = function (e) { f.prio = e.target.value; st.limite = 100; contatos(); };
+    document.getElementById('fTipo').onchange = function (e) { f.tipo = e.target.value; st.limite = 100; contatos(); };
     document.getElementById('fRegiao').onchange = function (e) { f.regiao = e.target.value; f.local = ''; st.limite = 100; contatos(); };
     document.getElementById('fLocal').onchange = function (e) { f.local = e.target.value; st.limite = 100; contatos(); };
     document.getElementById('fStatus').onchange = function (e) { f.status = e.target.value; st.limite = 100; contatos(); };
@@ -493,7 +496,7 @@
       '<section><h3>Dados do contato</h3><dl class="dados">' +
       '<dt>Prioridade</dt><dd>' + esc(l.prioridade || '') + '</dd>' +
       '<dt>Endereço</dt><dd>' + esc(l.endereco || '') + '</dd>' +
-      '<dt>Rede</dt><dd>' + esc(l.rede || 'Independente') + '</dd>' +
+      '<dt>Abordagem</dt><dd>' + esc(l.rede || '') + '</dd>' +
       '<dt>Site</dt><dd>' + esc(l.site || '') + '</dd>' +
       '<dt>Instagram</dt><dd>' + esc(l.instagram || '') + '</dd>' +
       '</dl></section></aside>';
@@ -600,7 +603,7 @@
     var camada = document.getElementById('camada');
     camada.innerHTML = '<div class="fundo"></div><aside class="ficha"><header><h2>Novo contato</h2><button class="fechar" aria-label="Fechar">×</button></header>' +
       '<section><label for="nNome">Nome</label><input type="text" id="nNome" placeholder="Nome do profissional ou da clínica">' +
-      '<label for="nTipo">Tipo</label><select id="nTipo">' + opcoes(TIPOS, 'Psicólogo(a)') + '</select>' +
+      '<label for="nTipo">Tipo</label><select id="nTipo">' + opcoes(TIPOS, 'Psicólogo(a) autônomo(a)') + '</select>' +
       '<div class="duas"><div><label for="nTel">Telefone</label><input type="text" id="nTel"></div><div><label for="nEmail">E-mail</label><input type="text" id="nEmail"></div></div>' +
       '<label class="chk" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="nCel"> Celular (tem WhatsApp)</label>' +
       '<div class="duas"><div><label for="nBairro">Bairro</label><input type="text" id="nBairro"></div><div><label for="nCidade">Cidade</label><input type="text" id="nCidade" value="São Paulo"></div></div>' +
