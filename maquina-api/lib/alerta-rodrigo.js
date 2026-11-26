@@ -10,6 +10,10 @@ const MOTIVOS = {
   decisor: 'Vai levar a decisão a sócio, diretor ou chefe',
   interesse_travado: 'Interesse claro, mas travou antes de se inscrever',
   outro: 'Outro caso que pede o Rodrigo',
+  // Perfil Zelus Vet do WhatsApp (lib/perfil-zelus-vet.js)
+  quer_demonstracao: 'Clínica quer ver a demonstração do Zelus Vet',
+  quer_testar: 'Clínica vai testar os 14 dias grátis',
+  quer_contratar: 'Clínica quer contratar o anual do Vet Friday',
 };
 
 const DEFINICAO = {
@@ -59,7 +63,8 @@ function init({ pool, clean, avisa, adminUrl }) {
     const dados = {
       resumo: clean(i.resumo, 800), nome: clean(i.nome, 120), email: clean(i.email, 160), empresa: clean(i.empresa, 120),
     };
-    const instrucaoOk = 'Rodrigo avisado. Diga em uma frase que avisou o Rodrigo e que ele vai chamar pessoalmente, sem prometer prazo e sem citar e-mail. Se a pessoa quiser falar já, pode passar o WhatsApp dele.';
+    const vet = !!(ctx && ctx.perfil === 'zelus-vet');
+    const instrucaoOk = vet ? require('./perfil-zelus-vet').INSTRUCAO_AVISO_OK : 'Rodrigo avisado. Diga em uma frase que avisou o Rodrigo e que ele vai chamar pessoalmente, sem prometer prazo e sem citar e-mail. Se a pessoa quiser falar já, pode passar o WhatsApp dele.';
     try {
       if (chave.length > 2) {
         const dup = await pool.query(
@@ -74,18 +79,18 @@ function init({ pool, clean, avisa, adminUrl }) {
         [canal, chave, motivo, dados.resumo, dados.nome, whats, dados.email, dados.empresa]
       );
       const linhas = [
-        ['Motivo', MOTIVOS[motivo]], ['Canal', canal === 'whatsapp' ? 'WhatsApp do Drigo' : 'Chat do site'],
+        ['Motivo', MOTIVOS[motivo]], ['Canal', canal === 'whatsapp' ? (vet ? 'WhatsApp do Zelus Vet (Drigo)' : 'WhatsApp do Drigo') : 'Chat do site'],
         ['Nome', dados.nome], ['WhatsApp', whats], ['E-mail', dados.email], ['Empresa', dados.empresa],
         ['Resumo do Drigo', dados.resumo],
       ].filter(([, v]) => v);
       const quem = dados.nome || (whats ? 'final ' + whats.replace(/\D/g, '').slice(-4) : 'visitante do site');
-      const texto = 'Lead quente pedindo você, captado pelo Drigo agora:\n\n'
+      const texto = (vet ? 'Clínica pedindo a equipe do Zelus Vet, captada pelo Drigo agora:\n\n' : 'Lead quente pedindo você, captado pelo Drigo agora:\n\n')
         + linhas.map(([k, v]) => `${k}: ${v}`).join('\n')
         + (adminUrl ? `\n\nConversa completa no painel: ${adminUrl}` : '')
-        + '\n\nO Drigo disse à pessoa que você vai chamar pessoalmente.';
+        + (vet ? '\n\nO Drigo disse à clínica que a equipe vai chamar por lá. Se for demonstração, confirme o horário com ela.' : '\n\nO Drigo disse à pessoa que você vai chamar pessoalmente.');
       let enviado = false;
       try {
-        await avisa(`Lead quente: ${quem} (${MOTIVOS[motivo]})`, texto);
+        await avisa(`${vet ? 'Zelus Vet' : 'Lead quente'}: ${quem} (${MOTIVOS[motivo]})`, texto);
         enviado = true;
       } catch (err) {
         console.error('avisar_rodrigo: falha no e-mail', err && err.message ? err.message : err);

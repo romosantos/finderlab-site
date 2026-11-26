@@ -96,7 +96,7 @@ function init(deps) {
   async function tick() {
     if (!ativo || rodando) return;
     const { dia, hora } = relogio();
-    if (dia > ULTIMO_DIA || hora < HORA_INI || hora >= HORA_FIM) return;
+    if (dia > (deps.ultimoDia || ULTIMO_DIA) || hora < HORA_INI || hora >= HORA_FIM) return;
     rodando = true;
     let client = null;
     let lock = false;
