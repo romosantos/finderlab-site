@@ -3427,7 +3427,7 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid, aud
     // pessoa (uma resposta por vez) e só responde se ainda for a última mensagem e se ninguém respondeu depois dela.
     if (WHATSAPP_RAJADA_MS > 0) await new Promise((r) => setTimeout(r, WHATSAPP_RAJADA_MS));
     await naFilaDoWhatsApp(phone, async () => {
-      const history = await loadWhatsAppHistory(phone);
+      let history = await loadWhatsAppHistory(phone);
       const ultima = history[history.length - 1];
       if (!ultima || ultima.role !== 'user') return; // já respondida por outro processamento
       if (String(ultima.content) !== String(body)) return; // chegou mensagem mais nova: ela responde por todas
@@ -3448,6 +3448,10 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid, aud
             return;
           }
           ctx.contextoVisita = perfilVet.contextoConvite(convite);
+          // A conversa do Zelus Vet começa na última abertura enviada: o que veio antes (conversas antigas da
+          // Máquina no mesmo número, aberturas anteriores) só confundia o modelo.
+          const ini = perfilVet.inicioDaConversaVet(history);
+          if (ini > 0) history = history.slice(ini);
         } else {
           ctx.contextoVisita = perfilVet.contextoWhatsApp();
         }
@@ -4059,7 +4063,8 @@ const alertaRodrigo = require('./lib/alerta-rodrigo').init({
 // O lembrete é escrito pelo modelo a partir da conversa (retoma o assunto dela; link só se ela mostrou interesse).
 async function gerarFollowupWhatsApp({ phone, nome }) {
   if (!anthropic || !chatReady) return '';
-  const history = await loadWhatsAppHistory(phone);
+  let history = await loadWhatsAppHistory(phone);
+  if (perfilVet) { const ini = perfilVet.inicioDaConversaVet(history); if (ini > 0) history = history.slice(ini); }
   if (!history.length) return '';
   const pedido = perfilVet ? perfilVet.pedidoFollowup(nome) : require('./lib/whatsapp-followup').pedidoFollowup(nome);
   const messages = [...history, { role: 'user', content: pedido }];

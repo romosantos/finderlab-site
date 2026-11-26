@@ -90,6 +90,16 @@ function contextoConvite({ nome, empresa, observacoes } = {}) {
   return linhas.join('\n');
 }
 
+// Posição da última abertura do Zelus Vet no histórico (mensagem do Drigo que começa com "Oi, pessoal da"),
+// ou -1 se não houver. O histórico usado pelo modelo começa nela.
+function inicioDaConversaVet(history) {
+  for (let i = (history || []).length - 1; i >= 0; i -= 1) {
+    const m = history[i];
+    if (m && m.role === 'assistant' && /^Oi, pessoal d[ao] /.test(String(m.content || ''))) return i;
+  }
+  return -1;
+}
+
 // Conversa que a pessoa começou no WhatsApp (sem convite).
 function contextoWhatsApp() {
   return [
@@ -160,5 +170,5 @@ const INSTRUCAO_AVISO_OK = 'Equipe avisada. Agora escreva a resposta completa pa
 
 module.exports = {
   PERFIL, ORIGEM_CLINICAS, ULTIMO_DIA_FOLLOWUP, PROMPT, TEXTO_CONVITE, BOTOES_CONVITE, NOME_MODELO, TOOLS, MOTIVOS_VET, INSTRUCAO_AVISO_OK,
-  nomeClinica, contextoConvite, contextoWhatsApp, pedidoFollowup,
+  nomeClinica, contextoConvite, contextoWhatsApp, pedidoFollowup, inicioDaConversaVet,
 };
