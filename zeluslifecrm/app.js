@@ -528,7 +528,7 @@
           '<div class="r">' + esc(rotulo(RESULTADOS, h.resultado)) + (h.status_depois ? ' → ' + esc(rotulo(STATUS, h.status_depois)) : '') + '</div>' +
           (h.email_assunto
             ? '<details class="mail"><summary>' + (h.email_direcao === 'recebido' ? 'Resposta de ' : 'Para ') + esc(h.email_para || '') + ' · ' + esc(h.email_assunto) + '</summary><div class="corpo">' + esc(h.nota || '') + '</div></details>'
-            : (h.nota ? '<div>' + esc(h.nota) + '</div>' : '')) + '</li>';
+            : (h.nota ? '<div class="nota">' + esc(h.nota) + '</div>' : '')) + '</li>';
       }).join('') + '</ul>' : '<p class="sub">Nenhuma tentativa ainda.</p>') + '</section>' +
 
       '<section><h3>Dados do contato</h3><dl class="dados">' +
