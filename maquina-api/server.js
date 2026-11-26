@@ -3294,13 +3294,13 @@ console.log('WhatsApp do Drigo: perfil ' + (perfilVet ? 'zelus-vet' : 'maquina')
 async function dadosDoConvite(phone, history) {
   try {
     const { rows } = await pool.query(
-      `SELECT c.nome, c.origem, c.empresa, c.observacoes FROM crm_contatos c
+      `SELECT c.nome, c.origem, c.empresa, c.observacoes, d.enviado_em FROM crm_contatos c
        JOIN crm_disparos d ON d.contato_id = c.id
        WHERE ${crmChaveSql('c.whats')} = ${crmChaveSql('$1::text')}
        ORDER BY d.id DESC LIMIT 1`,
       [phone]
     );
-    if (rows[0]) return { origem: rows[0].origem, nome: rows[0].nome, empresa: rows[0].empresa, observacoes: rows[0].observacoes };
+    if (rows[0]) return { origem: rows[0].origem, nome: rows[0].nome, empresa: rows[0].empresa, observacoes: rows[0].observacoes, enviadoEm: rows[0].enviado_em };
   } catch (err) {
     // tabela de disparos ainda não existe ou falha de consulta: cai no teste pelo histórico
   }
@@ -3404,6 +3404,16 @@ async function transcreverAudioWhatsApp(audio) {
   }
 }
 
+// Resposta do modelo que não deve virar mensagem: SEM_RESPOSTA, texto sem letras (ex.: "<br>") ou
+// comentário de bastidor sobre não responder ao atendimento automático.
+function naoEnviar(reply) {
+  const t = String(reply || '').replace(/<[^>]*>/g, ' ').trim();
+  if (!/\p{L}{2,}/u.test(t)) return true;
+  if (/\bSEM[_ ]RESPOSTA\b/i.test(t)) return true;
+  if (/(atendimento|resposta|mensagem) autom[aá]tic/i.test(t) && /n[aã]o (vou|irei|preciso|devo) respond/i.test(t)) return true;
+  return false;
+}
+
 async function handleWhatsAppInbound({ phone, body, profileName, messageSid, audio }) {
   try {
     if (audio) {
@@ -3450,7 +3460,9 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid, aud
         if (convite) {
           const pendentes = conversaConvite.pendentesDoFim(history);
           const respostasDoDrigo = history.filter((m) => m.role === 'assistant').length;
-          if (respostasDoDrigo <= 1 && pendentes.length > 0 && pendentes.every(conversaConvite.respostaAutomatica)) {
+          // Resposta que chega até 2 minutos depois da abertura é quase sempre o robô da clínica.
+          const rapida = !!(convite.enviadoEm && Date.now() - new Date(convite.enviadoEm).getTime() < 120000);
+          if (respostasDoDrigo <= 1 && pendentes.length > 0 && pendentes.every((t) => conversaConvite.respostaAutomatica(t, { rapida }))) {
             console.log('WhatsApp inbound: resposta automática ignorada para %s', phone);
             for (const texto of pendentes) await crmAnotaObservacao(phone, texto);
             return;
@@ -3461,10 +3473,10 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid, aud
           const ini = perfilVet.inicioDaConversaVet(history);
           if (ini > 0) history = history.slice(ini);
           // Primeira resposta da clínica a esta abertura: vai para o CRM do Zelus com o texto dela.
-          // (o Drigo ainda não respondeu nada depois da abertura; se a clínica mandou várias mensagens seguidas, vão juntas)
+          // (o Drigo ainda não respondeu nada depois da abertura; se a clínica mandou várias mensagens seguidas, vão juntas).
+          // Só registra depois que o Drigo de fato responder: resposta automática da clínica não conta.
           if (history.filter((m) => m.role === 'assistant').length === 1) {
-            const textos = history.filter((m) => m.role === 'user').map((m) => String(m.content || '')).join('\n');
-            if (textos) crmZelus.registrar(phone, 'respondeu', textos);
+            ctx.primeiraResposta = history.filter((m) => m.role === 'user').map((m) => String(m.content || '')).join('\n');
           }
         } else {
           ctx.contextoVisita = perfilVet.contextoWhatsApp();
@@ -3502,6 +3514,14 @@ async function handleWhatsAppInbound({ phone, body, profileName, messageSid, aud
         console.error('WhatsApp inbound: sem resposta do modelo pra %s', phone);
         return;
       }
+      // O modelo decidiu não responder (atendimento automático) ou devolveu algo que não é mensagem
+      // (só marcação, ou um comentário de bastidor): nada vai para a clínica.
+      if (perfilVet && naoEnviar(reply)) {
+        console.log('WhatsApp inbound: sem resposta para %s (%s)', phone, reply.slice(0, 60).replace(/\s+/g, ' '));
+        for (const texto of conversaConvite.pendentesDoFim(history)) await crmAnotaObservacao(phone, texto);
+        return;
+      }
+      if (perfilVet && ctx && ctx.primeiraResposta) crmZelus.registrar(phone, 'respondeu', ctx.primeiraResposta);
 
       await sendWhatsAppFreeform(phone, reply);
       await saveWhatsAppMessage({ phone, direction: 'out', body: reply });

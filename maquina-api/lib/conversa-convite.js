@@ -86,8 +86,21 @@ const AUTO_RE = new RegExp([
   'assim que poss[ií]vel (nosso|lhe|te|eu|retorn|entr)',
 ].join('|'), 'i');
 
-function respostaAutomatica(body) {
-  return AUTO_RE.test(String(body || ''));
+// Robôs de atendimento das clínicas (26/11/2026). FORTES: só aparecem em mensagem pronta, valem sempre.
+// FRACAS: saudações que uma recepcionista também escreveria; só contam quando a resposta chegou logo
+// depois do nosso envio (robô responde em segundos).
+const AUTO_FORTE_RE = new RegExp([
+  'digite o', 'n[uú]mero do departamento', 'n[aã]o compreendi', 'escolha (a|uma) op[cç]', 'qual ([eé] )?(o )?seu nome',
+  'nome do (tutor|pet)', 'e o (nome )?do pet', 'o que est[aá] acontecendo com (o )?seu pet', 'conv[eê]nio ou particular',
+  'agradece(mos)? (o |seu |sua |pelo |pela )?(contato|mensagem)', 'responderemos', 'iremos atend', 'em breve (iremos|vamos) (te |lhe )?(atender|responder)',
+  'hor[aá]rio de funcionamento', 'nosso hor[aá]rio', 'alta demanda', 'concierge',
+].join('|'), 'i');
+const AUTO_FRACA_RE = /somos d[ao]s? |como (podemos|posso) (te |lhe )?ajudar|em que (podemos|posso) (te |lhe )?ajudar|bem[- ]?vind[oa]|\bmenu\b|^\s*\*?1\*?[.)-]\s/im;
+
+function respostaAutomatica(body, { rapida = false } = {}) {
+  const t = String(body || '');
+  if (AUTO_RE.test(t) || AUTO_FORTE_RE.test(t)) return true;
+  return rapida && AUTO_FRACA_RE.test(t);
 }
 
 // Mensagens da pessoa que ainda não tiveram resposta do Drigo (o fim do histórico).
