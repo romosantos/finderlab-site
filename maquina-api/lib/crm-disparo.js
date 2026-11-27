@@ -9,6 +9,10 @@ const TEMPLATE_PADRAO = 'HXde4088ab10c6fb2f0d76d9d36fd3a5ae'; // maquina_convite
 const TEMPLATE_GERAL_PADRAO = 'HX3cd3ea79c853888c0f418e999b25d0f8'; // maquina_convite_imersao_geral, mesma mensagem sem o nome (contato sem nome)
 const FUSO = 'America/Sao_Paulo';
 const LOCK_ID = 7331001;
+// Não entregues por limite da própria Meta para aquela pessoa (63032: número fora das mensagens de marketing;
+// 63049: a Meta escolheu não entregar marketing). Não dizem nada sobre a saúde do nosso número, então não pausam.
+const ERROS_LIMITE_META = ['Twilio 63032', 'Twilio 63049'];
+const ERROS_LIMITE_META_SQL = ERROS_LIMITE_META.map((e) => `'${e}'`).join(',');
 
 // Texto igual ao do template aprovado: é o que fica gravado na conversa para o Drigo saber o que a pessoa recebeu.
 const TEXTO_CONVITE = [
@@ -147,7 +151,7 @@ function init(app, deps) {
     }
     const c = (await pool.query(
       `SELECT count(*) FILTER (WHERE d.status IN ('enviado','pendente'))::int AS enviados,
-              count(*) FILTER (WHERE d.status_final IN ('failed','undelivered'))::int AS falhas,
+              count(*) FILTER (WHERE d.status_final IN ('failed','undelivered') AND d.erro NOT IN (${ERROS_LIMITE_META_SQL}))::int AS falhas,
               count(*) FILTER (WHERE c.status = 'nao_quer_receber')::int AS parar
          FROM crm_disparos d LEFT JOIN crm_contatos c ON c.id = d.contato_id
         WHERE d.dia = $1`, [dia])).rows[0];
