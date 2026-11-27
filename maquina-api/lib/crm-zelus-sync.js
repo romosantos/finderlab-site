@@ -46,7 +46,9 @@ function init({ url, token, fetchFn } = {}) {
 
   // Cada mensagem da conversa (a ficha da clínica mostra como chat). ref evita duplicar.
   const destinoMensagem = destino.replace(/\/?$/, '') + '/mensagem';
-  async function mensagem(telefone, direcao, texto, ref, quando) {
+  // opcoes.criarContato: quem chegou sozinho no WhatsApp (fora da lista de clínicas) ganha ficha no CRM do Zelus,
+  // com opcoes.nome (nome do perfil do WhatsApp).
+  async function mensagem(telefone, direcao, texto, ref, quando, opcoes = {}) {
     if (!ligado || !telefone || !texto) return false;
     try {
       const r = await f(destinoMensagem, {
@@ -55,6 +57,8 @@ function init({ url, token, fetchFn } = {}) {
         body: JSON.stringify({
           telefone: String(telefone), direcao, texto: String(texto).slice(0, 8000),
           ...(ref ? { ref: String(ref) } : {}), ...(quando ? { enviada_em: new Date(quando).toISOString() } : {}),
+          ...(opcoes.criarContato ? { criar_contato: true } : {}),
+          ...(opcoes.criarContato && opcoes.nome ? { nome: String(opcoes.nome).slice(0, 120) } : {}),
         }),
         signal: AbortSignal.timeout(10000),
       });
