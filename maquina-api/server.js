@@ -3247,7 +3247,25 @@ async function saveWhatsAppMessage({ phone, direction, body, profileName, messag
   );
   // Perfil Zelus Vet: a conversa também vai para a ficha da clínica no CRM do Zelus (sem esperar).
   if (perfilVet && rows[0]) {
-    crmZelus.mensagem(phone, direction === 'in' ? 'recebida' : 'enviada', body, 'wm:' + rows[0].id, rows[0].created_at).catch(() => {});
+    // Quem não veio da lista de clínicas (não está no CRM do Drigo ou chegou sozinho) ganha ficha no CRM do Zelus.
+    const criarContato = direction === 'in' && (await contatoChegouSozinho(phone));
+    crmZelus.mensagem(phone, direction === 'in' ? 'recebida' : 'enviada', body, 'wm:' + rows[0].id, rows[0].created_at,
+      { criarContato, nome: nomeDePerfilValido(profileName) }).catch(() => {});
+  }
+}
+
+async function contatoChegouSozinho(phone) {
+  try {
+    const w = crmNormalizaWhats(phone);
+    if (!w) return false;
+    const { rows } = await pool.query(
+      `SELECT origem FROM crm_contatos WHERE substr(whats,1,4) = substr($1,1,4) AND right(whats,8) = right($1,8) LIMIT 1`,
+      [w]
+    );
+    return !rows.length || rows[0].origem === 'WhatsApp do Drigo';
+  } catch (err) {
+    console.error('contatoChegouSozinho', err && err.message ? err.message : err);
+    return false;
   }
 }
 
